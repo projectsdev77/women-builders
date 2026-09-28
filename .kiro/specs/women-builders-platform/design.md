@@ -4,18 +4,20 @@
 
 Women Builders is a professional community platform built as a responsive web application enabling quality network curation and relevant professional discovery. The platform serves women founders, operators, investors, and builders through intelligent member matching, connection management, and admin-driven community growth.
 
+> **Revision 2 (R2).** This design was reviewed in `spec-review.md` and corrected in `gap-resolutions.md`. Where they conflict, **`gap-resolutions.md` and the implementation win**. Sections marked **SUPERSEDED (R2)** are kept for history only. The authoritative schema is `prisma/schema.prisma` in the repository root.
+
 ### Key Design Decisions
 
 This design resolves all open questions from the requirements phase:
 
 1. **Outreach Email**: Platform tracks external communications only (no direct email sending for outreach). Notification emails for member activities use Resend.
-2. **Relevance Algorithm**: Hybrid scoring combining role matching (30%), needs-offerings alignment (40%), expertise overlap (20%), and activity recency (10%)
+2. **Relevance Algorithm**: Hybrid scoring combining role matching (30%), needs-offerings alignment (40%), expertise overlap (20%), and activity recency (10%). R2 changes the component formulas (G13)
 3. **Membership Model**: Application-based with admin approval (CONFIRMED)
-4. **Profile Completeness**: Required fields vary by role; 60% completeness threshold for connection requests
-5. **Spam Prevention**: 20 connection requests/day, 50 messages/day per member
+4. **Profile Completeness**: `round(100 × filled / applicable)`; ≥60% plus the primary role's required fields to send connection requests (R2, G15)
+5. **Spam Prevention**: 20 connection requests and 200 messages per rolling 24h per member, plus 20 unanswered messages per conversation (R2, G1). Block and report (Req 21) handle abuse
 6. **Connection Request Expiration**: 30-day expiration with auto-decline
-7. **Search Ranking**: Hybrid ranking with relevance score (70%) and profile completeness (30%)
-8. **Data Retention**: 2 years for terminal state Potential_Members, then archived
+7. **Search Ranking**: With a text query, 60% text match + 25% relevance + 15% completeness. Without a query, 70% relevance + 30% completeness (R2, G14)
+8. **Data Retention**: 2 years for Not_Interested/Not_A_Fit Potential_Members, then soft-archived. Do_Not_Contact records are kept forever as suppression (R2, G8)
 9. **Multi-tenancy**: Single community (CONFIRMED)
 10. **Mobile Support**: Responsive web app (CONFIRMED)
 
@@ -26,15 +28,15 @@ This design resolves all open questions from the requirements phase:
 - **Language**: TypeScript - Type safety across entire stack
 - **UI Library**: React 18 with React Server Components
 - **Styling**: Tailwind CSS - Utility-first, responsive design, dark mode support
-- **State Management**: React Context + TanStack Query (React Query) - Server state management
+- **State Management**: React Server Components + small client fetch hooks with polling for messages (R2)
 - **Form Handling**: React Hook Form + Zod - Type-safe validation
-- **Component Library**: shadcn/ui - Accessible, customizable components
+- **Component Library**: ~~shadcn/ui~~ **R2:** small in-house Tailwind component set in `components/ui`; the visual design comes from the designer handoff
 
 **Backend**
 - **Framework**: Next.js 14 API Routes - Unified codebase, serverless deployment
 - **Language**: TypeScript
 - **API Pattern**: RESTful with resource-based endpoints
-- **Authentication**: NextAuth.js v5 - Session management, credential provider
+- **Authentication**: ~~NextAuth.js v5~~ **R2:** custom database sessions (hashed token in an HttpOnly cookie, status re-checked every request) plus bcrypt. See G3
 - **Email Service**: Resend - Transactional emails for notifications
 
 **Database**
@@ -45,7 +47,7 @@ This design resolves all open questions from the requirements phase:
 **Infrastructure**
 - **Hosting**: Vercel - Optimized for Next.js, automatic deployments, edge functions
 - **Database Hosting**: Vercel Postgres (Neon) or Supabase - Managed PostgreSQL
-- **File Storage**: Vercel Blob Storage - Profile images, CSV imports
+- **File Storage**: ~~Vercel Blob Storage~~ **R2:** not in MVP. Initials avatars; CSV parsed in memory (profile photos are Phase 2)
 - **Monitoring**: Vercel Analytics + Sentry - Performance and error tracking
 
 **Justification**: This stack provides a unified TypeScript environment from database to UI, excellent developer experience with type safety, cost-effective serverless deployment, and strong community support. Next.js 14 with App Router provides optimal performance through Server Components and streaming.
@@ -352,6 +354,8 @@ const COMPLETENESS_THRESHOLD = 60;
 ## Data Models
 
 ### Database Schema
+
+> **SUPERSEDED (R2).** The authoritative schema is `prisma/schema.prisma`. Main changes: sessions, tokens, login attempts, blocks, reports, invitations, audit log, email outbox, status history; canonical connection pairs; no RateLimit table; optional prospect email; date-only follow-ups.
 
 ```prisma
 // prisma/schema.prisma
@@ -897,6 +901,9 @@ sequenceDiagram
 
 ### NextAuth.js Configuration
 
+> **SUPERSEDED (R2).** See `gap-resolutions.md` and the implementation in `lib/`.
+
+
 ```typescript
 // lib/auth/auth.config.ts
 import { NextAuthConfig } from 'next-auth';
@@ -1065,6 +1072,8 @@ export function validatePassword(password: string) {
 
 ### Rate Limiting
 
+> **SUPERSEDED (R2).** See `gap-resolutions.md` and the implementation in `lib/`.
+
 ```typescript
 // lib/services/rate-limit.ts
 import { prisma } from '@/lib/db';
@@ -1144,6 +1153,9 @@ export async function incrementRateLimit(
 
 ### Data Privacy and Field Visibility
 
+> **SUPERSEDED (R2).** See `gap-resolutions.md` and the implementation in `lib/`.
+
+
 ```typescript
 // lib/services/privacy.ts
 export function filterProfileFields(
@@ -1170,6 +1182,8 @@ export function filterProfileFields(
 ## Relevance Algorithm Implementation
 
 ### Relevance Calculation
+
+> **SUPERSEDED (R2, G13).** The tokenizer, needs/offerings formula (now cosine) and role matrix (now symmetric over all roles) changed. See `lib/services/relevance.ts`.
 
 The recommendation engine uses a hybrid scoring system with four weighted components:
 
@@ -1328,6 +1342,9 @@ const STOP_WORDS = new Set([
 
 ### Search Ranking Algorithm
 
+> **SUPERSEDED (R2).** See `gap-resolutions.md` and the implementation in `lib/`.
+
+
 ```typescript
 // lib/services/search.ts
 
@@ -1404,6 +1421,8 @@ This is a web application with complex business logic, user interactions, and da
 - **E2E Tests**: 5 critical user journeys
 
 ### Testing Stack
+
+> **R2:** Vitest for unit and integration tests (the tasks.md reference to Jest is corrected). Core service tests are required.
 
 ```typescript
 // Testing dependencies
@@ -2188,6 +2207,8 @@ main()
 
 ### Scheduled Jobs
 
+> **SUPERSEDED (R2).** Jobs: `/api/cron/outbox` (every minute), `/api/cron/expire-requests` (daily), `/api/cron/archive` (weekly, soft-archive, never Do_Not_Contact). There is no completeness job: it's recomputed on save.
+
 ```typescript
 // lib/jobs/cleanup.ts
 // Run daily via cron (Vercel Cron or external scheduler)
@@ -2822,6 +2843,9 @@ function AdminNote({ note }: { note: string }) {
 
 ### CSRF Protection
 
+> **SUPERSEDED (R2).** See `gap-resolutions.md` and the implementation in `lib/`.
+
+
 NextAuth.js provides built-in CSRF protection for authentication endpoints. For other mutations, use CSRF tokens.
 
 ```typescript
@@ -2846,6 +2870,9 @@ export function middleware(request: NextRequest) {
 ```
 
 ### Rate Limiting (Additional Layer)
+
+> **SUPERSEDED (R2).** See `gap-resolutions.md` and the implementation in `lib/`.
+
 
 Beyond application-level rate limiting, implement edge-level protection:
 

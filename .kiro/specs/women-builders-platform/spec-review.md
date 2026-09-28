@@ -1,5 +1,7 @@
 # Spec Review: Gaps, Contradictions, and Breakages
 
+> **Status:** all findings below are resolved. See `gap-resolutions.md` (G1–G18) for the decision on each one and where it is implemented.
+
 Review of `requirements.md`, `design.md`, and `tasks.md`. Findings are ranked by severity:
 
 - **P0**: Security hole or a feature that won't work as designed.
