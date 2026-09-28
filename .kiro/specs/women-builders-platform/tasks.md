@@ -54,15 +54,15 @@
 - _Req: 16_
 
 ## Step 7: Admin
-- [ ] 7.1 Applications queue: approve/reject (+ emails, approvedAt, prospect sync)
-- [ ] 7.2 Members list: deactivate/reactivate (kills sessions), grant/revoke admin with guards
-- [ ] 7.3 Potential members: CRUD, dedupe by email + LinkedIn, DNC suppression, assignment, notes, outreach log, status history
-- [ ] 7.4 Follow-up queue (date-only, timezone-aware)
-- [ ] 7.5 CSV import: preview + commit, partial, limits, formula neutralization
-- [ ] 7.6 Invitations
-- [ ] 7.7 Reports queue
-- [ ] 7.8 Dashboard: counts, conversion metrics, growth by approvedAt, upcoming follow-ups, date range
-- [ ] 7.9 Audit log viewer
+- [x] 7.1 Applications queue: approve/reject (+ emails, approvedAt, prospect sync)
+- [x] 7.2 Members list: deactivate/reactivate (kills sessions), grant/revoke admin with guards
+- [x] 7.3 Potential members: CRUD, dedupe by email + LinkedIn, DNC suppression, assignment, notes, outreach log, status history
+- [x] 7.4 Follow-up queue (date-only, timezone-aware)
+- [x] 7.5 CSV import: preview + commit, partial, limits, formula neutralization
+- [x] 7.6 Invitations
+- [x] 7.7 Reports queue
+- [x] 7.8 Dashboard: counts, conversion metrics, growth by approvedAt, upcoming follow-ups, date range
+- [x] 7.9 Audit log viewer
 - _Req: 6, 7, 8, 13, 19, 20, 21.5, 22, 23_
 
 ## Step 8: Operations and data rights
