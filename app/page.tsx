@@ -1,0 +1,23 @@
+import Link from 'next/link';
+import { APP_NAME, ELIGIBILITY_STATEMENT } from '@/lib/config';
+
+export default function LandingPage() {
+  return (
+    <main id="main" className="mx-auto flex max-w-3xl flex-col gap-8 px-4 py-20">
+      <h1 className="text-4xl font-bold tracking-tight">{APP_NAME}</h1>
+      <p className="text-lg text-gray-700">
+        Find the people who matter to what you&apos;re building: by what they do, what they
+        need, and what they can offer.
+      </p>
+      <p className="text-gray-600">{ELIGIBILITY_STATEMENT}</p>
+      <div className="flex gap-3">
+        <Link href="/register" className="rounded-md bg-brand-600 px-4 py-2 font-medium text-white">
+          Apply to join
+        </Link>
+        <Link href="/login" className="rounded-md border border-gray-300 bg-white px-4 py-2 font-medium">
+          Log in
+        </Link>
+      </div>
+    </main>
+  );
+}

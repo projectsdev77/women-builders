@@ -9,10 +9,10 @@
 - [x] 0.4 Mark superseded sections in `design.md`
 
 ## Step 1: Foundation
-- [ ] 1.1 Next.js 14 (App Router) + TypeScript strict + Tailwind + ESLint
-- [ ] 1.2 Prisma schema (R2): users, sessions, tokens, login attempts, profiles, requests, canonical connections, messages, blocks, reports, dismissals, notification prefs, email outbox, potential members + status history, invitations, audit log
-- [ ] 1.3 Initial migration + seed (admin with no directory profile, demo members)
-- [ ] 1.4 Vitest configured with a separate test database
+- [x] 1.1 Next.js 14 (App Router) + TypeScript strict + Tailwind + ESLint
+- [x] 1.2 Prisma schema (R2): users, sessions, tokens, login attempts, profiles, requests, canonical connections, messages, blocks, reports, dismissals, notification prefs, email outbox, potential members + status history, invitations, audit log
+- [x] 1.3 Initial migration + seed (admin with no directory profile, demo members)
+- [x] 1.4 Vitest configured with a separate test database
 - _Req: foundation; G17_
 
 ## Step 2: Authentication and accounts

@@ -1,0 +1,432 @@
+// Women Builders: database schema (Spec Revision 2).
+// Gap references (G#) point to .kiro/specs/women-builders-platform/gap-resolutions.md
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum RoleType {
+  FOUNDER
+  OPERATOR
+  INVESTOR
+  BUILDER
+}
+
+enum AccountStatus {
+  PENDING
+  ACTIVE
+  REJECTED
+  DEACTIVATED
+}
+
+enum DeactivatedBy {
+  SELF
+  ADMIN
+}
+
+enum ConnectionRequestStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  CANCELLED
+  EXPIRED
+}
+
+enum OutreachStatus {
+  IDENTIFIED
+  REVIEWED
+  CONTACTED
+  FOLLOW_UP_NEEDED
+  INTERESTED
+  INVITED
+  APPLIED
+  APPROVED
+  NOT_INTERESTED
+  NOT_A_FIT
+  DO_NOT_CONTACT
+}
+
+enum TokenPurpose {
+  EMAIL_VERIFICATION
+  PASSWORD_RESET
+}
+
+enum ReportReason {
+  HARASSMENT
+  SPAM
+  FAKE_PROFILE
+  INAPPROPRIATE_CONTENT
+  OTHER
+}
+
+enum ReportStatus {
+  OPEN
+  RESOLVED
+  DISMISSED
+}
+
+enum EmailStatus {
+  PENDING
+  SENT
+  FAILED
+}
+
+model User {
+  id                   String         @id @default(cuid())
+  email                String         @unique // always stored normalized (G11)
+  passwordHash         String
+  name                 String
+  isAdmin              Boolean        @default(false)
+  accountStatus        AccountStatus  @default(PENDING)
+  deactivatedBy        DeactivatedBy?
+  emailVerifiedAt      DateTime?
+  applicationStatement String?        @db.Text
+  approvedAt           DateTime?
+  rejectedAt           DateTime?
+  reviewNote           String?        @db.Text // internal admin note on approve/reject
+  lockedUntil          DateTime? // global backstop lock (G7)
+  lastActiveAt         DateTime       @default(now())
+  createdAt            DateTime       @default(now())
+  updatedAt            DateTime       @updatedAt
+
+  profile                 Profile?
+  sessions                Session[]
+  tokens                  AuthToken[]
+  sentRequests            ConnectionRequest[]        @relation("RequestSender")
+  receivedRequests        ConnectionRequest[]        @relation("RequestReceiver")
+  connectionsA            Connection[]               @relation("ConnectionA")
+  connectionsB            Connection[]               @relation("ConnectionB")
+  sentMessages            Message[]                  @relation("MessageSender")
+  receivedMessages        Message[]                  @relation("MessageReceiver")
+  dismissals              DismissedRecommendation[]  @relation("Dismisser")
+  dismissedBy             DismissedRecommendation[]  @relation("Dismissed")
+  blocksMade              Block[]                    @relation("Blocker")
+  blocksReceived          Block[]                    @relation("Blocked")
+  reportsMade             Report[]                   @relation("Reporter")
+  reportsReceived         Report[]                   @relation("ReportedUser")
+  reportsResolved         Report[]                   @relation("ReportResolver")
+  notificationPreference  NotificationPreference?
+  potentialMember         PotentialMember?           @relation("PotentialMemberUser")
+  assignedPotentialMembers PotentialMember[]         @relation("PotentialMemberAssignee")
+  invitationsSent         Invitation[]               @relation("InvitationSender")
+  auditLogs               AuditLog[]                 @relation("AuditActor")
+
+  @@index([accountStatus, createdAt])
+  @@index([approvedAt])
+}
+
+// DB-backed sessions so status/admin changes apply immediately (G3).
+model Session {
+  id           String   @id @default(cuid())
+  tokenHash    String   @unique
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt    DateTime
+  createdAt    DateTime @default(now())
+  lastSeenAt   DateTime @default(now())
+  userAgent    String?
+
+  @@index([userId])
+}
+
+// Single-use hashed tokens for email verification and password reset (G11).
+model AuthToken {
+  id        String       @id @default(cuid())
+  tokenHash String       @unique
+  purpose   TokenPurpose
+  userId    String
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime     @default(now())
+
+  @@index([userId, purpose])
+}
+
+// Failed-login tracking per (email, ip) to throttle without enabling lockout DoS (G7).
+model LoginAttempt {
+  id        String   @id @default(cuid())
+  email     String
+  ip        String
+  success   Boolean
+  createdAt DateTime @default(now())
+
+  @@index([email, ip, createdAt])
+  @@index([email, createdAt])
+}
+
+model Profile {
+  id                     String     @id @default(cuid())
+  userId                 String     @unique
+  user                   User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  primaryRole            RoleType
+  secondaryRoles         RoleType[]
+  headline               String?
+  professionalBackground String?    @db.Text
+  expertiseAreas         String[] // normalized tags (G13)
+  currentFocus           String?    @db.Text
+  needs                  String?    @db.Text
+  offerings              String?    @db.Text
+  location               String?
+  linkedInUrl            String?
+  websiteUrl             String?
+
+  // Founder
+  companyName            String?
+  companyStage           String?
+  industry               String?
+  fundingStatus          String?
+  // Operator
+  functionalExpertise    String?
+  seniorityLevel         String?
+  operationalFocus       String[]
+  // Investor
+  investmentStages       String[]
+  checkSizeMin           Int? // USD thousands
+  checkSizeMax           Int?
+  sectorPreferences      String[]
+  // Builder
+  technicalSkills        String[]
+  projectTypes           String[]
+  collaborationInterests String?    @db.Text
+
+  hiddenFields           String[] // subset of HIDEABLE_FIELDS (G5)
+  completenessScore      Int        @default(0)
+  onboardingCompletedAt  DateTime?
+  createdAt              DateTime   @default(now())
+  updatedAt              DateTime   @updatedAt
+
+  @@index([primaryRole])
+  @@index([completenessScore])
+}
+
+// No DB-level unique on (sender, receiver): re-requests are allowed after expiry.
+// "At most one PENDING per pair" is enforced transactionally (G6).
+model ConnectionRequest {
+  id          String                  @id @default(cuid())
+  senderId    String
+  sender      User                    @relation("RequestSender", fields: [senderId], references: [id], onDelete: Cascade)
+  receiverId  String
+  receiver    User                    @relation("RequestReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
+  message     String?                 @db.VarChar(500)
+  status      ConnectionRequestStatus @default(PENDING)
+  expiresAt   DateTime
+  respondedAt DateTime?
+  createdAt   DateTime                @default(now())
+
+  @@index([receiverId, status])
+  @@index([senderId, status])
+  @@index([senderId, createdAt])
+  @@index([status, expiresAt])
+}
+
+// Canonical pair: userAId < userBId (G6). Soft-removed via removedAt (G9).
+model Connection {
+  id        String    @id @default(cuid())
+  userAId   String
+  userA     User      @relation("ConnectionA", fields: [userAId], references: [id], onDelete: Cascade)
+  userBId   String
+  userB     User      @relation("ConnectionB", fields: [userBId], references: [id], onDelete: Cascade)
+  createdAt DateTime  @default(now())
+  removedAt DateTime?
+  messages  Message[]
+
+  @@unique([userAId, userBId])
+  @@index([userBId])
+}
+
+model Message {
+  id           String     @id @default(cuid())
+  connectionId String
+  connection   Connection @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+  senderId     String
+  sender       User       @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+  receiverId   String
+  receiver     User       @relation("MessageReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
+  content      String     @db.VarChar(5000)
+  readAt       DateTime?
+  createdAt    DateTime   @default(now())
+
+  @@index([connectionId, createdAt])
+  @@index([receiverId, readAt])
+  @@index([senderId, createdAt])
+}
+
+model DismissedRecommendation {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation("Dismisser", fields: [userId], references: [id], onDelete: Cascade)
+  dismissedUserId String
+  dismissedUser   User     @relation("Dismissed", fields: [dismissedUserId], references: [id], onDelete: Cascade)
+  dismissedAt     DateTime @default(now())
+  showAgainAfter  DateTime
+
+  @@unique([userId, dismissedUserId])
+}
+
+model Block {
+  id        String   @id @default(cuid())
+  blockerId String
+  blocker   User     @relation("Blocker", fields: [blockerId], references: [id], onDelete: Cascade)
+  blockedId String
+  blocked   User     @relation("Blocked", fields: [blockedId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([blockerId, blockedId])
+  @@index([blockedId])
+}
+
+model Report {
+  id             String       @id @default(cuid())
+  reporterId     String
+  reporter       User         @relation("Reporter", fields: [reporterId], references: [id], onDelete: Cascade)
+  reportedUserId String
+  reportedUser   User         @relation("ReportedUser", fields: [reportedUserId], references: [id], onDelete: Cascade)
+  messageId      String?
+  messageExcerpt String?      @db.VarChar(5000) // snapshot, in case the message is deleted
+  reason         ReportReason
+  details        String?      @db.VarChar(2000)
+  status         ReportStatus @default(OPEN)
+  resolvedById   String?
+  resolvedBy     User?        @relation("ReportResolver", fields: [resolvedById], references: [id], onDelete: SetNull)
+  resolutionNote String?      @db.Text
+  resolvedAt     DateTime?
+  createdAt      DateTime     @default(now())
+
+  @@index([status, createdAt])
+}
+
+model NotificationPreference {
+  id                 String   @id @default(cuid())
+  userId             String   @unique
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  connectionRequest  Boolean  @default(true)
+  connectionAccepted Boolean  @default(true)
+  newMessage         Boolean  @default(true)
+  updatedAt          DateTime @updatedAt
+}
+
+// Durable outbox: emails are enqueued in the same transaction as the event (G12).
+model EmailOutbox {
+  id          String      @id @default(cuid())
+  to          String
+  subject     String
+  html        String      @db.Text
+  text        String      @db.Text
+  kind        String // e.g. 'connection_request', 'password_reset'
+  dedupeKey   String?     @unique // used for message-email coalescing
+  unsubscribeUrl String?
+  status      EmailStatus @default(PENDING)
+  attempts    Int         @default(0)
+  nextAttemptAt DateTime  @default(now())
+  lastError   String?     @db.Text
+  sentAt      DateTime?
+  createdAt   DateTime    @default(now())
+
+  @@index([status, nextAttemptAt])
+}
+
+model PotentialMember {
+  id               String         @id @default(cuid())
+  email            String?        @unique // optional; normalized (G16)
+  linkedInUrl      String?        @unique // canonical form (G16, G18)
+  name             String
+  company          String?
+  role             String?
+  discoverySource  String?
+  referrerName     String?
+  referrerEmail    String?
+  lawfulBasisNote  String?        @db.Text
+  outreachStatus   OutreachStatus @default(IDENTIFIED)
+  nextFollowUpDate DateTime?      @db.Date // date-only (G16)
+  assignedAdminId  String?
+  assignedAdmin    User?          @relation("PotentialMemberAssignee", fields: [assignedAdminId], references: [id], onDelete: SetNull)
+  userId           String?        @unique // linked member account (G10)
+  user             User?          @relation("PotentialMemberUser", fields: [userId], references: [id], onDelete: SetNull)
+  archivedAt       DateTime? // soft archive; never for DO_NOT_CONTACT (G8)
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  notes         OutreachNote[]
+  attempts      OutreachAttempt[]
+  statusChanges PotentialMemberStatusChange[]
+  invitations   Invitation[]
+
+  @@index([outreachStatus])
+  @@index([nextFollowUpDate])
+  @@index([archivedAt])
+}
+
+model OutreachNote {
+  id                String          @id @default(cuid())
+  potentialMemberId String
+  potentialMember   PotentialMember @relation(fields: [potentialMemberId], references: [id], onDelete: Cascade)
+  content           String          @db.Text
+  createdById       String?
+  createdAt         DateTime        @default(now())
+
+  @@index([potentialMemberId, createdAt])
+}
+
+model OutreachAttempt {
+  id                String          @id @default(cuid())
+  potentialMemberId String
+  potentialMember   PotentialMember @relation(fields: [potentialMemberId], references: [id], onDelete: Cascade)
+  attemptDate       DateTime        @db.Date
+  method            String
+  outcome           String?         @db.Text
+  createdById       String?
+  createdAt         DateTime        @default(now())
+
+  @@index([potentialMemberId, attemptDate])
+}
+
+// Every status change, from any path (G16), powering conversion metrics.
+model PotentialMemberStatusChange {
+  id                String          @id @default(cuid())
+  potentialMemberId String
+  potentialMember   PotentialMember @relation(fields: [potentialMemberId], references: [id], onDelete: Cascade)
+  fromStatus        OutreachStatus?
+  toStatus          OutreachStatus
+  changedById       String? // null = system
+  createdAt         DateTime        @default(now())
+
+  @@index([toStatus, createdAt])
+  @@index([potentialMemberId, createdAt])
+}
+
+model Invitation {
+  id                String           @id @default(cuid())
+  email             String
+  tokenHash         String           @unique
+  potentialMemberId String?
+  potentialMember   PotentialMember? @relation(fields: [potentialMemberId], references: [id], onDelete: SetNull)
+  invitedById       String?
+  invitedBy         User?            @relation("InvitationSender", fields: [invitedById], references: [id], onDelete: SetNull)
+  expiresAt         DateTime
+  usedAt            DateTime?
+  revokedAt         DateTime?
+  createdAt         DateTime         @default(now())
+
+  @@index([email])
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorId    String?
+  actor      User?    @relation("AuditActor", fields: [actorId], references: [id], onDelete: SetNull)
+  action     String
+  targetType String
+  targetId   String?
+  details    Json?
+  createdAt  DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([targetType, targetId])
+}

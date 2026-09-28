@@ -1,0 +1,16 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Placeholder styling. Final visual design comes from the designer handoff. */
+:root {
+  color-scheme: light;
+}
+
+body {
+  @apply bg-gray-50 text-gray-900 antialiased;
+}
+
+:focus-visible {
+  @apply outline outline-2 outline-offset-2 outline-brand-600;
+}
