@@ -12,11 +12,11 @@
     "test:watch": "vitest",
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
-    "db:seed": "tsx prisma/seed.ts",
+    "db:seed": "dotenv -e .env -- tsx prisma/seed.ts",
     "db:test:reset": "dotenv -e .env.test -- prisma migrate reset --force --skip-seed"
   },
   "prisma": {
-    "seed": "tsx prisma/seed.ts"
+    "seed": "dotenv -e .env -- tsx prisma/seed.ts"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",

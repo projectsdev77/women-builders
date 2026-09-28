@@ -173,7 +173,7 @@ New **Requirement 21**:
 - **The design's broken unit test** was replaced with tests matching the documented formula.
 
 ### G14: Search ignored the query ✅
-- **With a text query,** results are ranked `0.6·textMatch + 0.25·relevance + 0.15·completeness`. An exact or prefix name match gets textMatch = 100.
+- **With a text query,** name matches (exact, prefix, or every query word starting a name word) form a top tier. Within a tier, results are ranked `0.6·textMatch + 0.25·relevance + 0.15·completeness`.
 - **Without a query,** ranking is `0.7·relevance + 0.3·completeness`, as originally designed.
 - **Short names** (Ana, Li) match via name-prefix matching. They aren't dropped.
 - **SQL prefilter:** `ILIKE` over visible text columns plus exact expertise tags. Then visibility-aware scoring in the service, then pagination. The candidate cap of 2,000 is documented. Postgres FTS/Algolia is Phase 2.

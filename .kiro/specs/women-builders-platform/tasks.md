@@ -34,10 +34,10 @@
 - _Req: 1, 9, 10, 12_
 
 ## Step 4: Discovery
-- [ ] 4.1 Relevance service (tokenizer, cosine needs/offerings, symmetric role matrix, mutuals) (G13)
-- [ ] 4.2 Search service with a visibility-aware match and ranking (G14)
-- [ ] 4.3 Search page with filters and pagination
-- [ ] 4.4 Recommendations with exclusions, dismiss (upsert, 30 days), explanations from visible fields only
+- [x] 4.1 Relevance service (tokenizer, cosine needs/offerings, symmetric role matrix, mutuals) (G13)
+- [x] 4.2 Search service with a visibility-aware match and ranking (G14)
+- [x] 4.3 Search page with filters and pagination
+- [x] 4.4 Recommendations with exclusions, dismiss (upsert, 30 days), explanations from visible fields only
 - _Req: 2, 5_
 
 ## Step 5: Network, safety, messaging
