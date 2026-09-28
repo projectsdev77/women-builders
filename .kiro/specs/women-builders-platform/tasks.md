@@ -26,11 +26,11 @@
 - _Req: 11, 18, 24_
 
 ## Step 3: Profiles and privacy
-- [ ] 3.1 Completeness service with the explicit formula and gate (G15)
-- [ ] 3.2 Profile editor (own profile) with role-specific sections, hidden-field toggles, tag normalization
-- [ ] 3.3 Onboarding wizard
-- [ ] 3.4 `toMemberView` privacy DTO used by every read path (G5)
-- [ ] 3.5 Member profile page with connection-state actions
+- [x] 3.1 Completeness service with the explicit formula and gate (G15)
+- [x] 3.2 Profile editor (own profile) with role-specific sections, hidden-field toggles, tag normalization
+- [x] 3.3 Onboarding wizard
+- [x] 3.4 `toMemberView` privacy DTO used by every read path (G5)
+- [x] 3.5 Member profile page with connection-state actions
 - _Req: 1, 9, 10, 12_
 
 ## Step 4: Discovery
