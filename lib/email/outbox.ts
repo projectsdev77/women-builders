@@ -64,6 +64,16 @@ async function deliver(email: {
   if (!res.ok) throw new Error(`Resend ${res.status}: ${await res.text()}`);
 }
 
+/** Message emails are skipped when the recipient has already read the conversation (G12). */
+async function alreadyRead(dedupeKey: string | null): Promise<boolean> {
+  if (!dedupeKey?.startsWith('msg:')) return false;
+  const [, connectionId, receiverId, senderId] = dedupeKey.split(':');
+  const unread = await prisma.message.count({
+    where: { connectionId, receiverId, senderId, readAt: null },
+  });
+  return unread === 0;
+}
+
 /** Sends due emails with exponential backoff. Called by cron and after enqueue. */
 export async function processOutbox(limit = 25): Promise<{ sent: number; failed: number }> {
   const due = await prisma.emailOutbox.findMany({
@@ -81,6 +91,13 @@ export async function processOutbox(limit = 25): Promise<{ sent: number; failed:
     });
     if (claimed.count === 0) continue;
     try {
+      if (await alreadyRead(email.dedupeKey)) {
+        await prisma.emailOutbox.update({
+          where: { id: email.id },
+          data: { status: 'SENT', sentAt: new Date(), lastError: 'skipped: messages already read' },
+        });
+        continue;
+      }
       await deliver(email);
       await prisma.emailOutbox.update({
         where: { id: email.id },

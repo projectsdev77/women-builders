@@ -41,10 +41,10 @@
 - _Req: 2, 5_
 
 ## Step 5: Network, safety, messaging
-- [ ] 5.1 Connection requests: atomic limits, one pending per pair, crossing auto-accept, silent decline, expiry (G1, G6)
-- [ ] 5.2 Requests page (incoming/outgoing), connections list with search, remove connection
-- [ ] 5.3 Block/unblock, report (G9)
-- [ ] 5.4 Messaging: connection check, limits, read-only states, mark read, 3s polling (G12)
+- [x] 5.1 Connection requests: atomic limits, one pending per pair, crossing auto-accept, silent decline, expiry (G1, G6)
+- [x] 5.2 Requests page (incoming/outgoing), connections list with search, remove connection
+- [x] 5.3 Block/unblock, report (G9)
+- [x] 5.4 Messaging: connection check, limits, read-only states, mark read, 3s polling (G12)
 - _Req: 3, 4, 14, 15, 21_
 
 ## Step 6: Notifications
