@@ -16,13 +16,13 @@
 - _Req: foundation; G17_
 
 ## Step 2: Authentication and accounts
-- [ ] 2.1 Email normalization, password policy, bcrypt (G11)
-- [ ] 2.2 Database sessions with a hashed token cookie; status re-checked every request (G3)
-- [ ] 2.3 Registration: Profile created at sign-up, verification email, invitation token path, prospect linking (G10)
-- [ ] 2.4 Login: per-(email, IP) throttle, global backstop, generic errors, timing equalization (G7)
-- [ ] 2.5 Email verification, password reset, change password (Req 24)
-- [ ] 2.6 Route gating: pending → `/pending`, onboarding redirect, admin guard (Req 11.5–11.8)
-- [ ] 2.7 Origin-check middleware for API mutations, CSP nonce, security headers (G4, G18)
+- [x] 2.1 Email normalization, password policy, bcrypt (G11)
+- [x] 2.2 Database sessions with a hashed token cookie; status re-checked every request (G3)
+- [x] 2.3 Registration: Profile created at sign-up, verification email, invitation token path, prospect linking (G10)
+- [x] 2.4 Login: per-(email, IP) throttle, global backstop, generic errors, timing equalization (G7)
+- [x] 2.5 Email verification, password reset, change password (Req 24)
+- [x] 2.6 Route gating: pending → `/pending`, onboarding redirect, admin guard (Req 11.5–11.8)
+- [x] 2.7 Origin-check middleware for API mutations, CSP nonce, security headers (G4, G18)
 - _Req: 11, 18, 24_
 
 ## Step 3: Profiles and privacy
