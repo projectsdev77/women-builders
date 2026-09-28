@@ -1,0 +1,40 @@
+import type { Metadata } from 'next';
+import { pageActiveMember } from '@/lib/auth/guards';
+import { prisma } from '@/lib/db';
+import { listBlocked } from '@/lib/services/safety';
+import { Card } from '@/components/ui';
+import { NotificationSettings } from './notification-settings';
+import { PasswordSettings } from './password-settings';
+import { BlockedList } from './blocked-list';
+
+export const metadata: Metadata = { title: 'Settings' };
+
+export default async function SettingsPage() {
+  const user = await pageActiveMember();
+  const [prefs, blocked] = await Promise.all([
+    prisma.notificationPreference.upsert({ where: { userId: user.id }, create: { userId: user.id }, update: {} }),
+    listBlocked(user.id),
+  ]);
+  return (
+    <div className="mx-auto max-w-2xl space-y-6">
+      <h1 className="text-2xl font-semibold">Settings</h1>
+      <Card className="space-y-4 p-6">
+        <h2 className="text-lg font-semibold">Email notifications</h2>
+        <p className="text-sm text-gray-600">
+          Emails go to <strong>{user.email}</strong>. Account and security emails are always sent.
+        </p>
+        <NotificationSettings
+          initial={{ connectionRequest: prefs.connectionRequest, connectionAccepted: prefs.connectionAccepted, newMessage: prefs.newMessage }}
+        />
+      </Card>
+      <Card className="space-y-4 p-6">
+        <h2 className="text-lg font-semibold">Password</h2>
+        <PasswordSettings />
+      </Card>
+      <Card className="space-y-4 p-6">
+        <h2 className="text-lg font-semibold">Blocked members</h2>
+        <BlockedList initial={blocked} />
+      </Card>
+    </div>
+  );
+}

@@ -48,9 +48,9 @@
 - _Req: 3, 4, 14, 15, 21_
 
 ## Step 6: Notifications
-- [ ] 6.1 Email outbox with retry worker; provider = Resend, or console in dev (G12)
-- [ ] 6.2 Preferences + signed one-click unsubscribe
-- [ ] 6.3 Message email coalescing
+- [x] 6.1 Email outbox with retry worker; provider = Resend, or console in dev (G12)
+- [x] 6.2 Preferences + signed one-click unsubscribe
+- [x] 6.3 Message email coalescing
 - _Req: 16_
 
 ## Step 7: Admin
