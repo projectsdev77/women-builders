@@ -202,7 +202,7 @@ describe('reports and dashboard (Req 20, 21.5)', () => {
     const a = await admin();
     const x = await createMember();
     const y = await createMember();
-    const r = await prisma.report.create({ data: { reporterId: x.id, reportedUserId: y.id, reason: 'SPAM' } });
+    const r = await prisma.report.create({ data: { reporterId: x.id, reportedUserId: y.id, reportedUserName: y.name, reason: 'SPAM' } });
     await resolveReport(a.id, r.id, 'RESOLVED', 'Warned member');
     await expect(resolveReport(a.id, r.id, 'DISMISSED')).rejects.toMatchObject({ code: 'NOT_FOUND' });
     expect(await prisma.auditLog.count({ where: { action: 'report.resolved' } })).toBe(1);

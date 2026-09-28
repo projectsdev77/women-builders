@@ -284,10 +284,12 @@ model Block {
 
 model Report {
   id             String       @id @default(cuid())
-  reporterId     String
-  reporter       User         @relation("Reporter", fields: [reporterId], references: [id], onDelete: Cascade)
-  reportedUserId String
-  reportedUser   User         @relation("ReportedUser", fields: [reportedUserId], references: [id], onDelete: Cascade)
+  // Reports outlive account deletion so nobody can erase reports by deleting their account (G11).
+  reporterId       String?
+  reporter         User?        @relation("Reporter", fields: [reporterId], references: [id], onDelete: SetNull)
+  reportedUserId   String?
+  reportedUser     User?        @relation("ReportedUser", fields: [reportedUserId], references: [id], onDelete: SetNull)
+  reportedUserName String // snapshot at report time
   messageId      String?
   messageExcerpt String?      @db.VarChar(5000) // snapshot, in case the message is deleted
   reason         ReportReason

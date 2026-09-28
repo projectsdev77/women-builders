@@ -143,7 +143,9 @@ New **Requirement 21**:
   - An admin-deactivated member is told to contact the admins.
 - **GDPR:**
   - `GET /api/me/export` returns a JSON file of all the member's data.
-  - `DELETE /api/me` permanently deletes the account after password confirmation. Messages the member sent are deleted. Counterpart conversations show "Deleted member".
+  - `DELETE /api/me` permanently deletes the account after password confirmation, along with its profile, requests, connections and **every conversation with that member, for both sides**. *(Changed during implementation: keeping half a conversation without its author was confusing, and the other side's messages are tied to the same connection.)*
+  - **Reports survive deletion.** A report keeps the reported member's name as a snapshot, and the account link becomes empty. Nobody can erase reports about themselves by deleting their account.
+  - The last active admin can't delete their account.
 - **Prospect data:** a `lawfulBasisNote` field plus the policy that records are only created from professional/public context. The retention rules in G8 apply.
 - **Spec change:** new Req 24 (Account security), 25 (Data rights).
 

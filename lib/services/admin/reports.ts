@@ -14,12 +14,13 @@ export async function listReports(status: ReportStatus | 'ALL' = 'OPEN') {
     orderBy: { createdAt: status === 'OPEN' ? 'asc' : 'desc' },
     take: 200,
   });
+  const ids = [...new Set(rows.map((r) => r.reportedUserId).filter((id): id is string => !!id))];
   const counts = await prisma.report.groupBy({
     by: ['reportedUserId'],
-    where: { reportedUserId: { in: rows.map((r) => r.reportedUserId) } },
-    _count: { _all: true },
+    where: { reportedUserId: { in: ids } },
+    _count: { id: true },
   });
-  const totals = new Map(counts.map((c) => [c.reportedUserId, c._count._all]));
+  const totals = new Map(counts.map((c) => [c.reportedUserId, c._count.id]));
   return rows.map((r) => ({
     id: r.id,
     reason: r.reason,
@@ -27,8 +28,13 @@ export async function listReports(status: ReportStatus | 'ALL' = 'OPEN') {
     messageExcerpt: r.messageExcerpt,
     status: r.status,
     createdAt: r.createdAt.toISOString(),
-    reporter: r.reporter,
-    reportedUser: { ...r.reportedUser, totalReports: totals.get(r.reportedUserId) ?? 1 },
+    reporter: r.reporter, // null when the reporter deleted their account
+    reportedUser: {
+      id: r.reportedUser?.id ?? null,
+      name: r.reportedUser?.name ?? `${r.reportedUserName} (account deleted)`,
+      accountStatus: r.reportedUser?.accountStatus ?? null,
+      totalReports: r.reportedUserId ? (totals.get(r.reportedUserId) ?? 1) : 1,
+    },
     resolvedBy: r.resolvedBy?.name ?? null,
     resolutionNote: r.resolutionNote,
     resolvedAt: r.resolvedAt?.toISOString() ?? null,

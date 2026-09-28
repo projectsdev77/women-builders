@@ -35,12 +35,12 @@ export default async function ReportsPage({ searchParams }: { searchParams: { st
                     <span className="text-sm text-gray-600">· {fmtDate(r.createdAt)}</span>
                   </div>
                   <span className="text-sm">
-                    <Link className="underline" href={`/admin/members/${r.reportedUser.id}`}>{r.reportedUser.name}</Link>
+                    {r.reportedUser.id ? <Link className="underline" href={`/admin/members/${r.reportedUser.id}`}>{r.reportedUser.name}</Link> : r.reportedUser.name}
                     {r.reportedUser.totalReports > 1 && <Badge tone="red">{r.reportedUser.totalReports} reports total</Badge>}
-                    {r.reportedUser.accountStatus !== 'ACTIVE' && <Badge>{r.reportedUser.accountStatus.toLowerCase()}</Badge>}
+                    {r.reportedUser.accountStatus && r.reportedUser.accountStatus !== 'ACTIVE' && <Badge>{r.reportedUser.accountStatus.toLowerCase()}</Badge>}
                   </span>
                 </div>
-                <p className="text-sm text-gray-600">Reported by <Link className="underline" href={`/admin/members/${r.reporter.id}`}>{r.reporter.name}</Link></p>
+                <p className="text-sm text-gray-600">Reported by {r.reporter ? <Link className="underline" href={`/admin/members/${r.reporter.id}`}>{r.reporter.name}</Link> : 'a deleted account'}</p>
                 {r.details && <p className="whitespace-pre-line text-sm">{r.details}</p>}
                 {r.messageExcerpt && <blockquote className="rounded-md bg-gray-50 p-2 text-sm italic">Reported message: “{r.messageExcerpt}”</blockquote>}
                 {r.status === 'OPEN' ? (

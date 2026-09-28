@@ -61,7 +61,7 @@ export async function reportMember(
   input: { memberId: string; reason: ReportReason; details?: string | null; messageId?: string | null },
 ) {
   if (actorId === input.memberId) throw Errors.validation("You can't report yourself.");
-  const target = await prisma.user.count({ where: { id: input.memberId } });
+  const target = await prisma.user.findUnique({ where: { id: input.memberId }, select: { name: true } });
   if (!target) throw Errors.notFound('Member');
   let messageExcerpt: string | null = null;
   if (input.messageId) {
@@ -79,6 +79,7 @@ export async function reportMember(
     data: {
       reporterId: actorId,
       reportedUserId: input.memberId,
+      reportedUserName: target.name,
       reason: input.reason,
       details,
       messageId: input.messageId ?? null,

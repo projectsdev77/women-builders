@@ -18,9 +18,17 @@ export function route<T>(fn: (req: NextRequest, ctx: Ctx) => Promise<T | Respons
       if (result instanceof Response) return result;
       return NextResponse.json(result ?? { ok: true });
     } catch (err) {
+      // Next.js signals (dynamic rendering, redirect, notFound) must propagate untouched;
+      // swallowing them would let a route be pre-rendered as a cached error.
+      if (isNextControlFlow(err)) throw err;
       return errorResponse(err, requestId, req);
     }
   };
+}
+
+function isNextControlFlow(err: unknown): boolean {
+  const digest = (err as { digest?: unknown } | null)?.digest;
+  return typeof digest === 'string' && (digest === 'DYNAMIC_SERVER_USAGE' || digest.startsWith('NEXT_'));
 }
 
 export function errorResponse(err: unknown, requestId: string, req?: NextRequest) {

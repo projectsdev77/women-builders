@@ -349,7 +349,8 @@ The platform serves a multi-role professional community where founders, operator
 
 1. THE Platform SHALL allow a member to download all their data (account, profile, connections, requests, sent and received messages, preferences) as a JSON file
 2. THE Platform SHALL allow a member to permanently delete their account after confirming their password
-3. WHEN an account is deleted, THE Platform SHALL delete the member's profile, connections, requests, and sent messages, and SHALL show the member as "Deleted member" in other members' conversation lists
+3. WHEN an account is deleted, THE Platform SHALL delete the member's profile, connections, requests, and all conversations with that member for both parties
+4. WHEN an account is deleted, THE Platform SHALL keep reports made about or by the member, with the reported member's name preserved, so deletion cannot erase safety history
 
 ## Open Questions for Design Phase
 

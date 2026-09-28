@@ -1,0 +1,7 @@
+{
+  "crons": [
+    { "path": "/api/cron/outbox", "schedule": "* * * * *" },
+    { "path": "/api/cron/expire-requests", "schedule": "0 3 * * *" },
+    { "path": "/api/cron/archive", "schedule": "0 2 * * 0" }
+  ]
+}

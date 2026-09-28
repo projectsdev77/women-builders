@@ -6,6 +6,7 @@ import { Card } from '@/components/ui';
 import { NotificationSettings } from './notification-settings';
 import { PasswordSettings } from './password-settings';
 import { BlockedList } from './blocked-list';
+import { AccountSettings } from './account-settings';
 
 export const metadata: Metadata = { title: 'Settings' };
 
@@ -34,6 +35,10 @@ export default async function SettingsPage() {
       <Card className="space-y-4 p-6">
         <h2 className="text-lg font-semibold">Blocked members</h2>
         <BlockedList initial={blocked} />
+      </Card>
+      <Card className="space-y-4 p-6">
+        <h2 className="text-lg font-semibold">Your account and data</h2>
+        <AccountSettings />
       </Card>
     </div>
   );

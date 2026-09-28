@@ -66,10 +66,10 @@
 - _Req: 6, 7, 8, 13, 19, 20, 21.5, 22, 23_
 
 ## Step 8: Operations and data rights
-- [ ] 8.1 Cron routes (outbox, expire requests, archive) protected by `CRON_SECRET`; `vercel.json`
-- [ ] 8.2 Data export and account deletion (Req 25)
-- [ ] 8.3 Self-deactivate/reactivate
-- [ ] 8.4 README: setup, env vars, scripts
+- [x] 8.1 Cron routes (outbox, expire requests, archive) protected by `CRON_SECRET`; `vercel.json`
+- [x] 8.2 Data export and account deletion (Req 25)
+- [x] 8.3 Self-deactivate/reactivate
+- [x] 8.4 README: setup, env vars, scripts
 
 ## Step 9: Designer handoff
 - [ ] 9.1 Self-contained designer handoff: product, users, IA, every screen and state, content, rules, constraints

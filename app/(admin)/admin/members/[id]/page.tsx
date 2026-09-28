@@ -119,7 +119,7 @@ export default async function AdminMemberPage({ params }: { params: { id: string
               <ul className="space-y-2 text-sm">
                 {user.reportsReceived.map((r) => (
                   <li key={r.id}>
-                    <Badge tone={r.status === 'OPEN' ? 'red' : 'gray'}>{r.status.toLowerCase()}</Badge> {REPORT_REASON_LABELS[r.reason]} · {fmtDate(r.createdAt)} by {r.reporter.name}
+                    <Badge tone={r.status === 'OPEN' ? 'red' : 'gray'}>{r.status.toLowerCase()}</Badge> {REPORT_REASON_LABELS[r.reason]} · {fmtDate(r.createdAt)} by {r.reporter?.name ?? 'a deleted account'}
                   </li>
                 ))}
               </ul>
