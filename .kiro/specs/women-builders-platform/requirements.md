@@ -81,7 +81,7 @@ The platform serves a multi-role professional community where founders, operator
 3. THE Platform SHALL notify the recipient when a new message is received
 4. THE Platform SHALL display message history in chronological order for each Connection
 5. WHEN a member has no Connection with another member, THE Platform SHALL not allow direct messaging between them
-6. *(R2)* THE Platform SHALL limit each member to 200 messages per rolling 24 hours and 20 consecutive messages to a recipient who has not replied; messages SHALL be at most 5,000 characters
+6. *(R2)* THE Platform SHALL limit each member to 20 consecutive messages to a recipient who has not replied (there is no daily message limit); messages SHALL be at most 5,000 characters
 7. *(R2)* WHEN a Connection is removed, a member is blocked, or either member is no longer active, THE Platform SHALL keep the history visible but read-only
 
 ### Requirement 5: Recommended Connections

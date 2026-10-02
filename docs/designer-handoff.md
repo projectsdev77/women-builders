@@ -228,7 +228,6 @@ Each recommendation includes up to three **reasons**. Design a visual treatment 
 | Limit | Value | Message tone |
 |---|---|---|
 | Connection requests | 20 per rolling 24h | "You've sent 20 connection requests in the last 24 hours. Please try again later." |
-| Messages | 200 per rolling 24h | Similar |
 | Unanswered messages in one conversation | 20 in a row | "You've sent 20 messages without a reply. Wait for Priya to respond." |
 | Withdrawn request cooldown | until the original expiry date | "You withdrew a request to this member recently. You can send a new one after October 28." |
 

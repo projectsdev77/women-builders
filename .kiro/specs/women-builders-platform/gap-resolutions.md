@@ -20,7 +20,7 @@ Status legend: ✅ resolved and implemented · 📐 resolved in spec only (decis
   - The transaction takes a per-user `pg_advisory_xact_lock`, so parallel requests serialize and can't race past the limit.
 - **Limits:**
   - 20 connection requests per rolling 24h.
-  - 200 messages per rolling 24h. Raised from 50: 50 across *all* conversations throttled ordinary active members, and harassment is now handled by block/report (G9).
+  - **No daily message limit** *(owner decision; the original spec said 50/day)*. Messaging is only possible between accepted connections, connection requests are already capped, and abuse is handled by block/report (G9). A daily cap could only hurt normal use.
   - A per-conversation cap of 20 messages to a recipient who hasn't replied yet.
 - **Spec change:** Req 3.7, 4.6 (new); design §Rate Limiting superseded.
 - **Implemented in:** `lib/services/rate-limit.ts`, `lib/services/connections.ts`, `lib/services/messaging.ts`.

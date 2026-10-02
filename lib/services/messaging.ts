@@ -47,7 +47,7 @@ export async function sendMessage(senderId: string, otherId: string, rawContent:
     throw Errors.validation(`Messages can be at most ${LIMITS.messageMax.toLocaleString()} characters.`);
   }
   const result = await prisma.$transaction(async (tx) => {
-    await lock(tx, `rate:message:${senderId}`);
+    await lock(tx, `message:${senderId}`); // serializes the unanswered-message check
     const conv = await loadConversation(tx, senderId, otherId).catch((e) => {
       if (e instanceof AppError && e.code === 'NOT_FOUND') {
         throw new AppError('CANNOT_MESSAGE', READ_ONLY_COPY.not_connected, 403);
@@ -56,11 +56,8 @@ export async function sendMessage(senderId: string, otherId: string, rawContent:
     });
     if (!conv.state.canSend) throw new AppError('CANNOT_MESSAGE', READ_ONLY_COPY[conv.state.reason], 403);
 
-    const now = Date.now();
-    const sentToday = await tx.message.count({ where: { senderId, createdAt: { gt: new Date(now - 24 * 3600 * 1000) } } });
-    if (sentToday >= LIMITS.messagesPer24h) {
-      throw Errors.rateLimited(`You've reached the limit of ${LIMITS.messagesPer24h} messages in 24 hours. Please try again later.`);
-    }
+    // No daily message cap (owner decision): messaging is already limited to accepted
+    // connections, and block/report cover abuse. The only limit is the one below.
     // Stop one-sided floods: max N messages in a row without a reply (G1).
     const lastReply = await tx.message.findFirst({
       where: { connectionId: conv.connection.id, senderId: otherId },

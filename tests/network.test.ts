@@ -12,7 +12,7 @@ import {
 } from '@/lib/services/connections';
 import { blockMember, reportMember, unblockMember } from '@/lib/services/safety';
 import { getConversation, listConversations, markConversationRead, sendMessage } from '@/lib/services/messaging';
-import { connectionStatus } from '@/lib/services/relationships';
+import { connectionStatus, pair } from '@/lib/services/relationships';
 import { processOutbox } from '@/lib/email/outbox';
 import { resetDb } from './helpers';
 import { COMPLETE_FOUNDER, createMember } from './factories';
@@ -202,6 +202,15 @@ describe('messaging (Req 4, G12)', () => {
     await expect(sendMessage(a.id, b.id, 'one more')).rejects.toMatchObject({ code: 'RATE_LIMITED' });
     await sendMessage(b.id, a.id, 'reply');
     await expect(sendMessage(a.id, b.id, 'thanks')).resolves.toBeTruthy();
+  });
+
+  it('has no daily message limit (only the unanswered-in-a-row cap)', async () => {
+    const sender = await ready();
+    const others = await Promise.all(Array.from({ length: 11 }, () => ready()));
+    for (const o of others) await prisma.connection.create({ data: pair(sender.id, o.id) });
+    // 11 conversations x 19 messages = 209 messages in one day, each conversation under the 20 cap.
+    for (const o of others) for (let i = 0; i < 19; i++) await sendMessage(sender.id, o.id, `m${i}`);
+    expect(await prisma.message.count({ where: { senderId: sender.id } })).toBe(209);
   });
 
   it('becomes read-only after removal or deactivation', async () => {

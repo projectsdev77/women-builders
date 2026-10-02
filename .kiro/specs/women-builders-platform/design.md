@@ -14,7 +14,7 @@ This design resolves all open questions from the requirements phase:
 2. **Relevance Algorithm**: Hybrid scoring combining role matching (30%), needs-offerings alignment (40%), expertise overlap (20%), and activity recency (10%). R2 changes the component formulas (G13)
 3. **Membership Model**: Application-based with admin approval (CONFIRMED)
 4. **Profile Completeness**: `round(100 × filled / applicable)`; ≥60% plus the primary role's required fields to send connection requests (R2, G15)
-5. **Spam Prevention**: 20 connection requests and 200 messages per rolling 24h per member, plus 20 unanswered messages per conversation (R2, G1). Block and report (Req 21) handle abuse
+5. **Spam Prevention**: 20 connection requests per rolling 24h per member, and at most 20 unanswered messages in a row per conversation. No daily message limit (R2, G1). Block and report (Req 21) handle abuse
 6. **Connection Request Expiration**: 30-day expiration with auto-decline
 7. **Search Ranking**: With a text query, 60% text match + 25% relevance + 15% completeness. Without a query, 70% relevance + 30% completeness (R2, G14)
 8. **Data Retention**: 2 years for Not_Interested/Not_A_Fit Potential_Members, then soft-archived. Do_Not_Contact records are kept forever as suppression (R2, G8)

@@ -4,7 +4,6 @@ export const APP_NAME = 'Women Builders';
 
 export const LIMITS = {
   connectionRequestsPer24h: 20, // G1
-  messagesPer24h: 200, // G1
   unansweredMessagesPerConversation: 20, // G1
   connectionRequestMessageMax: 500,
   messageMax: 5000, // G12
