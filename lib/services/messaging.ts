@@ -9,12 +9,13 @@ type Tx = Parameters<Parameters<typeof prisma.$transaction>[0]>[0];
 
 export type ConversationState =
   | { canSend: true }
-  | { canSend: false; reason: 'not_connected' | 'removed' | 'inactive' };
+  | { canSend: false; reason: 'not_connected' | 'removed' | 'inactive' | 'deleted' };
 
 const READ_ONLY_COPY = {
   not_connected: 'You can only message your connections.',
   removed: 'This connection was removed. The conversation is read-only.',
   inactive: 'This member is no longer active. The conversation is read-only.',
+  deleted: 'This account was deleted. You can still read your conversation, but it is read-only.',
 } as const;
 
 /**
@@ -31,9 +32,11 @@ async function loadConversation(db: Tx | typeof prisma, actorId: string, otherId
   if (!connection || !other) throw Errors.notFound('Conversation');
   const state: ConversationState = connection.removedAt
     ? { canSend: false, reason: 'removed' }
-    : other.accountStatus !== 'ACTIVE'
-      ? { canSend: false, reason: 'inactive' }
-      : { canSend: true };
+    : other.accountStatus === 'DELETED'
+      ? { canSend: false, reason: 'deleted' }
+      : other.accountStatus !== 'ACTIVE'
+        ? { canSend: false, reason: 'inactive' }
+        : { canSend: true };
   return { connection, other, state };
 }
 

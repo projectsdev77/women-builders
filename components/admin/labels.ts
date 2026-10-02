@@ -31,6 +31,7 @@ export const ACCOUNT_TONE: Record<string, 'gray' | 'green' | 'yellow' | 'red'> =
   PENDING: 'yellow',
   REJECTED: 'gray',
   DEACTIVATED: 'red',
+  DELETED: 'gray',
 };
 
 export const REPORT_REASON_LABELS: Record<string, string> = {

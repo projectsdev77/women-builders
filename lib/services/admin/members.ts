@@ -84,7 +84,7 @@ export async function listMembers(opts: { q?: string; status?: AccountStatus | '
     members: users.map((u) => ({
       id: u.id,
       name: u.name,
-      email: u.email,
+      email: u.accountStatus === 'DELETED' ? '' : u.email, // erased on deletion
       isAdmin: u.isAdmin,
       accountStatus: u.accountStatus,
       deactivatedBy: u.deactivatedBy,

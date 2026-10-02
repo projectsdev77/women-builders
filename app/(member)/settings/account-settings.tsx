@@ -52,7 +52,7 @@ export function AccountSettings() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="text-sm font-medium text-red-700">Delete account</p>
-          <p className="text-xs text-gray-500">Permanently delete your account, profile, connections and conversations.</p>
+          <p className="text-xs text-gray-500">Permanently erase your name, email, profile and connections. Your conversations stay visible to the people you talked to, as \"Deleted account\".</p>
         </div>
         <Button variant="danger" onClick={() => setDialog('delete')}>Delete</Button>
       </div>
@@ -69,8 +69,9 @@ export function AccountSettings() {
 
       <Dialog open={dialog === 'delete'} onClose={close} title="Delete your account permanently?">
         <ul className="list-disc space-y-1 pl-5 text-sm text-gray-700">
-          <li>Your profile, connections and requests are deleted.</li>
-          <li>Your conversations are deleted for you and the people you talked to.</li>
+          <li>Your name, email, profile, connections and requests are permanently erased.</li>
+          <li>Your conversations are kept. The people you talked to can still read them, but they&apos;ll see them as from &ldquo;Deleted account&rdquo; and can&apos;t reply.</li>
+          <li>Messages you already sent can&apos;t be taken back, so think about what&apos;s in them.</li>
           <li>This can&apos;t be undone. Consider downloading your data first.</li>
         </ul>
         {error && <Notice tone="error">{error}</Notice>}

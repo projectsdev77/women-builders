@@ -124,7 +124,7 @@ New **Requirement 21**:
   - On approval it moves to `APPROVED`.
   - All status changes are written to `PotentialMemberStatusChange`.
 - **PENDING users** can log in, but only see a "Your application is under review" page. Every API except `/api/me` and `/api/auth/*` returns 403 `ACCOUNT_NOT_ACTIVE`.
-- **Eligibility.** Application criteria are a **policy** decision, not code. The application form asks "Tell us about what you're building" plus a self-identification statement: "Women Builders is a community for women and non-binary builders." Admins decide. Criteria text is configurable in `lib/config.ts`.
+- **Eligibility.** Application criteria are a **policy** decision, not code. The application form asks "Tell us about what you're building" plus a self-identification statement: "Women Builders is a community for women founders, operators, investors and builders." Admins decide. Criteria text is configurable in `lib/config.ts`.
 - **Admin management:**
   - Admins can promote or demote other admins. They can't demote themselves or the last admin.
   - All admin actions are written to `AuditLog`.
@@ -143,8 +143,12 @@ New **Requirement 21**:
   - An admin-deactivated member is told to contact the admins.
 - **GDPR:**
   - `GET /api/me/export` returns a JSON file of all the member's data.
-  - `DELETE /api/me` permanently deletes the account after password confirmation, along with its profile, requests, connections and **every conversation with that member, for both sides**. *(Changed during implementation: keeping half a conversation without its author was confusing, and the other side's messages are tied to the same connection.)*
-  - **Reports survive deletion.** A report keeps the reported member's name as a snapshot, and the account link becomes empty. Nobody can erase reports about themselves by deleting their account.
+  - `DELETE /api/me` permanently deletes the account after password confirmation, **Telegram style** *(owner decision, revised during implementation)*:
+    - Name, email, profile, connections, requests, blocks, dismissals, settings, sessions and tokens are erased.
+    - **Conversations are kept**, for accountability. The other person can still read the whole history, shown as from "Deleted account", read-only.
+    - The user row stays as an anonymous shell (status `DELETED`, name "Deleted account", unroutable placeholder email), which is what keeps the conversations and reports attached. The real email is released, so it can register again.
+    - Deleted accounts never appear in search, recommendations or profile lookups (they return 404).
+  - **Reports survive deletion** too, with the reported member's name preserved as a snapshot.
   - The last active admin can't delete their account.
 - **Prospect data:** a `lawfulBasisNote` field plus the policy that records are only created from professional/public context. The retention rules in G8 apply.
 - **Spec change:** new Req 24 (Account security), 25 (Data rights).

@@ -28,7 +28,7 @@ The platform is **fully built and working**, with placeholder styling. Your job 
 
 ## 1. The product in one page
 
-**Women Builders is a curated, application-only professional community** for women (and non-binary people) who are **founders, operators, investors and builders**. It solves one problem: *finding the right people*. That means the investor who backs your stage, the operator who has scaled what you're scaling, or the engineer who wants to advise.
+**Women Builders is a curated, application-only professional community** for women who are **founders, operators, investors and builders**. It solves one problem: *finding the right people*. That means the investor who backs your stage, the operator who has scaled what you're scaling, or the engineer who wants to advise.
 
 The core loop:
 
@@ -80,6 +80,7 @@ Every member has exactly **one primary role** and **zero to three secondary role
 | **Rejected applicant** | A message after logging in: can re-apply after 90 days |
 | **Deactivated (self)** | Login offers "Reactivate my account" |
 | **Deactivated (by admin)** | Login shows "deactivated by the team, contact us" |
+| **Deleted account** | The person is gone (cannot log in). Other members only ever see them as **"Deleted account"** in old conversations (see 6.6) |
 | **Admin** | The admin area. An admin may *also* be a member with a profile, and then gets a "Member view" / "Admin" switch |
 
 ---
@@ -236,6 +237,8 @@ A conversation becomes read-only (history visible, composer replaced by a notice
 - the connection was removed: *"This connection was removed. The conversation is read-only."*
 - the other member is no longer active: *"This member is no longer active. The conversation is read-only."*
 
+- the other person **deleted their account**: *"This account was deleted. You can still read your conversation, but it is read-only."* The name shows as **"Deleted account"** with a neutral placeholder avatar (no initials, no profile link, no headline). Their messages stay exactly as they were. Design this as a distinct, calm "ghost" treatment that is clearly different from a normal member and from a blocked one.
+
 A **blocked** member's conversation disappears entirely for both people.
 
 ---
@@ -243,7 +246,7 @@ A **blocked** member's conversation disappears entirely for both people.
 ## 7. Screens: public and account
 
 ### 7.1 Landing `/` (screenshot 01)
-- **Content:** name/logo, one-line value proposition, the eligibility statement (*"Women Builders is a community for women and non-binary founders, operators, investors and builders."*), **Apply to join** (primary) and **Log in**.
+- **Content:** name/logo, one-line value proposition, the eligibility statement (*"Women Builders is a community for women founders, operators, investors and builders."*), **Apply to join** (primary) and **Log in**.
 - **Flash messages** after account actions: "Your account has been deleted." / "Your account is deactivated. Log in any time to reactivate it."
 - This is currently minimal. You're welcome to design a proper marketing landing page: how it works in 3 steps, the four roles, trust/curation messaging.
 
@@ -367,6 +370,7 @@ This is the same layout as 8.4, seen as yourself: all fields visible and no hidd
 ### 8.9 Inbox `/messages` (screenshot 13)
 - **List:** conversations sorted by latest activity. Each row: avatar, name (bold if unread), "(read-only)" tag if applicable, time (today → "3:42 PM", else "Sep 28"), last message preview prefixed "You:" if hers, and an unread count badge.
 - **New connections** with no messages yet show "Say hello 👋".
+- **Deleted accounts:** the row stays, named "Deleted account" with the ghost avatar and the "(read-only)" tag.
 - **Empty:** "No conversations yet. You can message anyone you're connected with. See your connections."
 
 ### 8.10 Conversation `/messages/[memberId]` (screenshot 14)
@@ -375,7 +379,7 @@ This is the same layout as 8.4, seen as yourself: all fields visible and no hidd
 - **Optimistic sending:** "Sending…" then sent. On failure: "Failed. Retry".
 - **New incoming messages** appear within ~3 seconds (the app polls). Consider a subtle arrival animation and "new messages" jump affordance when scrolled up.
 - **Composer:** multi-line, Enter sends and Shift+Enter adds a new line, max 5,000 characters, Send disabled when empty. Errors (limits) appear above the composer.
-- **Read-only state:** a notice replaces the composer (6.6).
+- **Read-only state:** a notice replaces the composer (6.6). This includes conversations with a **deleted account**: the header shows "Deleted account" (not a link), and every message stays readable. Reporting a message from a deleted account is still possible.
 - **Empty conversation:** "This is the start of your conversation with Priya."
 
 ### 8.11 Settings `/settings` (screenshot 16)
@@ -390,7 +394,7 @@ This is the same layout as 8.4, seen as yourself: all fields visible and no hidd
 4. **Your account and data:**
    - **Download your data** (a JSON file).
    - **Deactivate account:** dialog with the password, "Log in again any time to reactivate".
-   - **Delete account** (danger): dialog listing the consequences, a password field, and "type DELETE to confirm". Button: *Delete forever*. Deletion also removes her conversations for the people she talked to, so say so clearly.
+   - **Delete account** (danger): dialog with the consequences, a password field, and "type DELETE to confirm". Button: *Delete forever*. Be very clear about what happens: her name, email, profile, connections and requests are **permanently erased**, but **her conversations are kept**: the people she talked to can still read them, as from "Deleted account", and can't reply. Messages she already sent can't be taken back. (Same model as Telegram.)
 
 ### 8.12 Unsubscribed `/unsubscribed`
 The result of one-click unsubscribe from an email: "You're unsubscribed. You won't get emails about new messages anymore." + "Manage email settings". Invalid link variant: "This link didn't work."
@@ -432,7 +436,7 @@ Admin screens are desktop-first (still usable on tablet). Layout: a top bar (bra
 
 ### 9.3 Members `/admin/members` (screenshot 22) and account detail
 - **List:**
-  - Search (name, email, company) + status filter (All / Active / Pending / Deactivated / Rejected).
+  - Search (name, email, company) + status filter (All / Active / Pending / Deactivated / Rejected / Deleted).
   - Table columns: Name (+ Admin badge, email beneath), Role, Status badge, Joined, Last active, Reports (red "2 open").
   - 25 per page.
 - **Detail** `/admin/members/[id]`:
@@ -507,7 +511,7 @@ This is the outreach CRM for people the team wants to recruit.
 - **Cards:**
   - status badge, reason, date
   - reported member (link, "3 reports total" in red when repeated, status badge if not active; "Name (account deleted)" if they deleted their account)
-  - "Reported by X" ("a deleted account" if the reporter is gone)
+  - "Reported by X" (shown as "Deleted account" if the reporter later deleted theirs; the report itself is kept)
   - details
   - the reported message quoted, if any
 - **Actions:** **Mark resolved** (note: "Record what action was taken…") / **Dismiss** (note). Resolved cards show "Resolved by X on date: note".
@@ -548,7 +552,7 @@ Please spec each component with its states: default, hover, focus, active, disab
    - role badges, up to 6 expertise tags, connection-status badge
    - a flexible body slot (reasons / note / dates) and a footer action slot
 4. **Recommendation reason row:** icon + text per reason type (6.4).
-5. **Avatar:** initials (1–2 letters) at 36 / 40 / 48 / 72px. Plan for photos later.
+5. **Avatar:** initials (1–2 letters) at 36 / 40 / 48 / 72px. Plan for photos later. Plus a **"Deleted account" ghost variant** (neutral, no initials).
 6. **Badges:** role (primary vs secondary), connection status, account status, outreach status (11), report status, invitation status, counts (nav).
 7. **Notices/alerts:** info, success, warning, error (inline banners, polite live regions).
 8. **Completeness meter:** % label, progress bar, "ready" vs "not yet" state, list of required and missing fields.
@@ -683,6 +687,7 @@ These are ours to decide together; your recommendation is welcome.
 | Needs / offerings | What a member is looking for / can help with. Drives matching |
 | Completeness | Profile score 0–100%; 60% + required fields unlock sending requests |
 | Hidden field | A profile detail visible only to connections |
+| Deleted account | An account the person erased. Name, email and profile are gone; their conversations stay for the other person, shown as "Deleted account" and read-only |
 | Block | Mutual invisibility + no contact; silent |
 | Report | A confidential safety report reviewed by admins |
 | Do not contact (DNC) | A prospect who asked never to be contacted; kept forever as suppression |

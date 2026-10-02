@@ -52,10 +52,14 @@ export async function deactivateSelf(userId: string, password: string) {
   ]);
 }
 
+export const DELETED_ACCOUNT_NAME = 'Deleted account';
+
 /**
- * Permanent deletion (Req 25.2–25.3 R2). Deletes the account, profile, requests, connections
- * and every conversation with this member (for both sides). Reports about or by the member
- * are kept, with the account link removed, so deletion can't erase safety history.
+ * Account deletion, Telegram style (Req 25.2-25.4 R2): everything that identifies the person
+ * is erased, but the conversations stay. The other person keeps their history, now shown as
+ * coming from "Deleted account" and read-only. The user row itself is kept as an anonymous
+ * shell so those conversations, and any reports about the member, stay intact for
+ * accountability. The email address is released, so it can be used to register again.
  */
 export async function deleteAccount(userId: string, password: string) {
   const user = await confirmPassword(userId, password);
@@ -64,7 +68,32 @@ export async function deleteAccount(userId: string, password: string) {
     if (others === 0) throw Errors.validation("You're the last admin. Make someone else an admin before deleting your account.");
   }
   await prisma.$transaction([
+    prisma.session.deleteMany({ where: { userId } }),
+    prisma.authToken.deleteMany({ where: { userId } }),
+    prisma.loginAttempt.deleteMany({ where: { email: user.email } }),
+    prisma.emailOutbox.deleteMany({ where: { to: user.email } }),
+    prisma.invitation.deleteMany({ where: { email: user.email } }),
+    prisma.profile.deleteMany({ where: { userId } }),
+    prisma.notificationPreference.deleteMany({ where: { userId } }),
+    prisma.connectionRequest.deleteMany({ where: { OR: [{ senderId: userId }, { receiverId: userId }] } }),
+    prisma.dismissedRecommendation.deleteMany({ where: { OR: [{ userId }, { dismissedUserId: userId }] } }),
+    prisma.block.deleteMany({ where: { blockerId: userId } }),
     prisma.potentialMember.updateMany({ where: { userId }, data: { userId: null } }),
-    prisma.user.delete({ where: { id: userId } }),
+    prisma.user.update({
+      where: { id: userId },
+      data: {
+        accountStatus: 'DELETED',
+        deactivatedBy: null,
+        name: DELETED_ACCOUNT_NAME,
+        // Unique, unroutable placeholder; the real address becomes free to register again.
+        email: `deleted-${userId}@deleted.invalid`,
+        passwordHash: '!',
+        isAdmin: false,
+        applicationStatement: null,
+        reviewNote: null,
+        lockedUntil: null,
+        emailVerifiedAt: null,
+      },
+    }),
   ]);
 }

@@ -43,7 +43,7 @@ export const COMPLETENESS_THRESHOLD = 60; // G15
 
 // Shown on the application form (G10). Policy, not code; edit freely.
 export const ELIGIBILITY_STATEMENT =
-  'Women Builders is a community for women and non-binary founders, operators, investors and builders.';
+  'Women Builders is a community for women founders, operators, investors and builders.';
 
 export function appUrl(): string {
   return (process.env.APP_URL ?? 'http://localhost:3000').replace(/\/$/, '');

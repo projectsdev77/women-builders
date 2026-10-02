@@ -8,7 +8,7 @@ import { ACCOUNT_TONE, fmtDate } from '@/components/admin/labels';
 
 export const metadata: Metadata = { title: 'Members' };
 
-const STATUSES = ['ALL', 'ACTIVE', 'PENDING', 'DEACTIVATED', 'REJECTED'] as const;
+const STATUSES = ['ALL', 'ACTIVE', 'PENDING', 'DEACTIVATED', 'REJECTED', 'DELETED'] as const;
 
 export default async function AdminMembersPage({ searchParams }: { searchParams: { q?: string; status?: string; page?: string } }) {
   await pageAdmin();
