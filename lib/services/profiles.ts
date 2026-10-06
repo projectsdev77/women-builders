@@ -152,7 +152,7 @@ export async function completeOnboarding(userId: string) {
 export async function getMemberProfile(viewerId: string, memberId: string): Promise<MemberView> {
   const profile = await prisma.profile.findFirst({
     where: { userId: memberId, user: { accountStatus: 'ACTIVE' } },
-    include: { user: { select: { id: true, name: true, approvedAt: true, createdAt: true } } },
+    include: { user: { select: { id: true, name: true, approvedAt: true, createdAt: true, preferIntroductions: true } } },
   });
   if (!profile) throw Errors.notFound('Member');
   if (viewerId === memberId) return toMemberView(profile, { isSelf: true, connected: false }, 'self');

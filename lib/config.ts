@@ -15,6 +15,14 @@ export const LIMITS = {
   searchPageSizeMax: 50,
   csvMaxBytes: 1_000_000, // G16
   csvMaxRows: 2000,
+  // Warm introductions (R3 F12)
+  introOpenPerMember: 5,
+  introNoteToIntroducerMax: 1000,
+  introNoteToTargetMax: 500,
+  introducerNoteMax: 500,
+  introResponseDays: 14,
+  introSamePairCooldownDays: 90,
+  teamIntrosPerMonth: 2,
 } as const;
 
 export const DURATIONS_MS = {

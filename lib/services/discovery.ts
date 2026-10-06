@@ -18,7 +18,7 @@ import { relationshipSets, statusFromSets, type RelationshipSets } from './relat
 export type Candidate = ProfileWithUser & { user: ProfileWithUser['user'] & { lastActiveAt: Date } };
 
 export const candidateInclude = {
-  user: { select: { id: true, name: true, approvedAt: true, createdAt: true, lastActiveAt: true } },
+  user: { select: { id: true, name: true, approvedAt: true, createdAt: true, lastActiveAt: true, preferIntroductions: true } },
 } as const;
 
 export async function loadViewer(viewerId: string) {

@@ -128,7 +128,20 @@ Not taken (see spec section 12): paid membership, Deal Flow, The Season program 
     - Home prompt and a daily email, at most once per 90 days. Investors can opt out of the email in Settings.
     - `POST /api/me/investing-status`.
   - The "How to reach her" card action shows Message, View and connect, or Request sent. Introduction actions arrive in Step 4.
-- [ ] Step 4: Introductions (features 13–15)
+- [x] Step 4: Introductions (features 13–15)
+  - The flow: A asks B, a mutual connection who allows introduction requests. B introduces or passes. C accepts or says not now.
+    - On accept, A and C are connected and the conversation opens with "Introduced by B" and both notes.
+    - A and B are emailed when C accepts.
+  - Every "no" is silent. Until a step's 14-day deadline passes, A sees the same status whether or not someone declined. After that she sees "No introduction was made".
+    - Blocking and account deletion close open introductions the same silent way.
+  - Limits: 5 open per member, 1 open per target, 1 per introducer–target per 90 days. Same completeness gate as connection requests. No introduction while a connection request is pending either way.
+  - "Prefer introductions" (setting and onboarding step 4): direct requests are refused, and the profile shows "Ask for an introduction". Cards show a "Prefers introductions" tag.
+  - "Ask the team": offered only when nobody in her network can introduce her (decision: "no eligible introducer", not just "no mutual connection"), 2 per calendar month.
+    - Admin queue at `/admin/introductions` with a nav badge.
+    - The team is shown as "The Women Builders team".
+  - `/introductions` has three tabs, with a nav badge for items waiting on the member and a Report action.
+  - Admin dashboard: introductions made and accepted, with team introductions counted separately.
+  - The daily cron expires introductions.
 - [ ] Step 5: Gatherings (features 16–17)
 - [ ] Step 6: Public website, home and dashboard, designer brief (features 18–20)
 - [ ] Step 7 (R2): Review rules and site settings (feature 21)

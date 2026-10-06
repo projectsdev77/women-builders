@@ -96,6 +96,8 @@ model User {
   charterVersion       Int? // version of the community charter accepted (R3 F2)
   charterAcceptedAt    DateTime?
   charterNoticeVersion Int? // last charter version we emailed about
+  allowIntroRequests   Boolean  @default(true) // "Let members ask me for introductions" (R3 F12)
+  preferIntroductions  Boolean  @default(false) // no direct connection requests (R3 F11)
   lastActiveAt         DateTime       @default(now())
   createdAt            DateTime       @default(now())
   updatedAt            DateTime       @updatedAt
@@ -121,6 +123,9 @@ model User {
   assignedPotentialMembers PotentialMember[]         @relation("PotentialMemberAssignee")
   invitationsSent         Invitation[]               @relation("InvitationSender")
   auditLogs               AuditLog[]                 @relation("AuditActor")
+  introsRequested         Introduction[]             @relation("IntroRequester")
+  introsAskedOfMe         Introduction[]             @relation("IntroIntroducer")
+  introsForMe             Introduction[]             @relation("IntroTarget")
 
   @@index([accountStatus, createdAt])
   @@index([approvedAt])
@@ -331,6 +336,7 @@ model NotificationPreference {
   connectionAccepted Boolean  @default(true)
   newMessage         Boolean  @default(true)
   investingCheckins  Boolean  @default(true)
+  introductions      Boolean  @default(true)
   updatedAt          DateTime @updatedAt
 }
 
@@ -497,4 +503,45 @@ model AuditLog {
 
   @@index([createdAt])
   @@index([targetType, targetId])
+}
+
+// ---------------------------------------------------------------- R3 F12: warm introductions
+
+enum IntroductionStatus {
+  ASKED                  // waiting for the introducer (a member, or the team)
+  FORWARDED              // introduced; waiting for the target
+  ACCEPTED
+  DECLINED_BY_INTRODUCER // silent
+  DECLINED_BY_TARGET     // silent
+  EXPIRED
+  CANCELLED
+}
+
+/// A asks B (or the Women Builders team) to introduce her to C.
+model Introduction {
+  id                String             @id @default(cuid())
+  requesterId       String
+  requester         User               @relation("IntroRequester", fields: [requesterId], references: [id], onDelete: Cascade)
+  /// Null for "Ask the team" introductions.
+  introducerId      String?
+  introducer        User?              @relation("IntroIntroducer", fields: [introducerId], references: [id], onDelete: Cascade)
+  viaTeam           Boolean            @default(false)
+  targetId          String
+  target            User               @relation("IntroTarget", fields: [targetId], references: [id], onDelete: Cascade)
+  noteToIntroducer  String             @db.Text
+  noteToTarget      String?            @db.Text
+  introducerNote    String?            @db.Text
+  status            IntroductionStatus @default(ASKED)
+  introducerDueAt   DateTime
+  targetDueAt       DateTime?
+  forwardedAt       DateTime?
+  respondedAt       DateTime?
+  /// The admin who handled a team introduction.
+  handledById       String?
+  createdAt         DateTime           @default(now())
+
+  @@index([requesterId, status])
+  @@index([introducerId, status])
+  @@index([targetId, status])
+  @@index([viaTeam, status])
 }

@@ -9,10 +9,11 @@ import { openRequestCounts } from '@/lib/services/invite-requests';
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const admin = await pageAdmin();
-  const [requests, reports, followUps] = await Promise.all([
+  const [requests, reports, followUps, introductions] = await Promise.all([
     openRequestCounts(),
     prisma.report.count({ where: { status: 'OPEN' } }),
     followUpQueue(),
+    prisma.introduction.count({ where: { viaTeam: true, status: 'ASKED', introducerDueAt: { gt: new Date() } } }),
   ]);
   return (
     <div className="min-h-screen">
@@ -27,7 +28,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         </div>
       </header>
       <div className="mx-auto grid max-w-7xl gap-6 px-4 py-6 lg:grid-cols-[220px_1fr]">
-        <AdminNav counts={{ requests: requests.open, requestsOverdue: requests.overdue, reports, followUps: followUps.length }} />
+        <AdminNav counts={{ requests: requests.open, requestsOverdue: requests.overdue, reports, followUps: followUps.length, introductions }} />
         <main id="main" className="min-w-0">{children}</main>
       </div>
     </div>

@@ -176,6 +176,41 @@ export const templates = {
       cta: { label: 'Send a message', url: `${appUrl()}/messages/${byId}` },
       unsubscribeUrl,
     }),
+  introductionAsked: (requesterName: string, targetName: string, note: string, unsubscribeUrl: string) =>
+    layout({
+      subject: `${requesterName} asked you for an introduction to ${targetName}`,
+      heading: `Would you introduce ${requesterName} to ${targetName}?`,
+      paragraphs: [
+        `"${note.length > 400 ? `${note.slice(0, 400)}…` : note}"`,
+        'You have 14 days to decide. If you pass, nobody is told.',
+      ],
+      cta: { label: 'Review the request', url: `${appUrl()}/introductions?tab=asked` },
+      unsubscribeUrl,
+    }),
+  introduced: (introducerLabel: string, requesterName: string, unsubscribeUrl: string) =>
+    layout({
+      subject: `${introducerLabel} would like to introduce you to ${requesterName}`,
+      heading: `${introducerLabel} would like to introduce you to ${requesterName}`,
+      paragraphs: ['Read their notes and decide within 14 days. If you say "not now", nobody is told.'],
+      cta: { label: 'See the introduction', url: `${appUrl()}/introductions?tab=for-me` },
+      unsubscribeUrl,
+    }),
+  introductionAcceptedRequester: (targetName: string, targetId: string, unsubscribeUrl: string) =>
+    layout({
+      subject: `You're now connected with ${targetName}`,
+      heading: `${targetName} accepted the introduction`,
+      paragraphs: ['You are now connected. Your conversation starts with the introduction notes.'],
+      cta: { label: 'Send a message', url: `${appUrl()}/messages/${targetId}` },
+      unsubscribeUrl,
+    }),
+  introductionAcceptedIntroducer: (requesterName: string, targetName: string, unsubscribeUrl: string) =>
+    layout({
+      subject: `Your introduction worked`,
+      heading: `${requesterName} and ${targetName} are now connected`,
+      paragraphs: ['Thank you for making the introduction. This is how the community grows.'],
+      cta: { label: 'Your introductions', url: `${appUrl()}/introductions` },
+      unsubscribeUrl,
+    }),
   investingCheckin: (name: string, unsubscribeUrl: string) =>
     layout({
       subject: 'Are you still investing?',

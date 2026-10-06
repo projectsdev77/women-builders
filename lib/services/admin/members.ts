@@ -5,6 +5,7 @@ import { enqueueEmail } from '@/lib/email/outbox';
 import { templates } from '@/lib/email/templates';
 import { audit } from '../audit';
 import { changeProspectStatus } from '../prospect-status';
+import { closeIntroductionsFor } from '../introductions';
 
 export async function listMembers(opts: { q?: string; status?: AccountStatus | 'ALL'; admins?: boolean; page?: number; limit?: number }) {
   const page = Math.max(1, opts.page ?? 1);
@@ -83,6 +84,7 @@ export async function deactivateMember(actorId: string, userId: string, reason?:
     await tx.user.update({ where: { id: userId }, data: { accountStatus: 'DEACTIVATED', deactivatedBy: 'ADMIN' } });
     // End every session now; DB-backed sessions make this immediate (G3).
     await tx.session.deleteMany({ where: { userId } });
+    await closeIntroductionsFor(tx, userId);
     await enqueueEmail(tx, { to: user.email, kind: 'account_deactivated', content: templates.accountDeactivated() });
     await audit(tx, { actorId, action: 'member.deactivate', targetType: 'user', targetId: userId, details: reason ? { reason } : undefined });
   });

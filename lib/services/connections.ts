@@ -10,10 +10,13 @@ import { notifyConnectionAccepted, notifyConnectionRequest } from './notificatio
 type Tx = Parameters<Parameters<typeof prisma.$transaction>[0]>[0];
 
 async function activeMember(tx: Tx, id: string) {
-  return tx.user.findFirst({ where: { id, accountStatus: 'ACTIVE', profile: { isNot: null } }, select: { id: true, name: true } });
+  return tx.user.findFirst({
+    where: { id, accountStatus: 'ACTIVE', profile: { isNot: null } },
+    select: { id: true, name: true, preferIntroductions: true },
+  });
 }
 
-async function connect(tx: Tx, a: string, b: string) {
+export async function connect(tx: Tx, a: string, b: string) {
   const key = pair(a, b);
   return tx.connection.upsert({
     where: { userAId_userBId: key },
@@ -66,6 +69,15 @@ export async function sendConnectionRequest(senderId: string, receiverId: string
       await connect(tx, senderId, receiverId);
       await notifyConnectionAccepted(tx, receiverId, sender.name, senderId);
       return { status: 'connected' as const };
+    }
+
+    // "Prefer introductions": no direct requests; the button becomes "Ask for an introduction" (R3 F11).
+    if (receiver.preferIntroductions) {
+      throw new AppError(
+        'PREFERS_INTRODUCTIONS',
+        `${receiver.name.split(' ')[0]} prefers introductions. Ask a mutual connection to introduce you.`,
+        409,
+      );
     }
 
     const existing = await tx.connectionRequest.findFirst({

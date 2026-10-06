@@ -24,7 +24,9 @@ export function sanitizeHiddenFields(fields: string[]): HideableField[] {
   return HIDEABLE_FIELDS.filter((f) => fields.includes(f));
 }
 
-export type ProfileWithUser = Profile & { user: Pick<User, 'id' | 'name' | 'approvedAt' | 'createdAt'> };
+export type ProfileWithUser = Profile & {
+  user: Pick<User, 'id' | 'name' | 'approvedAt' | 'createdAt'> & Partial<Pick<User, 'preferIntroductions'>>;
+};
 
 export interface Viewer {
   isSelf: boolean;
@@ -82,6 +84,7 @@ export interface MemberView {
   /** True when some fields are hidden from this viewer (UI shows "connect to see more"). */
   hasHiddenFields: boolean;
   connectionStatus: ConnectionStatus | 'self';
+  preferIntroductions: boolean;
 }
 
 /**
@@ -141,6 +144,7 @@ export function toMemberView(p: ProfileWithUser, viewer: Viewer, status: Connect
     memberSince: (p.user.approvedAt ?? p.user.createdAt)?.toISOString() ?? null,
     hasHiddenFields: !viewer.isSelf && !viewer.connected && p.hiddenFields.length > 0,
     connectionStatus: status,
+    preferIntroductions: !!p.user.preferIntroductions,
   };
 }
 
@@ -158,6 +162,8 @@ export interface MemberCard {
   country: string | null;
   companyName: string | null;
   connectionStatus: ConnectionStatus;
+  /** She takes new contacts through introductions only (R3 F11). */
+  preferIntroductions: boolean;
   /** Filled in by list views that compute it (Discover, Capital, recommendations). */
   mutualConnections?: number;
 }
@@ -176,5 +182,6 @@ export function toMemberCard(p: ProfileWithUser, viewer: Viewer, status: Connect
     country: canSee(p, 'location', viewer) ? p.country : null,
     companyName: canSee(p, 'companyName', viewer) ? p.companyName : null,
     connectionStatus: status,
+    preferIntroductions: !!p.user.preferIntroductions,
   };
 }

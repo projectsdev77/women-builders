@@ -13,20 +13,21 @@ const ITEMS = [
   { href: '/capital', label: 'Capital' },
   { href: '/recommendations', label: 'For you' },
   { href: '/connections', label: 'Connections' },
+  { href: '/introductions', label: 'Introductions', badge: 'introductions' as const },
   { href: '/messages', label: 'Messages', badge: 'messages' as const },
   { href: '/profile', label: 'Profile' },
   { href: '/settings', label: 'Settings' },
 ];
 
-/** Polls the unread-message count every 30s while the tab is visible (G12). */
-function useUnreadCount() {
-  const [count, setCount] = useState(0);
+/** Polls the badge counts every 30s while the tab is visible (G12). */
+function useCounts() {
+  const [count, setCount] = useState({ unread: 0, introductions: 0 });
   useEffect(() => {
     let stopped = false;
     async function load() {
       if (document.visibilityState !== 'visible') return;
-      const res = await api<{ unread: number; pendingRequests: number }>('/api/me/counts');
-      if (!stopped && res.ok) setCount(res.data.unread);
+      const res = await api<{ unread: number; pendingRequests: number; introductions: number }>('/api/me/counts');
+      if (!stopped && res.ok) setCount({ unread: res.data.unread, introductions: res.data.introductions });
     }
     void load();
     const t = setInterval(load, 30_000);
@@ -41,7 +42,7 @@ function useUnreadCount() {
 export function MemberNav({ name, isAdmin }: { name: string; isAdmin: boolean }) {
   const pathname = usePathname();
   const router = useRouter();
-  const unread = useUnreadCount();
+  const { unread, introductions } = useCounts();
 
   async function logout() {
     await api('/api/auth/logout', { body: {} });
@@ -74,6 +75,12 @@ export function MemberNav({ name, isAdmin }: { name: string; isAdmin: boolean })
                   <span className="ml-1 rounded-full bg-brand-600 px-1.5 text-xs text-white">
                     {unread > 99 ? '99+' : unread}
                     <span className="sr-only"> unread</span>
+                  </span>
+                )}
+                {item.badge === 'introductions' && introductions > 0 && (
+                  <span className="ml-1 rounded-full bg-brand-600 px-1.5 text-xs text-white">
+                    {introductions}
+                    <span className="sr-only"> waiting for your answer</span>
                   </span>
                 )}
               </Link>

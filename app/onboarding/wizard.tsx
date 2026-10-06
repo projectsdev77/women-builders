@@ -12,6 +12,7 @@ import {
   type Section,
 } from '@/components/profile/profile-editor';
 import { api } from '@/lib/client/api';
+import { IntroductionSettings } from '@/app/(member)/settings/introduction-settings';
 
 const STEPS: Array<{ title: string; intro: string; sections: Section[] }> = [
   { title: 'The basics', intro: 'How members will recognize you.', sections: ['basics'] },
@@ -20,7 +21,13 @@ const STEPS: Array<{ title: string; intro: string; sections: Section[] }> = [
   { title: 'Needs and offerings', intro: 'This is what powers your recommendations.', sections: ['needs', 'privacy'] },
 ];
 
-export function OnboardingWizard({ initial }: { initial: EditableProfile }) {
+export function OnboardingWizard({
+  initial,
+  introSettings,
+}: {
+  initial: EditableProfile;
+  introSettings: { allowIntroRequests: boolean; preferIntroductions: boolean };
+}) {
   const router = useRouter();
   const editor = useProfileEditor(initial);
   const [step, setStep] = useState(0);
@@ -59,6 +66,18 @@ export function OnboardingWizard({ initial }: { initial: EditableProfile }) {
       <Card className="p-6">
         <ProfileSections profile={editor.profile} setProfile={editor.setProfile} error={editor.error} sections={current.sections} />
       </Card>
+      {last && (
+        <Card className="space-y-2 p-6">
+          <h2 className="text-lg font-semibold">Introductions</h2>
+          {(editor.profile.primaryRole === 'INVESTOR' || editor.profile.secondaryRoles.includes('INVESTOR')) && (
+            <p className="text-sm text-gray-700">
+              Many investors prefer to meet founders through someone they trust. Turn on &ldquo;Prefer introductions&rdquo; and founders will ask a mutual connection to introduce them instead of
+              sending a request.
+            </p>
+          )}
+          <IntroductionSettings initial={introSettings} />
+        </Card>
+      )}
       <SaveStatus saving={editor.saving} savedAt={null} error={editor.error} />
       <div className="flex justify-between">
         <Button variant="secondary" disabled={step === 0 || editor.saving} onClick={() => setStep(step - 1)}>

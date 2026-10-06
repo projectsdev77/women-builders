@@ -3,6 +3,7 @@ import { prisma } from '@/lib/db';
 import { Errors } from '@/lib/errors';
 import { LIMITS } from '@/lib/config';
 import { pair } from './relationships';
+import { closeIntroductionsBetween } from './introductions';
 
 /**
  * Block (Req 21.1–21.2): silent to the blocked member; removes any connection and
@@ -13,6 +14,9 @@ export async function blockMember(actorId: string, targetId: string) {
   const target = await prisma.user.count({ where: { id: targetId } });
   if (!target) throw Errors.notFound('Member');
   const now = new Date();
+  await prisma.$transaction(async (tx) => {
+    await closeIntroductionsBetween(tx, actorId, targetId);
+  });
   await prisma.$transaction([
     prisma.block.upsert({
       where: { blockerId_blockedId: { blockerId: actorId, blockedId: targetId } },

@@ -3,11 +3,18 @@
 import { useState } from 'react';
 import { api } from '@/lib/client/api';
 
-type Prefs = { connectionRequest: boolean; connectionAccepted: boolean; newMessage: boolean; investingCheckins: boolean };
+type Prefs = {
+  connectionRequest: boolean;
+  connectionAccepted: boolean;
+  newMessage: boolean;
+  investingCheckins: boolean;
+  introductions: boolean;
+};
 const LABELS: Array<[keyof Prefs, string, string]> = [
   ['connectionRequest', 'Connection requests', 'When someone asks to connect with you'],
   ['connectionAccepted', 'Accepted requests', 'When someone accepts your request'],
   ['newMessage', 'New messages', 'At most one email per conversation every 30 minutes'],
+  ['introductions', 'Introductions', 'When someone asks you for an introduction, introduces you, or accepts'],
   ['investingCheckins', 'Investing check-ins', 'Every 90 days we ask investors "Are you still investing?"'],
 ];
 

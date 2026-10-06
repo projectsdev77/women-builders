@@ -7,6 +7,7 @@ import { Button, Notice, Textarea } from '@/components/ui';
 import { Dialog } from '@/components/ui/dialog';
 import { api } from '@/lib/client/api';
 import { ReportDialog } from './report-dialog';
+import { IntroDialog, type IntroOptions } from './intro-dialog';
 
 type Status = 'none' | 'pending_sent' | 'pending_received' | 'connected';
 
@@ -17,6 +18,7 @@ export function MemberActions({
   canRequest,
   requestId,
   requestMessage,
+  intro,
 }: {
   memberId: string;
   memberName: string;
@@ -24,10 +26,11 @@ export function MemberActions({
   canRequest: boolean;
   requestId?: string | null;
   requestMessage?: string | null;
+  intro: IntroOptions;
 }) {
   const router = useRouter();
   const first = memberName.split(' ')[0];
-  const [dialog, setDialog] = useState<null | 'connect' | 'block' | 'report' | 'remove'>(null);
+  const [dialog, setDialog] = useState<null | 'connect' | 'block' | 'report' | 'remove' | 'intro' | 'team'>(null);
   const [note, setNote] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -58,17 +61,45 @@ export function MemberActions({
       {flash && <Notice tone="success">{flash}</Notice>}
       {error && !dialog && <Notice tone="error">{error}</Notice>}
 
-      {status === 'none' &&
-        (canRequest ? (
-          <Button onClick={() => setDialog('connect')}>Connect</Button>
-        ) : (
-          <>
-            <Button disabled aria-describedby="connect-help">Connect</Button>
+      {status === 'none' && (
+        <>
+          {!intro.preferIntroductions &&
+            (canRequest ? (
+              <Button onClick={() => setDialog('connect')}>Connect</Button>
+            ) : (
+              <Button disabled aria-describedby="connect-help">Connect</Button>
+            ))}
+          {intro.preferIntroductions && <p className="text-sm text-gray-700">{first} prefers introductions.</p>}
+          {intro.hasOpenRequest ? (
+            <Link href="/introductions?tab=mine" className="inline-flex min-h-[44px] items-center justify-center rounded-md border border-gray-300 bg-white px-4 text-sm">
+              Introduction requested
+            </Link>
+          ) : intro.introducers.length > 0 ? (
+            <>
+              <Button variant={intro.preferIntroductions ? 'primary' : 'secondary'} disabled={!intro.canAsk} onClick={() => setDialog('intro')}>
+                Ask for an introduction
+              </Button>
+              <p className="text-xs text-gray-600">
+                {intro.introducers.length} of your connections {intro.introducers.length === 1 ? 'knows' : 'know'} {first}
+              </p>
+            </>
+          ) : (
+            <>
+              {intro.preferIntroductions && <p className="text-xs text-gray-600">No one in your network knows {first} yet.</p>}
+              {intro.teamAvailable && intro.teamRemainingThisMonth > 0 && (
+                <Button variant={intro.preferIntroductions ? 'primary' : 'ghost'} disabled={!intro.canAsk} onClick={() => setDialog('team')}>
+                  Ask the Women Builders team to introduce you
+                </Button>
+              )}
+            </>
+          )}
+          {!canRequest && (
             <p id="connect-help" className="text-xs text-gray-600">
-              <Link href="/profile/edit" className="underline">Complete your profile</Link> to send connection requests.
+              <Link href="/profile/edit" className="underline">Complete your profile</Link> to connect or ask for introductions.
             </p>
-          </>
-        ))}
+          )}
+        </>
+      )}
 
       {status === 'pending_sent' && (
         <>
@@ -146,6 +177,22 @@ export function MemberActions({
           </Button>
         </div>
       </Dialog>
+
+      {(dialog === 'intro' || dialog === 'team') && (
+        <IntroDialog
+          open
+          viaTeam={dialog === 'team'}
+          onClose={() => setDialog(null)}
+          onDone={() => {
+            setDialog(null);
+            setFlash(`Introduction requested. You'll find it under Introductions.`);
+            router.refresh();
+          }}
+          memberId={memberId}
+          memberName={memberName}
+          options={intro}
+        />
+      )}
 
       <ReportDialog open={dialog === 'report'} onClose={() => setDialog(null)} memberId={memberId} memberName={memberName} />
     </div>

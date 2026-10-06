@@ -39,6 +39,7 @@ export function MemberCard({ member, children, footer }: { member: Card; childre
           </div>
         )}
         {status && <Badge tone={member.connectionStatus === 'connected' ? 'green' : 'yellow'}>{status}</Badge>}
+        {member.preferIntroductions && member.connectionStatus !== 'connected' && <Badge>Prefers introductions</Badge>}
         {!!member.mutualConnections && member.connectionStatus !== 'connected' && (
           <p className="text-xs text-gray-600">
             {member.mutualConnections} mutual connection{member.mutualConnections === 1 ? '' : 's'}

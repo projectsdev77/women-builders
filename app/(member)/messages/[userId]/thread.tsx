@@ -79,6 +79,17 @@ export function Thread({ initial }: { initial: Conversation }) {
       </header>
 
       <ol className="flex-1 space-y-2 overflow-y-auto p-4" aria-live="polite" aria-label={`Conversation with ${other.name}`}>
+        {initial.introduction && (
+          <li className="mx-auto max-w-md space-y-2 rounded-lg border border-brand-100 bg-brand-50 p-3 text-sm">
+            <p className="font-medium">Introduced by {initial.introduction.by}</p>
+            {initial.introduction.introducerNote && <blockquote className="whitespace-pre-line text-gray-700">“{initial.introduction.introducerNote}”</blockquote>}
+            {initial.introduction.requesterNote && (
+              <blockquote className="whitespace-pre-line text-gray-700">
+                <span className="block text-xs text-gray-500">{initial.introduction.requesterName.split(' ')[0]} wrote:</span>“{initial.introduction.requesterNote}”
+              </blockquote>
+            )}
+          </li>
+        )}
         {messages.length === 0 && pending.length === 0 && (
           <li className="py-8 text-center text-sm text-gray-500">This is the start of your conversation with {other.name.split(' ')[0]}.</li>
         )}

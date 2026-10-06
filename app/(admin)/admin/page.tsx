@@ -49,6 +49,8 @@ export default async function AdminDashboard({ searchParams }: { searchParams: {
         <Stat label="Invitation requests to review" value={m.requests.open} href="/admin/requests" sub={m.requests.overdue ? `${m.requests.overdue} waiting over 3 weeks` : 'None overdue'} />
         <Stat label="Open reports" value={m.openReports} href="/admin/reports" />
         <Stat label="Follow-ups in next 7 days" value={m.upcomingFollowUps.length} href="/admin/follow-ups" />
+        <Stat label="Introductions made in range" value={m.introductions.made} sub={`${m.introductions.accepted} accepted`} />
+        <Stat label="Team introductions in range" value={m.introductions.teamMade} href="/admin/introductions?status=HANDLED" sub={`${m.introductions.teamAccepted} accepted · ${m.introductions.teamWaiting} waiting`} />
       </div>
 
       <div className="grid gap-4 xl:grid-cols-2">

@@ -8,6 +8,7 @@ import { MemberActions } from '@/components/member/member-actions';
 import { prisma } from '@/lib/db';
 import { canSendConnectionRequests } from '@/lib/services/profile-fields';
 import { pendingRequestBetween } from '@/lib/services/connections';
+import { introductionOptions } from '@/lib/services/introductions';
 
 export const metadata: Metadata = { title: 'Member' };
 
@@ -18,9 +19,10 @@ export default async function MemberPage({ params }: { params: { id: string } })
     if (e instanceof AppError && e.code === 'NOT_FOUND') notFound();
     throw e;
   });
-  const [own, pending] = await Promise.all([
+  const [own, pending, intro] = await Promise.all([
     prisma.profile.findUniqueOrThrow({ where: { userId: user.id } }),
     pendingRequestBetween(user.id, member.id),
+    introductionOptions(user.id, member.id),
   ]);
   return (
     <MemberProfile
@@ -33,6 +35,7 @@ export default async function MemberPage({ params }: { params: { id: string } })
           canRequest={canSendConnectionRequests(own)}
           requestId={pending?.id}
           requestMessage={pending?.message}
+          intro={intro}
         />
       }
     />

@@ -2,6 +2,7 @@ import { prisma } from '@/lib/db';
 import { AppError, Errors } from '@/lib/errors';
 import { verifyPassword } from '@/lib/auth/password';
 import { removeProfilePhoto } from './photos';
+import { closeIntroductionsFor } from './introductions';
 
 async function confirmPassword(userId: string, password: string) {
   const user = await prisma.user.findUnique({ where: { id: userId } });
@@ -47,6 +48,7 @@ export async function exportMemberData(userId: string) {
 /** Self-deactivation (Req 9.5): hidden everywhere, reactivated by logging in again. */
 export async function deactivateSelf(userId: string, password: string) {
   await confirmPassword(userId, password);
+  await prisma.$transaction((tx) => closeIntroductionsFor(tx, userId));
   await prisma.$transaction([
     prisma.user.update({ where: { id: userId }, data: { accountStatus: 'DEACTIVATED', deactivatedBy: 'SELF' } }),
     prisma.session.deleteMany({ where: { userId } }),
@@ -70,6 +72,7 @@ export async function deleteAccount(userId: string, password: string) {
   }
   // Photo files live outside the database, so remove them first (R3 F19).
   await removeProfilePhoto(userId);
+  await prisma.$transaction((tx) => closeIntroductionsFor(tx, userId));
   await prisma.$transaction([
     prisma.session.deleteMany({ where: { userId } }),
     prisma.authToken.deleteMany({ where: { userId } }),

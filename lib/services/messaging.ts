@@ -5,6 +5,7 @@ import { lock } from './locks';
 import { isBlockedEitherWay, pair } from './relationships';
 import { notifyNewMessage } from './notifications';
 import { photoUrl } from './photo-url';
+import { introductionForPair } from './introductions';
 
 type Tx = Parameters<Parameters<typeof prisma.$transaction>[0]>[0];
 
@@ -124,6 +125,8 @@ export async function getConversation(actorId: string, otherId: string, opts: { 
     },
     state: conv.state.canSend ? { canSend: true as const } : { canSend: false as const, reason: conv.state.reason, message: READ_ONLY_COPY[conv.state.reason] },
     messages: messages.map((m) => serialize(m, actorId)),
+    // The conversation opens with the introduction notes when they met that way (R3 F12).
+    introduction: afterDate ? null : await introductionForPair(actorId, otherId),
   };
 }
 

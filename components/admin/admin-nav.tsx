@@ -11,11 +11,12 @@ const ITEMS = [
   { href: '/admin/prospects', label: 'Potential members' },
   { href: '/admin/follow-ups', label: 'Follow-ups', badge: 'followUps' as const },
   { href: '/admin/invitations', label: 'Invitations' },
+  { href: '/admin/introductions', label: 'Introduction requests', badge: 'introductions' as const },
   { href: '/admin/reports', label: 'Reports', badge: 'reports' as const },
   { href: '/admin/audit', label: 'Audit log' },
 ];
 
-export function AdminNav({ counts }: { counts: { requests: number; requestsOverdue: number; followUps: number; reports: number } }) {
+export function AdminNav({ counts }: { counts: { requests: number; requestsOverdue: number; followUps: number; reports: number; introductions: number } }) {
   const pathname = usePathname();
   return (
     <nav aria-label="Admin" className="flex gap-1 overflow-x-auto lg:flex-col">
