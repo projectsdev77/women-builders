@@ -73,3 +73,48 @@
 
 ## Step 9: Designer handoff
 - [ ] 9.1 Self-contained designer handoff: product, users, IA, every screen and state, content, rules, constraints
+
+---
+
+# Revision 3: features taken from the client's reference page
+
+Spec: `specification-r3.md`. Built one step at a time; each step ends with typecheck, lint, tests, a browser check and a commit.
+
+| # | Feature | Where it comes from on the reference page | Spec | Step |
+|---|---|---|---|---|
+| 1 | Profile photos | Candid photography of members throughout | F6 | 1 |
+| 2 | City + country on profiles, country filters | "2,400 members in 31 countries"; city-based dinners | F6, F8 | 1 |
+| 3 | Investor fields: firm, investor type, leads/follows, currently investing, last check | Capital Map: "sorted by who actually writes", "verified activity" | F6, F9 | 1 |
+| 4 | Founder raise amount | "Raising founders" in The Season; rounds that close | F6, F9 | 1 |
+| 5 | "Open to" on profiles (agreed suggestion, supports equal roles) | Operator Rooms, builders | F6, F8 | 1 |
+| 6 | Request-an-invitation front door feeding the outreach tracker | "Invite only", "Request an invitation", one-field apply form | F3, F20 | 2 |
+| 7 | Requests queue with 3-week answer promise | "You will hear back either way within three weeks" | F21 | 2 |
+| 8 | Invitation-only joining | "Invite only, since 2019" | F4 | 2 |
+| 9 | Community charter, accepted on joining | "Read the charter" | F2 | 2 |
+| 10 | Capital view: investors and founders raising | Capital Map: "640 funds and angels, filtered by stage and thesis" | F9 | 3 |
+| 11 | Founder↔investor stage fit in recommendations | Capital Map; "the women who fund them" | F10 | 3 |
+| 12 | "Still investing?" check-ins | "Only funds that closed a deal in the last nine months stay on the list" | F9 | 3 |
+| 13 | Warm introductions (double opt-in) | "Real introductions", "the shortest warm path from your own contacts" | F12 | 4 |
+| 14 | "Prefer introductions" setting | "A network that returns the call" | F11 | 4 |
+| 15 | "Ask the team" introductions (agreed suggestion) | "Returns the call" | F12 | 4 |
+| 16 | Gatherings: dinners and working sessions | The Table (twelve seats), Operator Rooms | F14, F23 | 5 |
+| 17 | "People you met" after a gathering | The Table: founders and check writers meet | F14 | 5 |
+| 18 | Real public homepage with live numbers | Hero, stats strip, "four rooms" | F1 | 6 |
+| 19 | Upcoming gatherings teaser on the public site | The Table, The Season | F1 | 6 |
+| 20 | Visual direction for the designer | Warm editorial look, serif + sans, candid photography | Handoff | 6 |
+| 21 | Two-approval review, member reviewers, open / waitlist switch | "Every application is read by two members", "Membership opens twice a year" | F21, F26 | 7 (R2) |
+| 22 | Wins | "310 rounds closed through intros", "$1.9B deployed" | F15 | 8 (R2) |
+| 23 | Public showcase and quotes (opt-in) | "Some of the table", member testimonial | F16 | 9 (R2) |
+
+Not taken (see spec section 12): paid membership, Deal Flow, The Season program tools, an index of non-member funds, member numbers.
+
+## R3 progress
+- [ ] Step 1: Profile foundations (features 1–5)
+- [ ] Step 2: Front door (features 6–9)
+- [ ] Step 3: Capital (features 10–12)
+- [ ] Step 4: Introductions (features 13–15)
+- [ ] Step 5: Gatherings (features 16–17)
+- [ ] Step 6: Public website, home and dashboard, designer brief (features 18–20)
+- [ ] Step 7 (R2): Review rules and site settings (feature 21)
+- [ ] Step 8 (R2): Wins (feature 22)
+- [ ] Step 9 (R2): Showcase and quotes (feature 23)

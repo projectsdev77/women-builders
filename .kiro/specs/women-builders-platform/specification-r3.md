@@ -1,6 +1,6 @@
 # Women Builders: Platform Specification, Revision 3
 
-**Status:** Proposed. Awaiting your approval before anything is built.
+**Status:** Approved. Being built step by step (section 11).
 **Date:** 6 October 2026
 
 **What this document is.** A complete description of the Women Builders platform as it will be once every agreed feature and change is in place. It covers:
@@ -79,6 +79,10 @@
 | 9 | Eligibility wording | "A community for women founders, operators, investors and builders." (already built) |
 | 10 | The client's landing page | Inspiration and reference, not a specification |
 | 11 | Visual direction | The reference page's warm, editorial look is the starting point for the designer (**please confirm**, see section 13) |
+| 12 | "Ask the team" introductions | **Yes, in R1**, built with warm introductions (F12) |
+| 13 | Member reviewers | **Yes, in R2**, part of the review rules (F21) |
+| 14 | "Open to" on profiles | **Yes, in R1** (F6, F8) |
+| 15 | Member numbers / founding-member label | **No** |
 
 ---
 
@@ -90,6 +94,7 @@
 | **Requester** | No (she's a record in the outreach tracker) | Nothing beyond a visitor. She gets an acknowledgement email and a decision email |
 | **Invitee** | Not yet | Open her invitation link and join |
 | **Member** | Yes, active | Everything in section 4 |
+| **Reviewer (R2)** | Yes, an active member marked as reviewer by an admin | Everything a member can do, plus voting on invitation requests in the Requests queue. Nothing else in the admin area |
 | **Admin** | Yes, active, admin flag | Everything in section 5. An admin can also be a member with a profile |
 | **Deactivated member** | Yes, inactive | Log in only to reactivate (if she deactivated herself), or see a "contact us" message (if an admin deactivated her) |
 | **Deleted account** | Shell only | Nothing. Other members see her only as "Deleted account" in old conversations |
@@ -272,6 +277,7 @@ Unchanged:
 | | ✚ Country | From a country list | Yes (as "Location") |
 | | LinkedIn, Website | URLs | Yes |
 | About | Expertise | Tags ≤ 20 | No |
+| | ✚ Open to | Any of: Advising, Investing, Hiring, Being hired, Co-founding, Freelance or project work, Mentoring, Speaking | No |
 | | Professional background | ≤ 5,000 | Yes |
 | | Current focus | ≤ 1,000 | Yes |
 | Needs & offers | What I need / What I can offer | ≤ 2,000 each | Yes |
@@ -352,7 +358,7 @@ Unchanged:
 
 **Changed:**
 - **Filters:** **country** (list) and **city** (text) replace the single location box.
-- **New filters:** **Currently investing** (shown when Investor is selected), **Raising now** (shown when Founder is selected), and **Prefers introductions** (a tag on the card, not a filter).
+- **New filters:** **Open to** (multi), **Currently investing** (shown when Investor is selected), **Raising now** (shown when Founder is selected). **Prefers introductions** appears as a tag on the card, not a filter.
 - **Cards:** now show the photo, plus "*N mutual connections*" when greater than 0.
 
 ### F9. Capital view — **New · R1**
@@ -457,6 +463,16 @@ Unchanged:
   - **For me:** I'm the person being introduced to. Accept / Not now, with both notes.
   - **My requests:** my asks, with a status: *Waiting for B* → *B introduced you, waiting for C* → *Connected*, or *No introduction was made*.
 - **Reporting:** available from any introduction.
+
+**"Ask the team" introductions**
+- **When it appears:** only when the member has no mutual connection with the person she wants to meet. The profile then shows **Ask the Women Builders team to introduce you**.
+- **Flow:** the same as a normal introduction, with the team as introducer:
+  - she writes a note to the team and an optional note for the person;
+  - the request goes to an admin **Introduction requests** queue;
+  - an admin introduces (the person sees "The Women Builders team would like to introduce you to…") or passes silently;
+  - the person accepts or passes as usual.
+- **Limits:** 2 team requests per member per calendar month. The same completeness gate, silent declines and block rules as normal introductions apply.
+- **Counts:** team introductions are shown separately on the admin dashboard.
 - **Counts:** made = forwarded, accepted = connected. These appear on the admin dashboard and the public site.
 
 ### F13. Messaging — **Existing**
@@ -647,6 +663,7 @@ This replaces the old Applications page.
 
 **R2: review rules**
 - **Required approvals:** set from 1 to 3 (default 2), in Settings (F26).
+- **Who votes:** admins, plus **member reviewers**. Admins can mark any active member as a reviewer. Reviewers see only the Requests queue (form answers, LinkedIn, notes, votes) and can vote, but they can't invite, decline, or see any other admin page.
 - **Voting:** each admin votes **Approve** or **Decline**, with a private note, and can change her vote until the request is decided. Votes are visible to admins only.
 - **Outcomes:**
   - Approvals reach the threshold: the invitation is sent automatically.
@@ -888,6 +905,9 @@ All changes go into the audit log. **In R1, these values live in configuration.*
 | 4 | Warm introductions and "Prefer introductions" | F11, F12, F13 (introduction note) |
 | 5 | Gatherings: member side and admin side, reminders, "People you met" | F14, F23 |
 | 6 | Home and dashboard updates; public website (Home, stats, gatherings teaser, charter, legal placeholders); designer brief updated | F1, F18, F24, F19 |
+| 7 | (R2) Review rules: votes, member reviewers, applications open / waitlist; site settings | F21 (R2), F26 |
+| 8 | (R2) Wins | F15 |
+| 9 | (R2) Public showcase and quotes | F16 |
 
 **R2 (next):**
 - Wins (F15);
@@ -923,8 +943,6 @@ All changes go into the audit log. **In R1, these values live in configuration.*
 2. **Legal texts.** Who writes the privacy policy, terms and final charter: you, the client, or a lawyer? Launch shouldn't happen without them.
 3. **Photo storage.** Which provider? If the app will be hosted on Vercel, I recommend Vercel Blob; otherwise Cloudflare R2. It only changes configuration.
 
-**Suggestions not yet agreed.** Say yes or no to each.
-4. **"Ask the team" introductions (R2).** When a member wants to reach someone and has no mutual connection, she can ask the Women Builders team to make the introduction. At most 2 per month, handled in an admin queue. This matters most for new members trying to reach investors who prefer introductions.
-5. **Member reviewers (R2).** The reference page says "every application is read by two members." This would let admins mark trusted members as reviewers who can vote on requests (but see nothing else in the admin area).
-6. **"Open to" on profiles (R1, small).** Tags such as advising, hiring, being hired, co-founding, investing, freelance or project work, mentoring and speaking, with a filter in Discover. This gives operators and builders the same kind of clear signal that "Raising now" and "Currently investing" give founders and investors, which supports the equal-roles decision.
-7. **Member numbers.** A sequential "Member no." shown on the profile, as on the reference page. It's a small touch of belonging. I'd skip it unless you like it.
+**Agreed suggestions (built):** "Ask the team" introductions (F12, R1), member reviewers (F21, R2), "Open to" on profiles (F6, R1). **Declined:** member numbers.
+
+**Photo storage (implementation choice until you decide):** photos go through a small storage layer. It uses the local disk in development and any S3-compatible service in production (Amazon S3, Cloudflare R2 and others), set through environment variables. Vercel Blob can be added if you choose it.
