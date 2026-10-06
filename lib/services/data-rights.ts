@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/db';
 import { AppError, Errors } from '@/lib/errors';
 import { verifyPassword } from '@/lib/auth/password';
+import { removeProfilePhoto } from './photos';
 
 async function confirmPassword(userId: string, password: string) {
   const user = await prisma.user.findUnique({ where: { id: userId } });
@@ -67,6 +68,8 @@ export async function deleteAccount(userId: string, password: string) {
     const others = await prisma.user.count({ where: { isAdmin: true, accountStatus: 'ACTIVE', id: { not: userId } } });
     if (others === 0) throw Errors.validation("You're the last admin. Make someone else an admin before deleting your account.");
   }
+  // Photo files live outside the database, so remove them first (R3 F19).
+  await removeProfilePhoto(userId);
   await prisma.$transaction([
     prisma.session.deleteMany({ where: { userId } }),
     prisma.authToken.deleteMany({ where: { userId } }),

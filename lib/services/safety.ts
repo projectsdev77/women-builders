@@ -52,6 +52,7 @@ export const REPORT_REASONS: Record<ReportReason, string> = {
   SPAM: 'Spam or unsolicited selling',
   FAKE_PROFILE: 'Fake or impersonating profile',
   INAPPROPRIATE_CONTENT: 'Inappropriate content',
+  INAPPROPRIATE_PHOTO: 'Inappropriate photo',
   OTHER: 'Something else',
 };
 

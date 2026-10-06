@@ -109,7 +109,7 @@ Spec: `specification-r3.md`. Built one step at a time; each step ends with typec
 Not taken (see spec section 12): paid membership, Deal Flow, The Season program tools, an index of non-member funds, member numbers.
 
 ## R3 progress
-- [ ] Step 1: Profile foundations (features 1–5)
+- [x] Step 1: Profile foundations (features 1–5)
 - [ ] Step 2: Front door (features 6–9)
 - [ ] Step 3: Capital (features 10–12)
 - [ ] Step 4: Introductions (features 13–15)

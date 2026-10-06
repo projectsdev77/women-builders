@@ -31,7 +31,7 @@ describe('data rights (Req 25, G11)', () => {
 
   it('deletion erases the person but keeps conversations, shown as "Deleted account"', async () => {
     const a = await createMember();
-    const b = await createMember({ name: 'Bad Actor', profile: { headline: 'Secret headline', location: 'Paris' } });
+    const b = await createMember({ name: 'Bad Actor', profile: { headline: 'Secret headline', city: 'Paris', country: 'FR' } });
     const c = await prisma.connection.create({ data: pair(a.id, b.id) });
     await prisma.message.create({ data: { connectionId: c.id, senderId: b.id, receiverId: a.id, content: 'hi from b' } });
     await prisma.message.create({ data: { connectionId: c.id, senderId: a.id, receiverId: b.id, content: 'hi from a' } });

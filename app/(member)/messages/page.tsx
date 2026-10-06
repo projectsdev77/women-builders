@@ -27,7 +27,7 @@ export default async function MessagesPage() {
           {conversations.map((c) => (
             <li key={c.member.id}>
               <Link href={`/messages/${c.member.id}`} className="flex items-center gap-3 p-4 hover:bg-gray-50">
-                <Avatar name={c.member.name} />
+                <Avatar name={c.member.name} photoUrl={c.member.photoUrl} ghost={c.member.deleted} />
                 <div className="min-w-0 flex-1">
                   <div className="flex items-baseline justify-between gap-2">
                     <span className={cx('truncate', c.unreadCount > 0 ? 'font-semibold' : 'font-medium')}>

@@ -106,6 +106,16 @@ export const templates = {
       ],
       cta: { label: 'Accept invitation', url },
     }),
+  photoRemoved: (name: string) =>
+    layout({
+      subject: `Your ${APP_NAME} profile photo was removed`,
+      heading: `Hi ${name}, we removed your profile photo`,
+      paragraphs: [
+        "Our team removed your profile photo because it didn't meet the community charter.",
+        'You can upload a different photo from your profile at any time. Reply to this email if you have questions.',
+      ],
+      cta: { label: 'Edit your profile', url: `${appUrl()}/profile/edit` },
+    }),
   accountDeactivated: () =>
     layout({
       subject: `Your ${APP_NAME} account has been deactivated`,

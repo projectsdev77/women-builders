@@ -23,7 +23,15 @@ export interface MemberOverrides {
     currentFocus: string;
     needs: string;
     offerings: string;
-    location: string;
+    city: string;
+    country: string;
+    openTo: string[];
+    firmName: string;
+    investorType: string;
+    currentlyInvesting: boolean;
+    investingConfirmedAt: Date;
+    raiseAmount: number;
+    photoKey: string;
     companyName: string;
     companyStage: string;
     industry: string;
@@ -85,7 +93,8 @@ export const COMPLETE_FOUNDER = {
   currentFocus: 'Raising a seed round',
   needs: 'fundraising advice and investor intros',
   offerings: 'payments product expertise',
-  location: 'Austin, TX',
+  city: 'Austin',
+  country: 'US',
   companyName: 'Acme',
   companyStage: 'Seed',
 };

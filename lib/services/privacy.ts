@@ -1,7 +1,10 @@
 import type { Profile, RoleType, User } from '@prisma/client';
 import type { ConnectionStatus } from './relationships';
+import { formatLocation } from '@/lib/countries';
+import { photoUrl } from './photo-url';
+import { investingStatus, type InvestingStatus } from './profile-fields';
 
-/** The only fields a member may hide from non-connections (G5, Req 9.2). */
+/** The only fields a member may hide from non-connections (G5, Req 9.2). "location" covers city and country (R3). */
 export const HIDEABLE_FIELDS = [
   'location',
   'professionalBackground',
@@ -10,6 +13,7 @@ export const HIDEABLE_FIELDS = [
   'offerings',
   'companyName',
   'fundingStatus',
+  'raiseAmount',
   'checkSize',
   'linkedInUrl',
   'websiteUrl',
@@ -40,16 +44,38 @@ export interface MemberView {
   primaryRole: RoleType;
   secondaryRoles: RoleType[];
   expertiseAreas: string[];
+  openTo: string[];
+  photoUrl: string | null;
+  photoUrlLarge: string | null;
+  /** Display string "City, Country"; null when hidden from this viewer. */
   location: string | null;
+  city: string | null;
+  country: string | null;
   professionalBackground: string | null;
   currentFocus: string | null;
   needs: string | null;
   offerings: string | null;
   linkedInUrl: string | null;
   websiteUrl: string | null;
-  founder: { companyName: string | null; companyStage: string | null; industry: string | null; fundingStatus: string | null } | null;
+  founder: {
+    companyName: string | null;
+    companyStage: string | null;
+    industry: string | null;
+    fundingStatus: string | null;
+    raiseAmount: number | null;
+  } | null;
   operator: { functionalExpertise: string | null; seniorityLevel: string | null; operationalFocus: string[] } | null;
-  investor: { investmentStages: string[]; checkSizeMin: number | null; checkSizeMax: number | null; sectorPreferences: string[] } | null;
+  investor: {
+    firmName: string | null;
+    investorType: string | null;
+    leadsRounds: string | null;
+    investing: InvestingStatus;
+    lastCheckMonth: string | null;
+    investmentStages: string[];
+    checkSizeMin: number | null;
+    checkSizeMax: number | null;
+    sectorPreferences: string[];
+  } | null;
   builder: { technicalSkills: string[]; projectTypes: string[]; collaborationInterests: string | null } | null;
   completenessScore: number;
   memberSince: string | null;
@@ -71,7 +97,12 @@ export function toMemberView(p: ProfileWithUser, viewer: Viewer, status: Connect
     primaryRole: p.primaryRole,
     secondaryRoles: p.secondaryRoles,
     expertiseAreas: p.expertiseAreas,
-    location: see('location') ? p.location : null,
+    openTo: p.openTo,
+    photoUrl: photoUrl(p.user.id, p, 128),
+    photoUrlLarge: photoUrl(p.user.id, p, 512),
+    location: see('location') ? formatLocation(p.city, p.country) : null,
+    city: see('location') ? p.city : null,
+    country: see('location') ? p.country : null,
     professionalBackground: see('professionalBackground') ? p.professionalBackground : null,
     currentFocus: see('currentFocus') ? p.currentFocus : null,
     needs: see('needs') ? p.needs : null,
@@ -84,6 +115,7 @@ export function toMemberView(p: ProfileWithUser, viewer: Viewer, status: Connect
           companyStage: p.companyStage,
           industry: p.industry,
           fundingStatus: see('fundingStatus') ? p.fundingStatus : null,
+          raiseAmount: see('raiseAmount') && see('fundingStatus') ? p.raiseAmount : null,
         }
       : null,
     operator: roles.has('OPERATOR')
@@ -91,6 +123,11 @@ export function toMemberView(p: ProfileWithUser, viewer: Viewer, status: Connect
       : null,
     investor: roles.has('INVESTOR')
       ? {
+          firmName: p.firmName,
+          investorType: p.investorType,
+          leadsRounds: p.leadsRounds,
+          investing: investingStatus(p),
+          lastCheckMonth: p.lastCheckMonth,
           investmentStages: p.investmentStages,
           checkSizeMin: see('checkSize') ? p.checkSizeMin : null,
           checkSizeMax: see('checkSize') ? p.checkSizeMax : null,
@@ -115,9 +152,14 @@ export interface MemberCard {
   primaryRole: RoleType;
   secondaryRoles: RoleType[];
   expertiseAreas: string[];
+  openTo: string[];
+  photoUrl: string | null;
   location: string | null;
+  country: string | null;
   companyName: string | null;
   connectionStatus: ConnectionStatus;
+  /** Filled in by list views that compute it (Discover, Capital, recommendations). */
+  mutualConnections?: number;
 }
 
 export function toMemberCard(p: ProfileWithUser, viewer: Viewer, status: ConnectionStatus): MemberCard {
@@ -128,7 +170,10 @@ export function toMemberCard(p: ProfileWithUser, viewer: Viewer, status: Connect
     primaryRole: p.primaryRole,
     secondaryRoles: p.secondaryRoles,
     expertiseAreas: p.expertiseAreas.slice(0, 6),
-    location: canSee(p, 'location', viewer) ? p.location : null,
+    openTo: p.openTo,
+    photoUrl: photoUrl(p.user.id, p, 128),
+    location: canSee(p, 'location', viewer) ? formatLocation(p.city, p.country) : null,
+    country: canSee(p, 'location', viewer) ? p.country : null,
     companyName: canSee(p, 'companyName', viewer) ? p.companyName : null,
     connectionStatus: status,
   };

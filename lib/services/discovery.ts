@@ -3,7 +3,8 @@ import { z } from 'zod';
 import { prisma } from '@/lib/db';
 import { Errors } from '@/lib/errors';
 import { DURATIONS_MS, LIMITS } from '@/lib/config';
-import { normalizeTags } from './profile-fields';
+import { INVESTING_UNCONFIRMED_AFTER_DAYS, OPTIONS, RAISING_STATUSES, normalizeTags } from './profile-fields';
+import { countryName } from '@/lib/countries';
 import { canSee, toMemberCard, type MemberCard, type ProfileWithUser, type Viewer } from './privacy';
 import {
   calculateRelevance,
@@ -74,7 +75,17 @@ export const searchQuerySchema = z.object({
   primaryRole: list(z.enum(['FOUNDER', 'OPERATOR', 'INVESTOR', 'BUILDER'])),
   secondaryRole: list(z.enum(['FOUNDER', 'OPERATOR', 'INVESTOR', 'BUILDER'])),
   expertise: list(z.string().max(60)),
-  location: z.string().trim().max(100).optional().default(''),
+  country: z
+    .string()
+    .trim()
+    .max(2)
+    .optional()
+    .default('')
+    .transform((v) => v.toUpperCase()),
+  city: z.string().trim().max(100).optional().default(''),
+  openTo: list(z.enum(OPTIONS.openTo)),
+  investing: z.enum(['1']).optional(),
+  raising: z.enum(['1']).optional(),
   page: z.coerce.number().int().min(1).max(500).default(1),
   limit: z.coerce.number().int().min(1).max(LIMITS.searchPageSizeMax).default(LIMITS.searchPageSizeDefault),
 });
@@ -111,7 +122,10 @@ export function textMatchScore(c: Candidate, viewer: Viewer, q: string): number 
     canSee(c, 'needs', viewer) ? c.needs : null,
     canSee(c, 'offerings', viewer) ? c.offerings : null,
     canSee(c, 'companyName', viewer) ? c.companyName : null,
-    canSee(c, 'location', viewer) ? c.location : null,
+    canSee(c, 'location', viewer) ? c.city : null,
+    canSee(c, 'location', viewer) ? countryName(c.country) : null,
+    c.openTo.join(' '),
+    c.firmName,
   ]
     .filter(Boolean)
     .join(' ');
@@ -128,7 +142,23 @@ export async function searchMembers(viewerId: string, query: SearchQuery) {
   if (query.secondaryRole.length) and.push({ secondaryRoles: { hasSome: query.secondaryRole as RoleType[] } });
   const tags = normalizeTags(query.expertise);
   if (tags.length) and.push({ expertiseAreas: { hasSome: tags } });
-  if (query.location) and.push({ location: { contains: query.location, mode: 'insensitive' } });
+  if (query.country) and.push({ country: query.country });
+  if (query.city) and.push({ city: { contains: query.city, mode: 'insensitive' } });
+  if (query.openTo.length) and.push({ openTo: { hasSome: query.openTo } });
+  if (query.investing) {
+    // Investors whose "currently investing" is a fresh Yes (R3 F9).
+    and.push(
+      { OR: [{ primaryRole: 'INVESTOR' }, { secondaryRoles: { has: 'INVESTOR' } }] },
+      { currentlyInvesting: true },
+      { investingConfirmedAt: { gt: new Date(Date.now() - INVESTING_UNCONFIRMED_AFTER_DAYS * 86_400_000) } },
+    );
+  }
+  if (query.raising) {
+    and.push(
+      { OR: [{ primaryRole: 'FOUNDER' }, { secondaryRoles: { has: 'FOUNDER' } }] },
+      { fundingStatus: { in: [...RAISING_STATUSES] } },
+    );
+  }
   if (query.q) {
     // SQL prefilter (broad); visibility-aware scoring below decides the final match.
     const words = [...new Set([query.q, ...query.q.split(/\s+/)].filter((w) => w.length >= 2 || w === query.q))].slice(0, 8);
@@ -145,7 +175,8 @@ export async function searchMembers(viewerId: string, query: SearchQuery) {
         { offerings: c },
         { companyName: c },
         { industry: c },
-        { location: c },
+        { city: c },
+        { firmName: c },
       );
     }
     const qTags = normalizeTags([query.q, ...query.q.split(/\s+/)]);
@@ -166,8 +197,9 @@ export async function searchMembers(viewerId: string, query: SearchQuery) {
   const scored: Array<SearchResult & { rank: number }> = [];
   for (const c of candidates) {
     const viewer: Viewer = { isSelf: false, connected: sets.connected.has(c.userId) };
-    // A location filter must not match a hidden location (no oracle, G5).
-    if (query.location && !canSee(c, 'location', viewer)) continue;
+    // Filters must not match fields hidden from this viewer (no oracle, G5).
+    if ((query.country || query.city) && !canSee(c, 'location', viewer)) continue;
+    if (query.raising && !canSee(c, 'fundingStatus', viewer)) continue;
     const text = textMatchScore(c, viewer, query.q);
     if (query.q && text === 0) continue;
     const rel = calculateRelevance(viewerInput, visibleInput(c, viewer));
@@ -185,8 +217,11 @@ export async function searchMembers(viewerId: string, query: SearchQuery) {
   }
   scored.sort((a, b) => b.rank - a.rank || a.member.name.localeCompare(b.member.name));
   const start = (query.page - 1) * query.limit;
+  const page = scored.slice(start, start + query.limit);
+  const mutuals = await mutualCounts(sets.connected, page.map((r) => r.member.id));
+  for (const r of page) r.member.mutualConnections = mutuals.get(r.member.id) ?? 0;
   return {
-    results: scored.slice(start, start + query.limit).map(({ rank: _rank, ...r }) => r),
+    results: page.map(({ rank: _rank, ...r }) => r),
     pagination: {
       total: scored.length,
       page: query.page,
@@ -241,8 +276,8 @@ export async function getRecommendations(viewerId: string) {
     .sort((a, b) => b.rel.total - a.rel.total || b.mutual - a.mutual)
     .slice(0, LIMITS.recommendationsMax);
 
-  const recommendations: Recommendation[] = scored.map(({ c, viewer, rel }) => ({
-    member: toMemberCard(c, viewer, 'none'),
+  const recommendations: Recommendation[] = scored.map(({ c, viewer, rel, mutual }) => ({
+    member: { ...toMemberCard(c, viewer, 'none'), mutualConnections: mutual },
     relevanceScore: rel.total,
     explanation: rel.reasons[0]?.description ?? 'Active member of the community',
     reasons: rel.reasons,

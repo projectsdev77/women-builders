@@ -15,12 +15,16 @@ beforeEach(resetDb);
 
 describe('completeness formula (G15)', () => {
   it('is filled / applicable over core + all held roles', () => {
-    // 7 core + 4 founder = 11 applicable; headline + companyName filled = 2
-    expect(calculateCompleteness({ primaryRole: 'FOUNDER', secondaryRoles: [], headline: 'x', companyName: 'Acme' })).toBe(18);
-    // adding the investor role adds 3 applicable fields
+    // 8 core (incl. photo and country, R3) + 4 founder = 12 applicable; headline + companyName filled = 2
+    expect(calculateCompleteness({ primaryRole: 'FOUNDER', secondaryRoles: [], headline: 'x', companyName: 'Acme' })).toBe(17);
+    // adding the investor role adds 4 applicable fields (incl. investor type)
     expect(
       calculateCompleteness({ primaryRole: 'FOUNDER', secondaryRoles: ['INVESTOR'], headline: 'x', companyName: 'Acme' }),
-    ).toBe(14);
+    ).toBe(13);
+    // a photo and a country now count
+    expect(
+      calculateCompleteness({ primaryRole: 'FOUNDER', secondaryRoles: [], headline: 'x', companyName: 'Acme', photoKey: 'k', country: 'NG' }),
+    ).toBe(33);
   });
 
   it('gates connection requests on 60% and primary-role required fields', () => {
@@ -83,7 +87,8 @@ describe('privacy (G5, Req 9)', () => {
     expect(JSON.stringify(s)).not.toContain(owner.email);
 
     const f = await getMemberProfile(friend.id, owner.id);
-    expect(f.location).toBe(COMPLETE_FOUNDER.location);
+    expect(f.location).toBe('Austin, United States');
+    expect(f.country).toBe('US');
     expect(f.needs).toBe(COMPLETE_FOUNDER.needs);
     expect(f.connectionStatus).toBe('connected');
   });

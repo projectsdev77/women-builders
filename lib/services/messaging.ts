@@ -4,6 +4,7 @@ import { DURATIONS_MS, LIMITS } from '@/lib/config';
 import { lock } from './locks';
 import { isBlockedEitherWay, pair } from './relationships';
 import { notifyNewMessage } from './notifications';
+import { photoUrl } from './photo-url';
 
 type Tx = Parameters<Parameters<typeof prisma.$transaction>[0]>[0];
 
@@ -27,7 +28,7 @@ async function loadConversation(db: Tx | typeof prisma, actorId: string, otherId
   if (await isBlockedEitherWay(db, actorId, otherId)) throw Errors.notFound('Conversation');
   const [connection, other] = await Promise.all([
     db.connection.findUnique({ where: { userAId_userBId: pair(actorId, otherId) } }),
-    db.user.findUnique({ where: { id: otherId }, select: { id: true, name: true, accountStatus: true, profile: { select: { headline: true } } } }),
+    db.user.findUnique({ where: { id: otherId }, select: { id: true, name: true, accountStatus: true, profile: { select: { headline: true, photoKey: true, photoVersion: true } } } }),
   ]);
   if (!connection || !other) throw Errors.notFound('Conversation');
   const state: ConversationState = connection.removedAt
@@ -113,7 +114,14 @@ export async function getConversation(actorId: string, otherId: string, opts: { 
     take: afterDate ? 200 : 500,
   });
   return {
-    other: { id: conv.other.id, name: conv.other.name, headline: conv.other.profile?.headline ?? null, active: conv.other.accountStatus === 'ACTIVE' },
+    other: {
+      id: conv.other.id,
+      name: conv.other.name,
+      headline: conv.other.profile?.headline ?? null,
+      active: conv.other.accountStatus === 'ACTIVE',
+      deleted: conv.other.accountStatus === 'DELETED',
+      photoUrl: conv.other.profile ? photoUrl(conv.other.id, conv.other.profile) : null,
+    },
     state: conv.state.canSend ? { canSend: true as const } : { canSend: false as const, reason: conv.state.reason, message: READ_ONLY_COPY[conv.state.reason] },
     messages: messages.map((m) => serialize(m, actorId)),
   };
@@ -130,7 +138,7 @@ export async function markConversationRead(actorId: string, otherId: string) {
 }
 
 export interface ConversationSummary {
-  member: { id: string; name: string; headline: string | null; active: boolean };
+  member: { id: string; name: string; headline: string | null; active: boolean; deleted: boolean; photoUrl: string | null };
   lastMessage: MessageItem | null;
   unreadCount: number;
   readOnly: boolean;
@@ -146,8 +154,8 @@ export async function listConversations(actorId: string): Promise<ConversationSu
   const connections = await prisma.connection.findMany({
     where: { OR: [{ userAId: actorId }, { userBId: actorId }] },
     include: {
-      userA: { select: { id: true, name: true, accountStatus: true, profile: { select: { headline: true } } } },
-      userB: { select: { id: true, name: true, accountStatus: true, profile: { select: { headline: true } } } },
+      userA: { select: { id: true, name: true, accountStatus: true, profile: { select: { headline: true, photoKey: true, photoVersion: true } } } },
+      userB: { select: { id: true, name: true, accountStatus: true, profile: { select: { headline: true, photoKey: true, photoVersion: true } } } },
       messages: { orderBy: { createdAt: 'desc' }, take: 1 },
     },
   });
@@ -166,7 +174,14 @@ export async function listConversations(actorId: string): Promise<ConversationSu
     .filter(({ c, other, last }) => !blocked.has(other.id) && (last || (!c.removedAt && other.accountStatus === 'ACTIVE')))
     .sort((a, b) => (b.last?.createdAt ?? b.c.createdAt).getTime() - (a.last?.createdAt ?? a.c.createdAt).getTime())
     .map(({ c, other, last }) => ({
-      member: { id: other.id, name: other.name, headline: other.profile?.headline ?? null, active: other.accountStatus === 'ACTIVE' },
+      member: {
+        id: other.id,
+        name: other.name,
+        headline: other.profile?.headline ?? null,
+        active: other.accountStatus === 'ACTIVE',
+        deleted: other.accountStatus === 'DELETED',
+        photoUrl: other.profile ? photoUrl(other.id, other.profile) : null,
+      },
       lastMessage: last ? serialize(last, actorId) : null,
       unreadCount: unreadMap.get(c.id) ?? 0,
       readOnly: !!c.removedAt || other.accountStatus !== 'ACTIVE',

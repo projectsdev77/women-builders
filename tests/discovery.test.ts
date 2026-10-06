@@ -33,14 +33,16 @@ describe('search (G14, Req 2)', () => {
     const viewer = await createMember();
     const hidden = await createMember({
       name: 'Hidden Hannah',
-      profile: { location: 'Austin', needs: 'stealth quantum project', hiddenFields: ['location', 'needs'] },
+      profile: { city: 'Austin', country: 'US', needs: 'stealth quantum project', hiddenFields: ['location', 'needs'] },
     });
     expect((await searchMembers(viewer.id, q({ q: 'quantum' }))).results).toHaveLength(0);
-    expect((await searchMembers(viewer.id, q({ location: 'austin' }))).results).toHaveLength(0);
+    expect((await searchMembers(viewer.id, q({ city: 'austin' }))).results).toHaveLength(0);
+    expect((await searchMembers(viewer.id, q({ country: 'us' }))).results).toHaveLength(0);
     // Once connected, hidden fields are searchable.
     await prisma.connection.create({ data: pair(viewer.id, hidden.id) });
     expect((await searchMembers(viewer.id, q({ q: 'quantum' }))).results).toHaveLength(1);
-    expect((await searchMembers(viewer.id, q({ location: 'austin' }))).results[0]?.member.location).toBe('Austin');
+    expect((await searchMembers(viewer.id, q({ city: 'austin' }))).results[0]?.member.location).toBe('Austin, United States');
+    expect((await searchMembers(viewer.id, q({ country: 'US' }))).results).toHaveLength(1);
   });
 
   it('excludes self, blocked and non-active members', async () => {

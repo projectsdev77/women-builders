@@ -298,7 +298,7 @@ Unchanged:
 | Builder | Technical skills (required), Project types, Collaboration interests | Existing | No |
 
 **Photos**
-- **Upload:** in the editor and onboarding. A crop to square happens in the browser.
+- **Upload:** in the editor and onboarding. The server crops to a square centred on the most interesting part of the image (no manual crop step).
 - **Processing on the server:**
   - the file type is checked from its content, not its name;
   - **location and camera metadata (EXIF) are removed**;
@@ -804,7 +804,7 @@ All changes go into the audit log. **In R1, these values live in configuration.*
 - **Gathering:** title, type, description, start (UTC) plus IANA time zone, duration, city, country, online flag, venue / link (private), capacity, audience (all / roles / invite-only), seat mode, requests-close time, show-on-public-site flag, status (Scheduled, Cancelled), created by.
 - **GatheringHost** and **GatheringInvite** (for invite-only gatherings).
 - **SeatRequest:** gathering, member, note, status (Requested, Confirmed, Waitlisted, Declined, Cancelled), late-cancel flag, attendance (Attended, No-show, unset).
-- **MediaObject:** the stored photo (storage keys for each size, content type, created time).
+- **Photos** are stored on the profile itself (`photoKey`, `photoVersion`) rather than in a separate table. Each photo is two files in object storage.
 - **Win and WinParticipant (R2),** **Testimonial (R2),** **SiteSetting (R2).**
 
 **Changed entities**

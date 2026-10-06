@@ -69,7 +69,7 @@ export function Thread({ initial }: { initial: Conversation }) {
     <div className="mx-auto flex h-[calc(100vh-10rem)] max-w-3xl flex-col rounded-lg border border-gray-200 bg-white">
       <header className="flex items-center gap-3 border-b border-gray-200 p-4">
         <Link href="/messages" className="text-sm text-brand-700 underline sm:hidden">Back</Link>
-        <Avatar name={other.name} />
+        <Avatar name={other.name} photoUrl={other.photoUrl} ghost={other.deleted} />
         <div className="min-w-0">
           <h1 className="truncate font-semibold">
             {other.active ? <Link href={`/members/${other.id}`} className="hover:underline">{other.name}</Link> : other.name}

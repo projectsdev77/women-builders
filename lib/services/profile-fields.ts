@@ -17,31 +17,42 @@ export const OPTIONS = {
   ],
   seniorityLevel: ['Individual contributor', 'Manager', 'Director', 'VP', 'C-level', 'Advisor'],
   investmentStages: ['Pre-seed', 'Seed', 'Series A', 'Series B', 'Growth'],
+  investorType: ['Angel', 'VC fund', 'Family office', 'Corporate', 'Syndicate lead', 'Other'],
+  leadsRounds: ['Leads', 'Follows', 'Both'],
+  // "Open to" gives every role a clear signal of what she's available for (R3 F6).
+  openTo: [
+    'Advising', 'Investing', 'Hiring', 'Being hired', 'Co-founding',
+    'Freelance or project work', 'Mentoring', 'Speaking',
+  ],
 } as const;
+
+/** Funding statuses that count as "raising" for Capital and Discover filters (R3 F9). */
+export const RAISING_STATUSES = ['Raising now', 'Raising in 6 months'] as const;
 
 /** Profile fields that count towards completeness for every member (G15). */
 export const CORE_FIELDS = [
   'headline',
+  'photo',
   'professionalBackground',
   'expertiseAreas',
   'currentFocus',
   'needs',
   'offerings',
-  'location',
+  'country',
 ] as const;
 
-/** Virtual field `checkSize` = both checkSizeMin and checkSizeMax set. */
+/** Virtual fields: `checkSize` = both bounds set; `photo` = a photo is uploaded. */
 export type CompletenessField =
   | (typeof CORE_FIELDS)[number]
   | 'companyName' | 'companyStage' | 'industry' | 'fundingStatus'
   | 'functionalExpertise' | 'seniorityLevel' | 'operationalFocus'
-  | 'investmentStages' | 'checkSize' | 'sectorPreferences'
+  | 'investorType' | 'investmentStages' | 'checkSize' | 'sectorPreferences'
   | 'technicalSkills' | 'projectTypes' | 'collaborationInterests';
 
 export const ROLE_FIELDS: Record<RoleType, CompletenessField[]> = {
   FOUNDER: ['companyName', 'companyStage', 'industry', 'fundingStatus'],
   OPERATOR: ['functionalExpertise', 'seniorityLevel', 'operationalFocus'],
-  INVESTOR: ['investmentStages', 'checkSize', 'sectorPreferences'],
+  INVESTOR: ['investorType', 'investmentStages', 'checkSize', 'sectorPreferences'],
   BUILDER: ['technicalSkills', 'projectTypes', 'collaborationInterests'],
 };
 
@@ -55,12 +66,13 @@ export const REQUIRED_FOR_PRIMARY_ROLE: Record<RoleType, CompletenessField[]> = 
 
 export const FIELD_LABELS: Record<CompletenessField, string> = {
   headline: 'Headline',
+  photo: 'Photo',
+  country: 'Country',
   professionalBackground: 'Professional background',
   expertiseAreas: 'Expertise areas',
   currentFocus: 'Current focus',
   needs: 'What you need',
   offerings: 'What you can offer',
-  location: 'Location',
   companyName: 'Company name',
   companyStage: 'Company stage',
   industry: 'Industry',
@@ -68,6 +80,7 @@ export const FIELD_LABELS: Record<CompletenessField, string> = {
   functionalExpertise: 'Functional expertise',
   seniorityLevel: 'Seniority',
   operationalFocus: 'Operational focus areas',
+  investorType: 'Investor type',
   investmentStages: 'Investment stages',
   checkSize: 'Check size range',
   sectorPreferences: 'Sector preferences',
@@ -80,6 +93,7 @@ type ProfileLike = Pick<Profile, 'primaryRole' | 'secondaryRoles'> & Partial<Pro
 
 export function isFilled(profile: ProfileLike, field: CompletenessField): boolean {
   if (field === 'checkSize') return profile.checkSizeMin != null && profile.checkSizeMax != null;
+  if (field === 'photo') return !!profile.photoKey;
   const value = (profile as Record<string, unknown>)[field];
   if (Array.isArray(value)) return value.length > 0;
   if (typeof value === 'string') return value.trim().length > 0;
@@ -135,4 +149,22 @@ export function normalizeTags(tags: string[], max = 20): string[] {
     if (out.length >= max) break;
   }
   return out;
+}
+
+export type InvestingStatus = 'active' | 'unconfirmed' | 'paused' | null;
+export const INVESTING_CONFIRM_EVERY_DAYS = 90;
+export const INVESTING_UNCONFIRMED_AFTER_DAYS = 120;
+
+/**
+ * "Currently investing" with freshness (R3 F9): a Yes that hasn't been confirmed for
+ * 120 days is shown as "Status not confirmed" and drops out of the default filter.
+ */
+export function investingStatus(
+  p: { currentlyInvesting?: boolean | null; investingConfirmedAt?: Date | null },
+  now = new Date(),
+): InvestingStatus {
+  if (p.currentlyInvesting == null) return null;
+  if (!p.currentlyInvesting) return 'paused';
+  const confirmed = p.investingConfirmedAt?.getTime() ?? 0;
+  return now.getTime() - confirmed > INVESTING_UNCONFIRMED_AFTER_DAYS * 86_400_000 ? 'unconfirmed' : 'active';
 }

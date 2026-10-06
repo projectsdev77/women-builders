@@ -16,7 +16,7 @@ export function MemberCard({ member, children, footer }: { member: Card; childre
   return (
     <article className="flex h-full flex-col rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
       <div className="flex gap-3">
-        <Avatar name={member.name} size={48} />
+        <Avatar name={member.name} size={48} photoUrl={member.photoUrl} />
         <div className="min-w-0 flex-1">
           <h3 className="truncate font-semibold">
             <Link href={`/members/${member.id}`} className="hover:underline">
@@ -39,6 +39,11 @@ export function MemberCard({ member, children, footer }: { member: Card; childre
           </div>
         )}
         {status && <Badge tone={member.connectionStatus === 'connected' ? 'green' : 'yellow'}>{status}</Badge>}
+        {!!member.mutualConnections && member.connectionStatus !== 'connected' && (
+          <p className="text-xs text-gray-600">
+            {member.mutualConnections} mutual connection{member.mutualConnections === 1 ? '' : 's'}
+          </p>
+        )}
       </div>
       {children && <div className="mt-3 text-sm text-gray-700">{children}</div>}
       {footer && <div className="mt-auto flex gap-2 pt-3">{footer}</div>}

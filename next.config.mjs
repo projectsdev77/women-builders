@@ -10,7 +10,7 @@ const securityHeaders = [
 const nextConfig = {
   poweredByHeader: false,
   experimental: {
-    serverComponentsExternalPackages: ['bcryptjs'],
+    serverComponentsExternalPackages: ['bcryptjs', 'sharp', '@aws-sdk/client-s3'],
   },
   async headers() {
     return [{ source: '/(.*)', headers: securityHeaders }];

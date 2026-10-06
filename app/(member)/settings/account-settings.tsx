@@ -52,7 +52,7 @@ export function AccountSettings() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="text-sm font-medium text-red-700">Delete account</p>
-          <p className="text-xs text-gray-500">Permanently erase your name, email, profile and connections. Your conversations stay visible to the people you talked to, as \"Deleted account\".</p>
+          <p className="text-xs text-gray-500">Permanently erase your name, email, profile and connections. Your conversations stay visible to the people you talked to, as &ldquo;Deleted account&rdquo;.</p>
         </div>
         <Button variant="danger" onClick={() => setDialog('delete')}>Delete</Button>
       </div>

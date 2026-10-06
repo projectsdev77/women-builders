@@ -13,6 +13,11 @@ import {
   missingRequiredFields,
 } from '@/lib/client/profile-rules';
 import { TagInput } from './tag-input';
+import { PhotoUploader } from './photo-uploader';
+import { countryOptions } from '@/lib/countries';
+
+const COUNTRIES = countryOptions();
+const RAISING = ['Raising now', 'Raising in 6 months'];
 
 export type Role = 'FOUNDER' | 'OPERATOR' | 'INVESTOR' | 'BUILDER';
 const ROLES: Role[] = ['FOUNDER', 'OPERATOR', 'INVESTOR', 'BUILDER'];
@@ -27,16 +32,25 @@ export interface EditableProfile {
   currentFocus: string;
   needs: string;
   offerings: string;
-  location: string;
+  city: string;
+  country: string;
+  openTo: string[];
   linkedInUrl: string;
   websiteUrl: string;
   companyName: string;
   companyStage: string;
   industry: string;
   fundingStatus: string;
+  raiseAmount: string;
   functionalExpertise: string;
   seniorityLevel: string;
   operationalFocus: string[];
+  firmName: string;
+  investorType: string;
+  leadsRounds: string;
+  /** 'yes' | 'paused' | '' (not set) */
+  currentlyInvesting: string;
+  lastCheckMonth: string;
   investmentStages: string[];
   checkSizeMin: string;
   checkSizeMax: string;
@@ -45,18 +59,21 @@ export interface EditableProfile {
   projectTypes: string[];
   collaborationInterests: string;
   hiddenFields: string[];
+  /** Not sent with the form: photos upload on their own (R3 F6). */
+  photoUrl: string | null;
 }
 
 export type Section = 'basics' | 'roles' | 'about' | 'needs' | 'privacy';
 
 const HIDEABLE: Array<{ field: string; label: string }> = [
-  { field: 'location', label: 'Location' },
+  { field: 'location', label: 'Location (city and country)' },
   { field: 'professionalBackground', label: 'Professional background' },
   { field: 'currentFocus', label: 'Current focus' },
   { field: 'needs', label: 'What I need' },
   { field: 'offerings', label: 'What I can offer' },
   { field: 'companyName', label: 'Company name' },
   { field: 'fundingStatus', label: 'Funding status' },
+  { field: 'raiseAmount', label: 'Raise amount' },
   { field: 'checkSize', label: 'Check size' },
   { field: 'linkedInUrl', label: 'LinkedIn' },
   { field: 'websiteUrl', label: 'Website' },
@@ -64,11 +81,26 @@ const HIDEABLE: Array<{ field: string; label: string }> = [
 
 function toPayload(p: EditableProfile) {
   const num = (v: string) => (v.trim() === '' ? null : Number(v));
-  return { ...p, checkSizeMin: num(p.checkSizeMin), checkSizeMax: num(p.checkSizeMax) };
+  const { photoUrl: _photoUrl, ...rest } = p;
+  const investor = p.primaryRole === 'INVESTOR' || p.secondaryRoles.includes('INVESTOR');
+  return {
+    ...rest,
+    country: p.country || null,
+    checkSizeMin: num(p.checkSizeMin),
+    checkSizeMax: num(p.checkSizeMax),
+    raiseAmount: RAISING.includes(p.fundingStatus) ? num(p.raiseAmount) : null,
+    currentlyInvesting: investor && p.currentlyInvesting ? p.currentlyInvesting === 'yes' : null,
+    lastCheckMonth: p.lastCheckMonth || null,
+  };
+}
+
+/** What completeness needs to know, including whether a photo exists. */
+function completenessInput(p: EditableProfile) {
+  return { ...toPayload(p), photoKey: p.photoUrl ? 'set' : null };
 }
 
 export function CompletenessMeter({ profile }: { profile: EditableProfile }) {
-  const payload = toPayload(profile);
+  const payload = completenessInput(profile);
   const score = calculateCompleteness(payload);
   const missing = missingFields(payload);
   const required = missingRequiredFields(payload);
@@ -143,6 +175,11 @@ export function ProfileSections({
       {sections.includes('basics') && (
         <section aria-labelledby="sec-basics" className="space-y-4">
           <h2 id="sec-basics" className="text-lg font-semibold">Basics</h2>
+          <PhotoUploader
+            name={profile.name}
+            photoUrl={profile.photoUrl}
+            onChange={(url) => setProfile((p) => ({ ...p, photoUrl: url }))}
+          />
           <Field id="name" label="Full name" required error={err('name')}>
             <Input id="name" value={profile.name} onChange={onText('name')} {...aria('name')} />
           </Field>
@@ -180,9 +217,17 @@ export function ProfileSections({
               ))}
             </div>
           </fieldset>
-          <Field id="location" label="Location" hint="City, country" error={err('location')}>
-            <Input id="location" value={profile.location} onChange={onText('location')} {...aria('location')} />
-          </Field>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field id="city" label="City" error={err('city')}>
+              <Input id="city" autoComplete="address-level2" value={profile.city} onChange={onText('city')} {...aria('city')} />
+            </Field>
+            <Field id="country" label="Country" error={err('country')}>
+              <Select id="country" autoComplete="country" value={profile.country} onChange={onText('country')} {...aria('country')}>
+                <option value="">Choose…</option>
+                {COUNTRIES.map((c) => <option key={c.code} value={c.code}>{c.name}</option>)}
+              </Select>
+            </Field>
+          </div>
           <div className="grid gap-4 sm:grid-cols-2">
             <Field id="linkedInUrl" label="LinkedIn profile" error={err('linkedInUrl')}>
               <Input id="linkedInUrl" inputMode="url" placeholder="https://www.linkedin.com/in/your-name" value={profile.linkedInUrl} onChange={onText('linkedInUrl')} {...aria('linkedInUrl')} />
@@ -217,6 +262,11 @@ export function ProfileSections({
                   </Select>
                 </Field>
               </div>
+              {RAISING.includes(profile.fundingStatus) && (
+                <Field id="raiseAmount" label="How much are you raising? (USD thousands)" hint="e.g. 1500 for $1.5M" error={err('raiseAmount')}>
+                  <Input id="raiseAmount" type="number" min={0} inputMode="numeric" value={profile.raiseAmount} onChange={onText('raiseAmount')} {...aria('raiseAmount')} />
+                </Field>
+              )}
               <Field id="industry" label="Industry" hint="e.g. Fintech, Climate, Health" error={err('industry')}>
                 <Input id="industry" value={profile.industry} onChange={onText('industry')} />
               </Field>
@@ -247,6 +297,35 @@ export function ProfileSections({
           {held.has('INVESTOR') && (
             <fieldset className="space-y-4 rounded-lg border border-gray-200 p-4">
               <legend className="px-1 font-medium">Investor</legend>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Field id="investorType" label="Investor type" required={profile.primaryRole === 'INVESTOR'} error={err('investorType')}>
+                  <Select id="investorType" value={profile.investorType} onChange={onText('investorType')}>
+                    <option value="">Choose…</option>
+                    {OPTIONS.investorType.map((o) => <option key={o}>{o}</option>)}
+                  </Select>
+                </Field>
+                <Field id="firmName" label="Firm or fund" hint="Leave blank if you invest personally" error={err('firmName')}>
+                  <Input id="firmName" value={profile.firmName} onChange={onText('firmName')} />
+                </Field>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-3">
+                <Field id="currentlyInvesting" label="Currently investing?" hint="We'll check in every 90 days" error={err('currentlyInvesting')}>
+                  <Select id="currentlyInvesting" value={profile.currentlyInvesting} onChange={onText('currentlyInvesting')}>
+                    <option value="">Choose…</option>
+                    <option value="yes">Yes, writing checks</option>
+                    <option value="paused">Paused for now</option>
+                  </Select>
+                </Field>
+                <Field id="leadsRounds" label="Leads or follows?" error={err('leadsRounds')}>
+                  <Select id="leadsRounds" value={profile.leadsRounds} onChange={onText('leadsRounds')}>
+                    <option value="">Choose…</option>
+                    {OPTIONS.leadsRounds.map((o) => <option key={o}>{o}</option>)}
+                  </Select>
+                </Field>
+                <Field id="lastCheckMonth" label="Last check written" error={err('lastCheckMonth')}>
+                  <Input id="lastCheckMonth" type="month" value={profile.lastCheckMonth} onChange={onText('lastCheckMonth')} {...aria('lastCheckMonth')} />
+                </Field>
+              </div>
               <fieldset>
                 <legend className="text-sm font-medium text-gray-800">
                   Stages you invest in{profile.primaryRole === 'INVESTOR' && <span className="text-red-600"> *</span>}
@@ -302,6 +381,22 @@ export function ProfileSections({
           <Field id="expertiseAreas" label="Expertise areas" hint="Up to 20. Press Enter or comma after each" error={err('expertiseAreas')}>
             <TagInput id="expertiseAreas" value={profile.expertiseAreas} onChange={(v) => set('expertiseAreas', v)} placeholder="e.g. fundraising, B2B sales, AI" />
           </Field>
+          <fieldset>
+            <legend className="text-sm font-medium text-gray-800">Open to</legend>
+            <p className="text-xs text-gray-500">What you&apos;re available for right now. Members can filter by this.</p>
+            <div className="mt-1 grid gap-x-4 sm:grid-cols-2">
+              {OPTIONS.openTo.map((o) => (
+                <label key={o} className="inline-flex min-h-[44px] items-center gap-2 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={profile.openTo.includes(o)}
+                    onChange={(e) => set('openTo', e.target.checked ? [...profile.openTo, o] : profile.openTo.filter((x) => x !== o))}
+                  />
+                  {o}
+                </label>
+              ))}
+            </div>
+          </fieldset>
           <Field id="professionalBackground" label="Professional background" error={err('professionalBackground')}>
             <Textarea id="professionalBackground" rows={5} maxLength={5000} value={profile.professionalBackground} onChange={onText('professionalBackground')} />
           </Field>

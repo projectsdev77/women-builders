@@ -5,7 +5,10 @@ import { pageAdmin } from '@/lib/auth/guards';
 import { getMemberDetail } from '@/lib/services/admin/members';
 import { AppError } from '@/lib/errors';
 import { ROLE_LABELS } from '@/lib/services/profile-fields';
-import { Badge, Card } from '@/components/ui';
+import { Avatar, Badge, Card } from '@/components/ui';
+import { formatLocation } from '@/lib/countries';
+import { photoUrl } from '@/lib/services/photo-url';
+import { formatThousands } from '@/components/profile/member-profile';
 import { ActionButton } from '@/components/admin/action-button';
 import { ACCOUNT_TONE, REPORT_REASON_LABELS, STATUS_LABELS, fmtDate } from '@/components/admin/labels';
 
@@ -71,18 +74,30 @@ export default async function AdminMemberPage({ params }: { params: { id: string
 
       <div className="grid gap-4 lg:grid-cols-3">
         <Card className="lg:col-span-2">
+          {p && (
+            <div className="mb-4 flex items-center gap-4">
+              <Avatar name={user.name} size={72} photoUrl={photoUrl(user.id, p, 512)} />
+              {p.photoKey && (
+                <ActionButton label="Remove photo" variant="ghost" method="DELETE" path={`/api/admin/members/${user.id}/photo`}
+                  confirm={{ title: 'Remove this photo?', description: "The member is emailed that it didn't meet the community charter and can upload another." }} />
+              )}
+            </div>
+          )}
           <h2 className="mb-2 font-semibold">Profile <span className="text-xs font-normal text-gray-500">(admins see all fields, including hidden ones)</span></h2>
           {p ? (
             <dl className="divide-y divide-gray-100">
               <Row label="Roles" value={[p.primaryRole, ...p.secondaryRoles].map((r) => ROLE_LABELS[r]).join(', ')} />
               <Row label="Headline" value={p.headline} />
-              <Row label="Location" value={p.location} />
+              <Row label="Location" value={formatLocation(p.city, p.country)} />
+              <Row label="Open to" value={p.openTo.join(', ')} />
               <Row label="Background" value={p.professionalBackground} />
               <Row label="Current focus" value={p.currentFocus} />
               <Row label="Needs" value={p.needs} />
               <Row label="Offers" value={p.offerings} />
               <Row label="Expertise" value={p.expertiseAreas.join(', ')} />
               <Row label="Company" value={[p.companyName, p.companyStage, p.industry].filter(Boolean).join(' · ')} />
+              <Row label="Funding" value={[p.fundingStatus, p.raiseAmount != null ? formatThousands(p.raiseAmount) : null].filter(Boolean).join(' · ')} />
+              <Row label="Investor" value={[p.investorType, p.firmName, p.leadsRounds, p.currentlyInvesting == null ? null : p.currentlyInvesting ? 'Currently investing' : 'Paused', p.lastCheckMonth ? `Last check ${p.lastCheckMonth}` : null].filter(Boolean).join(' · ')} />
               <Row label="LinkedIn" value={p.linkedInUrl && <a className="underline" href={p.linkedInUrl} target="_blank" rel="noopener noreferrer">{p.linkedInUrl}</a>} />
               <Row label="Hidden from non-connections" value={p.hiddenFields.join(', ')} />
               <Row label="Completeness" value={`${p.completenessScore}%`} />

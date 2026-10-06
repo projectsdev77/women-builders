@@ -3,8 +3,9 @@ import Link from 'next/link';
 import { pageActiveMember } from '@/lib/auth/guards';
 import { searchMembers, searchQuerySchema } from '@/lib/services/discovery';
 import { MemberCard } from '@/components/member/member-card';
-import { Button, EmptyState, Input } from '@/components/ui';
-import { ROLE_LABELS } from '@/lib/services/profile-fields';
+import { Button, EmptyState, Input, Select } from '@/components/ui';
+import { OPTIONS, ROLE_LABELS } from '@/lib/services/profile-fields';
+import { countryOptions } from '@/lib/countries';
 
 export const metadata: Metadata = { title: 'Discover members' };
 
@@ -25,7 +26,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Recor
     sp.set('page', String(page));
     return `/search?${sp.toString()}`;
   };
-  const hasFilters = !!(query.q || query.primaryRole.length || query.expertise.length || query.location || query.secondaryRole.length);
+  const hasFilters = !!(query.q || query.primaryRole.length || query.expertise.length || query.country || query.city || query.openTo.length || query.investing || query.raising || query.secondaryRole.length);
 
   return (
     <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
@@ -58,9 +59,36 @@ export default async function SearchPage({ searchParams }: { searchParams: Recor
             <Input id="expertise" name="expertise" defaultValue={query.expertise.join(', ')} placeholder="e.g. fintech" />
           </div>
           <div>
-            <label htmlFor="location" className="block text-sm font-medium">Location</label>
-            <Input id="location" name="location" defaultValue={query.location} placeholder="City or country" />
+            <label htmlFor="country" className="block text-sm font-medium">Country</label>
+            <Select id="country" name="country" defaultValue={query.country}>
+              <option value="">Any country</option>
+              {countryOptions().map((c) => <option key={c.code} value={c.code}>{c.name}</option>)}
+            </Select>
           </div>
+          <div>
+            <label htmlFor="city" className="block text-sm font-medium">City</label>
+            <Input id="city" name="city" defaultValue={query.city} placeholder="e.g. Lagos" />
+          </div>
+          <fieldset>
+            <legend className="text-sm font-medium">Open to</legend>
+            {OPTIONS.openTo.map((o) => (
+              <label key={o} className="flex min-h-[36px] items-center gap-2 text-sm">
+                <input type="checkbox" name="openTo" value={o} defaultChecked={query.openTo.includes(o)} />
+                {o}
+              </label>
+            ))}
+          </fieldset>
+          <fieldset>
+            <legend className="text-sm font-medium">Capital</legend>
+            <label className="flex min-h-[36px] items-center gap-2 text-sm">
+              <input type="checkbox" name="investing" value="1" defaultChecked={!!query.investing} />
+              Investors currently writing checks
+            </label>
+            <label className="flex min-h-[36px] items-center gap-2 text-sm">
+              <input type="checkbox" name="raising" value="1" defaultChecked={!!query.raising} />
+              Founders raising now or soon
+            </label>
+          </fieldset>
           <div className="flex gap-2">
             <Button type="submit" className="flex-1">Search</Button>
             {hasFilters && (

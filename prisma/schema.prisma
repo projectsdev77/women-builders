@@ -62,6 +62,7 @@ enum ReportReason {
   SPAM
   FAKE_PROFILE
   INAPPROPRIATE_CONTENT
+  INAPPROPRIATE_PHOTO
   OTHER
 }
 
@@ -174,7 +175,11 @@ model Profile {
   currentFocus           String?    @db.Text
   needs                  String?    @db.Text
   offerings              String?    @db.Text
-  location               String?
+  city                   String? // free text (was "location"; R3 F6)
+  country                String? // ISO 3166-1 alpha-2 code
+  openTo                 String[] // see OPEN_TO_OPTIONS (R3 F6)
+  photoKey               String? // storage key prefix; sizes are stored as <key>-512.webp / -128.webp
+  photoVersion           Int        @default(0)
   linkedInUrl            String?
   websiteUrl             String?
 
@@ -183,11 +188,18 @@ model Profile {
   companyStage           String?
   industry               String?
   fundingStatus          String?
+  raiseAmount            Int? // USD thousands, when raising
   // Operator
   functionalExpertise    String?
   seniorityLevel         String?
   operationalFocus       String[]
   // Investor
+  firmName               String?
+  investorType           String?
+  leadsRounds            String? // Leads | Follows | Both
+  currentlyInvesting     Boolean?
+  investingConfirmedAt   DateTime?
+  lastCheckMonth         String? // YYYY-MM
   investmentStages       String[]
   checkSizeMin           Int? // USD thousands
   checkSizeMax           Int?
@@ -205,6 +217,7 @@ model Profile {
 
   @@index([primaryRole])
   @@index([completenessScore])
+  @@index([country])
 }
 
 // No DB-level unique on (sender, receiver): re-requests are allowed after expiry.

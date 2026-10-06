@@ -45,7 +45,7 @@ export default async function DashboardPage() {
             {unread.slice(0, 3).map((c) => (
               <li key={c.member.id}>
                 <Link href={`/messages/${c.member.id}`} className="flex items-center gap-3 p-3 hover:bg-gray-50">
-                  <Avatar name={c.member.name} size={36} />
+                  <Avatar name={c.member.name} size={36} photoUrl={c.member.photoUrl} ghost={c.member.deleted} />
                   <span className="min-w-0 flex-1"><span className="block font-medium">{c.member.name}</span><span className="block truncate text-sm text-gray-600">{c.lastMessage?.content}</span></span>
                 </Link>
               </li>

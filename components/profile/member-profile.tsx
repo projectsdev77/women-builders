@@ -22,10 +22,27 @@ function Row({ label, value }: { label: string; value: ReactNode }) {
   );
 }
 
+/** USD thousands → "$250K" / "$1.5M". */
+export function formatThousands(k: number) {
+  return k >= 1000 ? `$${(k / 1000).toLocaleString()}M` : `$${k}K`;
+}
+
 export function formatCheckSize(min: number | null, max: number | null) {
   if (min == null || max == null) return null;
-  const f = (k: number) => (k >= 1000 ? `$${(k / 1000).toLocaleString()}M` : `$${k}K`);
-  return `${f(min)}–${f(max)}`;
+  return `${formatThousands(min)}–${formatThousands(max)}`;
+}
+
+export function formatMonth(ym: string | null) {
+  if (!ym) return null;
+  const [y, m] = ym.split('-').map(Number);
+  return new Date(Date.UTC(y!, m! - 1, 15)).toLocaleDateString(undefined, { month: 'short', year: 'numeric', timeZone: 'UTC' });
+}
+
+const INVESTING_LABEL = { active: 'Currently investing', unconfirmed: 'Status not confirmed', paused: 'Paused' } as const;
+
+export function InvestingBadge({ status }: { status: 'active' | 'unconfirmed' | 'paused' | null }) {
+  if (!status) return null;
+  return <Badge tone={status === 'active' ? 'green' : 'gray'}>{INVESTING_LABEL[status]}</Badge>;
 }
 
 export function RoleBadges({ primary, secondary }: { primary: MemberView['primaryRole']; secondary: MemberView['secondaryRoles'] }) {
@@ -44,11 +61,14 @@ export function MemberProfile({ member, actions }: { member: MemberView; actions
     <div className="space-y-4">
       <Card className="p-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
-          <Avatar name={member.name} size={72} />
+          <Avatar name={member.name} size={96} photoUrl={member.photoUrlLarge} />
           <div className="flex-1 space-y-2">
             <h1 className="text-2xl font-semibold">{member.name}</h1>
             {member.headline && <p className="text-gray-700">{member.headline}</p>}
             <RoleBadges primary={member.primaryRole} secondary={member.secondaryRoles} />
+            {member.openTo.length > 0 && (
+              <p className="text-sm text-gray-700"><span className="text-gray-500">Open to:</span> {member.openTo.join(' · ')}</p>
+            )}
             <p className="text-sm text-gray-500">
               {member.location && <span>{member.location} · </span>}
               {member.memberSince && <span>Member since {new Date(member.memberSince).toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}</span>}
@@ -94,6 +114,7 @@ export function MemberProfile({ member, actions }: { member: MemberView; actions
                 <Row label="Stage" value={member.founder.companyStage} />
                 <Row label="Industry" value={member.founder.industry} />
                 <Row label="Funding" value={member.founder.fundingStatus} />
+                <Row label="Raising" value={member.founder.raiseAmount != null ? formatThousands(member.founder.raiseAmount) : null} />
               </dl>
             </Card>
           )}
@@ -110,7 +131,12 @@ export function MemberProfile({ member, actions }: { member: MemberView; actions
           {member.investor && (
             <Card className="space-y-2 p-6">
               <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-500">Investor</h2>
+              <InvestingBadge status={member.investor.investing} />
               <dl className="space-y-1">
+                <Row label="Type" value={member.investor.investorType} />
+                <Row label="Firm" value={member.investor.firmName} />
+                <Row label="Leads or follows" value={member.investor.leadsRounds} />
+                <Row label="Last check" value={formatMonth(member.investor.lastCheckMonth)} />
                 <Row label="Stages" value={member.investor.investmentStages} />
                 <Row label="Check size" value={formatCheckSize(member.investor.checkSizeMin, member.investor.checkSizeMax)} />
                 <Row label="Sectors" value={member.investor.sectorPreferences} />

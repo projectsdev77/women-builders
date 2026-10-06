@@ -170,7 +170,33 @@ export function Notice({
   );
 }
 
-export function Avatar({ name, size = 40 }: { name: string; size?: number }) {
+/**
+ * Member photo, or initials when there is none. `ghost` is the neutral avatar for deleted
+ * accounts (no initials, no photo).
+ */
+export function Avatar({
+  name,
+  size = 40,
+  photoUrl,
+  ghost = false,
+}: {
+  name: string;
+  size?: number;
+  photoUrl?: string | null;
+  ghost?: boolean;
+}) {
+  const box = { width: size, height: size };
+  if (ghost) {
+    return (
+      <span aria-hidden="true" style={box} className="inline-flex shrink-0 items-center justify-center rounded-full bg-gray-200 text-gray-400">
+        <svg viewBox="0 0 24 24" width={size * 0.5} height={size * 0.5} fill="currentColor"><circle cx="12" cy="8" r="4" /><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7" /></svg>
+      </span>
+    );
+  }
+  if (photoUrl) {
+    // eslint-disable-next-line @next/next/no-img-element -- served by our access-checked media route
+    return <img src={photoUrl} alt="" width={size} height={size} style={box} className="shrink-0 rounded-full bg-gray-100 object-cover" />;
+  }
   const initials = name
     .split(/\s+/)
     .filter(Boolean)
@@ -180,7 +206,7 @@ export function Avatar({ name, size = 40 }: { name: string; size?: number }) {
   return (
     <span
       aria-hidden="true"
-      style={{ width: size, height: size, fontSize: size * 0.4 }}
+      style={{ ...box, fontSize: size * 0.4 }}
       className="inline-flex shrink-0 items-center justify-center rounded-full bg-brand-100 font-semibold text-brand-700"
     >
       {initials || '?'}
