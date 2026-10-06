@@ -10,6 +10,7 @@ import { cx } from '@/components/ui';
 const ITEMS = [
   { href: '/dashboard', label: 'Home' },
   { href: '/search', label: 'Discover' },
+  { href: '/capital', label: 'Capital' },
   { href: '/recommendations', label: 'For you' },
   { href: '/connections', label: 'Connections' },
   { href: '/messages', label: 'Messages', badge: 'messages' as const },

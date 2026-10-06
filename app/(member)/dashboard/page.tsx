@@ -7,6 +7,8 @@ import { listConversations } from '@/lib/services/messaging';
 import { canSendConnectionRequests, missingRequiredFields, FIELD_LABELS } from '@/lib/services/profile-fields';
 import { COMPLETENESS_THRESHOLD } from '@/lib/config';
 import { MemberCard } from '@/components/member/member-card';
+import { InvestingCheck } from '@/components/member/investing-check';
+import { needsInvestingCheck } from '@/lib/services/investing';
 import { Avatar, Card, EmptyState, Notice } from '@/components/ui';
 
 export const metadata: Metadata = { title: 'Home' };
@@ -33,6 +35,7 @@ export default async function DashboardPage() {
           <Link href="/profile/edit" className="underline">Finish your profile</Link>
         </Notice>
       )}
+      {needsInvestingCheck(profile) && <InvestingCheck />}
       <div className="grid gap-4 sm:grid-cols-3">
         <Link href="/connections/requests"><Card className="h-full hover:bg-gray-50"><p className="text-sm text-gray-600">Connection requests</p><p className="text-3xl font-semibold">{incoming}</p></Card></Link>
         <Link href="/messages"><Card className="h-full hover:bg-gray-50"><p className="text-sm text-gray-600">Unread conversations</p><p className="text-3xl font-semibold">{unread.length}</p></Card></Link>

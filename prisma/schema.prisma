@@ -203,6 +203,7 @@ model Profile {
   leadsRounds            String? // Leads | Follows | Both
   currentlyInvesting     Boolean?
   investingConfirmedAt   DateTime?
+  investingCheckSentAt   DateTime? // last "still investing?" email (R3 F9)
   lastCheckMonth         String? // YYYY-MM
   investmentStages       String[]
   checkSizeMin           Int? // USD thousands
@@ -329,6 +330,7 @@ model NotificationPreference {
   connectionRequest  Boolean  @default(true)
   connectionAccepted Boolean  @default(true)
   newMessage         Boolean  @default(true)
+  investingCheckins  Boolean  @default(true)
   updatedAt          DateTime @updatedAt
 }
 

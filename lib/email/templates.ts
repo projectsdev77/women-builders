@@ -176,6 +176,17 @@ export const templates = {
       cta: { label: 'Send a message', url: `${appUrl()}/messages/${byId}` },
       unsubscribeUrl,
     }),
+  investingCheckin: (name: string, unsubscribeUrl: string) =>
+    layout({
+      subject: 'Are you still investing?',
+      heading: `${name}, are you still investing?`,
+      paragraphs: [
+        'Founders in the Capital view see investors who have confirmed in the last few months first. It takes one click.',
+        'If you have paused, say so and founders will know not to expect a reply for now. You can switch back any time.',
+      ],
+      cta: { label: 'Answer on your Home page', url: `${appUrl()}/dashboard#investing` },
+      unsubscribeUrl,
+    }),
   newMessage: (fromName: string, fromId: string, preview: string, unsubscribeUrl: string) =>
     layout({
       subject: `New message from ${fromName}`,

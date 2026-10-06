@@ -5,12 +5,13 @@ import { templates, type EmailContent } from '@/lib/email/templates';
 import { sign, verifySigned } from '@/lib/security/tokens';
 import { prisma } from '@/lib/db';
 
-export type NotificationType = 'connection_request' | 'connection_accepted' | 'new_message';
+export type NotificationType = 'connection_request' | 'connection_accepted' | 'new_message' | 'investing_checkin';
 
 const PREF_FIELD = {
   connection_request: 'connectionRequest',
   connection_accepted: 'connectionAccepted',
   new_message: 'newMessage',
+  investing_checkin: 'investingCheckins',
 } as const;
 
 /** One-click unsubscribe link for a single notification type (Req 16.6). */
@@ -32,7 +33,7 @@ export async function unsubscribe(token: string): Promise<NotificationType | nul
 }
 
 /** Enqueues a notification email if the recipient is active and opted in (Req 16.5). */
-async function notify(
+export async function notify(
   tx: Tx,
   userId: string,
   type: NotificationType,

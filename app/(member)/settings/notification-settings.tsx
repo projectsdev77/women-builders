@@ -3,14 +3,15 @@
 import { useState } from 'react';
 import { api } from '@/lib/client/api';
 
-type Prefs = { connectionRequest: boolean; connectionAccepted: boolean; newMessage: boolean };
+type Prefs = { connectionRequest: boolean; connectionAccepted: boolean; newMessage: boolean; investingCheckins: boolean };
 const LABELS: Array<[keyof Prefs, string, string]> = [
   ['connectionRequest', 'Connection requests', 'When someone asks to connect with you'],
   ['connectionAccepted', 'Accepted requests', 'When someone accepts your request'],
   ['newMessage', 'New messages', 'At most one email per conversation every 30 minutes'],
+  ['investingCheckins', 'Investing check-ins', 'Every 90 days we ask investors "Are you still investing?"'],
 ];
 
-export function NotificationSettings({ initial }: { initial: Prefs }) {
+export function NotificationSettings({ initial, isInvestor }: { initial: Prefs; isInvestor: boolean }) {
   const [prefs, setPrefs] = useState(initial);
   const [status, setStatus] = useState<string | null>(null);
 
@@ -26,7 +27,7 @@ export function NotificationSettings({ initial }: { initial: Prefs }) {
 
   return (
     <div className="space-y-2">
-      {LABELS.map(([key, label, hint]) => (
+      {LABELS.filter(([key]) => key !== 'investingCheckins' || isInvestor).map(([key, label, hint]) => (
         <label key={key} className="flex min-h-[44px] items-start gap-3">
           <input type="checkbox" className="mt-1" checked={prefs[key]} onChange={(e) => toggle(key, e.target.checked)} />
           <span>

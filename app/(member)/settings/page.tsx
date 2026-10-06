@@ -25,7 +25,13 @@ export default async function SettingsPage() {
           Emails go to <strong>{user.email}</strong>. Account and security emails are always sent.
         </p>
         <NotificationSettings
-          initial={{ connectionRequest: prefs.connectionRequest, connectionAccepted: prefs.connectionAccepted, newMessage: prefs.newMessage }}
+          initial={{
+            connectionRequest: prefs.connectionRequest,
+            connectionAccepted: prefs.connectionAccepted,
+            newMessage: prefs.newMessage,
+            investingCheckins: prefs.investingCheckins,
+          }}
+          isInvestor={user.profile?.primaryRole === 'INVESTOR' || !!user.profile?.secondaryRoles.includes('INVESTOR')}
         />
       </Card>
       <Card className="space-y-4 p-6">

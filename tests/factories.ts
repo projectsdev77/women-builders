@@ -32,6 +32,9 @@ export interface MemberOverrides {
     investorType: string;
     currentlyInvesting: boolean;
     investingConfirmedAt: Date;
+    investingCheckSentAt: Date;
+    lastCheckMonth: string;
+    leadsRounds: string;
     raiseAmount: number;
     photoKey: string;
     companyName: string;

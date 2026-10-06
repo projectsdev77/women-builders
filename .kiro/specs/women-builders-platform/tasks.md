@@ -116,7 +116,18 @@ Not taken (see spec section 12): paid membership, Deal Flow, The Season program 
   - Self-registration, email verification and the applications queue are removed. `/join?invite=` creates an active member directly and requires accepting the charter. Legacy pending applicants were migrated into open requests.
   - Invitation reminder after 7 days carries a fresh link, because only token hashes are stored.
   - `/charter` (public), plus a `/charter/accept` interstitial when the version goes up. It offers export, deactivate or delete for members who don't accept. Members get a one-time email per charter version.
-- [ ] Step 3: Capital (features 10–12)
+- [x] Step 3: Capital (features 10–12)
+  - `/capital` has two tabs.
+    - **Investors:** "currently investing" is on by default. Filters: "I'm raising checks of $X", stage, sector, type, leads/follows, country. Sort: confirmed in 90 days, then latest check, then relevance, then name.
+    - **Founders raising:** filters for stage, industry, country and raise range.
+    - Every filter respects hidden fields. A founder who hides her funding status doesn't appear for non-connections.
+  - Founder↔investor role fit is 100 only when the founder's stage maps to one of the investor's stages and she is currently investing; otherwise 70.
+    - Stage mapping: Idea→Pre-seed, Series C+→Growth; Bootstrapped and Public have none.
+    - New reasons: "Investing at your stage" / "Raising at a stage you invest in", "N mutual connections can introduce you", and "Also in <city>" (reason only).
+  - "Are you still investing?" check-ins:
+    - Home prompt and a daily email, at most once per 90 days. Investors can opt out of the email in Settings.
+    - `POST /api/me/investing-status`.
+  - The "How to reach her" card action shows Message, View and connect, or Request sent. Introduction actions arrive in Step 4.
 - [ ] Step 4: Introductions (features 13–15)
 - [ ] Step 5: Gatherings (features 16–17)
 - [ ] Step 6: Public website, home and dashboard, designer brief (features 18–20)

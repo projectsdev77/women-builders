@@ -24,7 +24,7 @@ function Row({ label, value }: { label: string; value: ReactNode }) {
 
 /** USD thousands → "$250K" / "$1.5M". */
 export function formatThousands(k: number) {
-  return k >= 1000 ? `$${(k / 1000).toLocaleString()}M` : `$${k}K`;
+  return k >= 1000 ? `$${(k / 1000).toLocaleString('en-US')}M` : `$${k}K`;
 }
 
 export function formatCheckSize(min: number | null, max: number | null) {
@@ -35,7 +35,7 @@ export function formatCheckSize(min: number | null, max: number | null) {
 export function formatMonth(ym: string | null) {
   if (!ym) return null;
   const [y, m] = ym.split('-').map(Number);
-  return new Date(Date.UTC(y!, m! - 1, 15)).toLocaleDateString(undefined, { month: 'short', year: 'numeric', timeZone: 'UTC' });
+  return new Date(Date.UTC(y!, m! - 1, 15)).toLocaleDateString('en-US', { month: 'short', year: 'numeric', timeZone: 'UTC' });
 }
 
 const INVESTING_LABEL = { active: 'Currently investing', unconfirmed: 'Status not confirmed', paused: 'Paused' } as const;

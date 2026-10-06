@@ -1,5 +1,5 @@
 import type { Profile, RoleType } from '@prisma/client';
-import { ROLE_LABELS } from './profile-fields';
+import { ROLE_LABELS, STAGE_TO_INVESTMENT_STAGE, investingStatus } from './profile-fields';
 
 /**
  * Relevance scoring (Spec R2, G13).
@@ -78,12 +78,31 @@ export function roleAffinity(a: RoleType, b: RoleType): number {
   return ROLE_AFFINITY[[a, b].sort().join('|')] ?? 0;
 }
 
+/** Founder↔investor fit scores 100 only when the stages line up and she is investing (R3 F10). */
+export const FOUNDER_INVESTOR_MISMATCH = 70;
+
+export function stageFits(founder: Pick<RelevanceInput, 'companyStage'>, investor: Pick<RelevanceInput, 'investmentStages' | 'investingActive'>) {
+  const stage = founder.companyStage ? STAGE_TO_INVESTMENT_STAGE[founder.companyStage] : undefined;
+  return !!stage && !!investor.investingActive && (investor.investmentStages ?? []).includes(stage);
+}
+
+type RoleSide = Pick<RelevanceInput, 'roles' | 'companyStage' | 'investmentStages' | 'investingActive'>;
+
 /** Best affinity across all roles held by either side (primary + secondary). */
-export function roleMatch(aRoles: RoleType[], bRoles: RoleType[]): { score: number; a: RoleType; b: RoleType } {
-  let best = { score: 0, a: aRoles[0]!, b: bRoles[0]! };
-  for (const a of aRoles) for (const b of bRoles) {
-    const s = roleAffinity(a, b);
-    if (s > best.score) best = { score: s, a, b };
+export function roleMatch(
+  aSide: RoleType[] | RoleSide,
+  bSide: RoleType[] | RoleSide,
+): { score: number; a: RoleType; b: RoleType; stageFit: boolean } {
+  const A: RoleSide = Array.isArray(aSide) ? { roles: aSide } : aSide;
+  const B: RoleSide = Array.isArray(bSide) ? { roles: bSide } : bSide;
+  let best = { score: 0, a: A.roles[0]!, b: B.roles[0]!, stageFit: false };
+  for (const a of A.roles) for (const b of B.roles) {
+    let s = roleAffinity(a, b);
+    let stageFit = false;
+    if (a === 'FOUNDER' && b === 'INVESTOR') stageFit = stageFits(A, B);
+    if (a === 'INVESTOR' && b === 'FOUNDER') stageFit = stageFits(B, A);
+    if ((a === 'FOUNDER' && b === 'INVESTOR') || (a === 'INVESTOR' && b === 'FOUNDER')) s = stageFit ? 100 : FOUNDER_INVESTOR_MISMATCH;
+    if (s > best.score) best = { score: s, a, b, stageFit };
   }
   return best;
 }
@@ -102,10 +121,19 @@ export interface RelevanceInput {
   offerings: string | null;
   expertiseAreas: string[];
   lastActiveAt: Date;
+  /** Founder side of the stage fit (R3 F10). */
+  companyStage?: string | null;
+  /** Investor side of the stage fit. */
+  investmentStages?: string[];
+  investingActive?: boolean;
+  /** Only for the "Also in <city>" reason; never scored. Null when hidden from the viewer. */
+  city?: string | null;
+  country?: string | null;
 }
 
 export function relevanceInput(
-  p: Pick<Profile, 'primaryRole' | 'secondaryRoles' | 'needs' | 'offerings' | 'expertiseAreas'>,
+  p: Pick<Profile, 'primaryRole' | 'secondaryRoles' | 'needs' | 'offerings' | 'expertiseAreas'> &
+    Partial<Pick<Profile, 'companyStage' | 'investmentStages' | 'currentlyInvesting' | 'investingConfirmedAt' | 'city' | 'country'>>,
   lastActiveAt: Date,
 ): RelevanceInput {
   return {
@@ -114,10 +142,22 @@ export function relevanceInput(
     offerings: p.offerings,
     expertiseAreas: p.expertiseAreas,
     lastActiveAt,
+    companyStage: p.companyStage ?? null,
+    investmentStages: p.investmentStages ?? [],
+    investingActive: investingStatus(p) === 'active',
+    city: p.city ?? null,
+    country: p.country ?? null,
   };
 }
 
-export type ReasonType = 'role_match' | 'needs_offering' | 'offers_what_they_need' | 'expertise' | 'mutual_connection';
+export type ReasonType =
+  | 'role_match'
+  | 'stage_fit'
+  | 'needs_offering'
+  | 'offers_what_they_need'
+  | 'expertise'
+  | 'mutual_connection'
+  | 'same_city';
 export interface Reason {
   type: ReasonType;
   description: string;
@@ -156,7 +196,7 @@ export function calculateRelevance(
   target: RelevanceInput,
   opts: { mutualConnections?: number; now?: Date } = {},
 ): RelevanceScore {
-  const role = roleMatch(viewer.roles, target.roles);
+  const role = roleMatch(viewer, target);
 
   const vNeeds = tokenSet(viewer.needs);
   const vOffers = tokenSet(viewer.offerings);
@@ -182,11 +222,18 @@ export function calculateRelevance(
   );
 
   const reasons: Reason[] = [];
+  if (role.stageFit) {
+    reasons.push(
+      role.a === 'FOUNDER'
+        ? { type: 'stage_fit', description: 'Investing at your stage' }
+        : { type: 'stage_fit', description: 'Raising at a stage you invest in' },
+    );
+  }
   const helps = matchedWords(target.offerings, intersect(vNeeds, tOffers));
   if (helps.length) reasons.push({ type: 'needs_offering', description: `Can help with what you need: ${helps.join(', ')}` });
   const youHelp = matchedWords(target.needs, intersect(tNeeds, vOffers));
   if (youHelp.length) reasons.push({ type: 'offers_what_they_need', description: `Looking for what you offer: ${youHelp.join(', ')}` });
-  if (role.score >= 60) {
+  if (role.score >= 60 && !role.stageFit) {
     reasons.push({
       type: 'role_match',
       description:
@@ -199,7 +246,14 @@ export function calculateRelevance(
   if (shared.length) reasons.push({ type: 'expertise', description: `Shared expertise: ${shared.join(', ')}` });
   const mutual = opts.mutualConnections ?? 0;
   if (mutual > 0) {
-    reasons.push({ type: 'mutual_connection', description: `${mutual} mutual connection${mutual === 1 ? '' : 's'}` });
+    reasons.push({
+      type: 'mutual_connection',
+      description: `${mutual} mutual connection${mutual === 1 ? '' : 's'} can introduce you`,
+    });
+  }
+  // "Also in <city>" is a reason only; it never changes the score (R3 F10).
+  if (viewer.city && target.city && viewer.country === target.country && viewer.city.trim().toLowerCase() === target.city.trim().toLowerCase()) {
+    reasons.push({ type: 'same_city', description: `Also in ${target.city.trim()}` });
   }
 
   return { total, breakdown: { roleMatch: role.score, needsOfferings, expertise, recency }, reasons };

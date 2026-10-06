@@ -15,13 +15,13 @@ import {
 } from './relevance';
 import { relationshipSets, statusFromSets, type RelationshipSets } from './relationships';
 
-type Candidate = ProfileWithUser & { user: ProfileWithUser['user'] & { lastActiveAt: Date } };
+export type Candidate = ProfileWithUser & { user: ProfileWithUser['user'] & { lastActiveAt: Date } };
 
-const candidateInclude = {
+export const candidateInclude = {
   user: { select: { id: true, name: true, approvedAt: true, createdAt: true, lastActiveAt: true } },
 } as const;
 
-async function loadViewer(viewerId: string) {
+export async function loadViewer(viewerId: string) {
   const p = await prisma.profile.findUnique({
     where: { userId: viewerId },
     include: { user: { select: { lastActiveAt: true } } },
@@ -31,15 +31,16 @@ async function loadViewer(viewerId: string) {
 }
 
 /** Relevance input restricted to what the viewer may see of the target (G5). */
-function visibleInput(c: Candidate, viewer: Viewer): RelevanceInput {
+export function visibleInput(c: Candidate, viewer: Viewer): RelevanceInput {
   return {
     ...relevanceInput(c, c.user.lastActiveAt),
     needs: canSee(c, 'needs', viewer) ? c.needs : null,
     offerings: canSee(c, 'offerings', viewer) ? c.offerings : null,
+    city: canSee(c, 'location', viewer) ? c.city : null,
   };
 }
 
-async function mutualCounts(viewerConnections: Set<string>, candidateIds: string[]): Promise<Map<string, number>> {
+export async function mutualCounts(viewerConnections: Set<string>, candidateIds: string[]): Promise<Map<string, number>> {
   const counts = new Map<string, number>();
   if (viewerConnections.size === 0 || candidateIds.length === 0) return counts;
   const mine = [...viewerConnections];
@@ -60,14 +61,14 @@ async function mutualCounts(viewerConnections: Set<string>, candidateIds: string
   return counts;
 }
 
-const baseWhere = (viewerId: string, sets: RelationshipSets): Prisma.ProfileWhereInput => ({
+export const baseWhere = (viewerId: string, sets: RelationshipSets): Prisma.ProfileWhereInput => ({
   userId: { notIn: [viewerId, ...sets.blocked] },
   user: { accountStatus: 'ACTIVE' },
 });
 
 // ---------------------------------------------------------------- search
 
-const list = <T extends z.ZodTypeAny>(item: T) =>
+export const list = <T extends z.ZodTypeAny>(item: T) =>
   z.preprocess((v) => (v === undefined ? [] : Array.isArray(v) ? v : [v]), z.array(item));
 
 export const searchQuerySchema = z.object({

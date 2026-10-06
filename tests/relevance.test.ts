@@ -43,11 +43,43 @@ describe('needs/offerings (cosine)', () => {
 describe('role matching (symmetric, all roles)', () => {
   it('is symmetric', () => {
     expect(roleMatch(['INVESTOR'], ['OPERATOR']).score).toBe(roleMatch(['OPERATOR'], ['INVESTOR']).score);
-    expect(roleMatch(['FOUNDER'], ['INVESTOR']).score).toBe(100);
+    expect(roleMatch(['FOUNDER'], ['INVESTOR']).score).toBe(roleMatch(['INVESTOR'], ['FOUNDER']).score);
   });
   it('considers secondary roles on both sides', () => {
     expect(roleMatch(['OPERATOR'], ['INVESTOR']).score).toBe(30);
-    expect(roleMatch(['OPERATOR', 'FOUNDER'], ['INVESTOR']).score).toBe(100);
+    expect(roleMatch(['OPERATOR', 'FOUNDER'], ['INVESTOR']).score).toBe(70);
+  });
+});
+
+describe('founder↔investor stage fit (R3 F10)', () => {
+  const founder = (stage: string | null) => m({ roles: ['FOUNDER'], companyStage: stage });
+  const investor = (stages: string[], active: boolean) => m({ roles: ['INVESTOR'], investmentStages: stages, investingActive: active });
+
+  it('scores 100 only when the stage matches and she is investing, otherwise 70', () => {
+    expect(roleMatch(founder('Seed'), investor(['Seed', 'Series A'], true))).toMatchObject({ score: 100, stageFit: true });
+    expect(roleMatch(investor(['Seed'], true), founder('Seed'))).toMatchObject({ score: 100, stageFit: true });
+    expect(roleMatch(founder('Series B'), investor(['Seed'], true)).score).toBe(70);
+    expect(roleMatch(founder('Seed'), investor(['Seed'], false)).score).toBe(70);
+    expect(roleMatch(founder('Bootstrapped'), investor(['Seed'], true)).score).toBe(70);
+    // Idea-stage companies raise pre-seed; Series C+ raises growth.
+    expect(roleMatch(founder('Idea'), investor(['Pre-seed'], true)).score).toBe(100);
+    expect(roleMatch(founder('Series C+'), investor(['Growth'], true)).score).toBe(100);
+  });
+
+  it('explains the fit from either side', () => {
+    const a = calculateRelevance(founder('Seed'), investor(['Seed'], true), { now }).reasons.map((r) => r.description);
+    expect(a).toContain('Investing at your stage');
+    const b = calculateRelevance(investor(['Seed'], true), founder('Seed'), { now }).reasons.map((r) => r.description);
+    expect(b).toContain('Raising at a stage you invest in');
+  });
+
+  it('adds "Also in <city>" as a reason without changing the score', () => {
+    const v = m({ city: 'Lagos', country: 'NG' });
+    const same = calculateRelevance(v, m({ city: ' lagos ', country: 'NG' }), { now });
+    const other = calculateRelevance(v, m({ city: 'Lagos', country: 'PT' }), { now });
+    expect(same.reasons.map((r) => r.description)).toContain('Also in lagos');
+    expect(other.reasons.some((r) => r.type === 'same_city')).toBe(false);
+    expect(same.total).toBe(other.total);
   });
 });
 
@@ -61,18 +93,18 @@ describe('overall score', () => {
 
   it('builds readable reasons from original words, including mutual connections', () => {
     const viewer = m({ needs: 'Intros to fintech investors', expertiseAreas: ['fintech', 'payments'] });
-    const target = m({ roles: ['INVESTOR'], offerings: 'Fintech expertise and investor intros', expertiseAreas: ['fintech'] });
+    const target = m({ roles: ['OPERATOR'], offerings: 'Fintech expertise and investor intros', expertiseAreas: ['fintech'] });
     const r = calculateRelevance(viewer, target, { now, mutualConnections: 2 });
     const text = r.reasons.map((x) => x.description).join(' | ');
     expect(text).toContain('Can help with what you need: Fintech');
-    expect(text).toContain('Investor: a natural fit');
+    expect(text).toContain('Operator: a natural fit');
     expect(text).toContain('Shared expertise: fintech');
-    expect(text).toContain('2 mutual connections');
+    expect(text).toContain('2 mutual connections can introduce you');
   });
 
   it('weights sum as documented', () => {
-    const r = calculateRelevance(m({ roles: ['FOUNDER'] }), m({ roles: ['INVESTOR'] }), { now });
-    // roleMatch 100·0.3 + recency 100·0.1
-    expect(r.total).toBe(40);
+    const r = calculateRelevance(m({ roles: ['FOUNDER'] }), m({ roles: ['BUILDER'] }), { now });
+    // roleMatch 80·0.3 + recency 100·0.1
+    expect(r.total).toBe(34);
   });
 });

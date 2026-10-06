@@ -26,6 +26,16 @@ export const OPTIONS = {
   ],
 } as const;
 
+/** The investment stage a company at this stage raises (R3 F10). Bootstrapped and public companies have none. */
+export const STAGE_TO_INVESTMENT_STAGE: Record<string, string | undefined> = {
+  Idea: 'Pre-seed',
+  'Pre-seed': 'Pre-seed',
+  Seed: 'Seed',
+  'Series A': 'Series A',
+  'Series B': 'Series B',
+  'Series C+': 'Growth',
+};
+
 /** Funding statuses that count as "raising" for Capital and Discover filters (R3 F9). */
 export const RAISING_STATUSES = ['Raising now', 'Raising in 6 months'] as const;
 

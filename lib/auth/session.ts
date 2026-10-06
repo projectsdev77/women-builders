@@ -19,6 +19,7 @@ export interface SessionUser {
   charterVersion: number | null;
   profile: {
     primaryRole: RoleType;
+    secondaryRoles: RoleType[];
     completenessScore: number;
     onboardingCompletedAt: Date | null;
   } | null;
@@ -49,7 +50,7 @@ export async function findSessionUser(token: string): Promise<SessionUser | null
       user: {
         include: {
           profile: {
-            select: { primaryRole: true, completenessScore: true, onboardingCompletedAt: true },
+            select: { primaryRole: true, secondaryRoles: true, completenessScore: true, onboardingCompletedAt: true },
           },
         },
       },
