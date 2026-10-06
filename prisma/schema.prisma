@@ -44,9 +44,10 @@ enum OutreachStatus {
   CONTACTED
   FOLLOW_UP_NEEDED
   INTERESTED
+  REQUESTED // asked for an invitation on the website (R3 F3)
   INVITED
-  APPLIED
-  APPROVED
+  APPLIED // retired in R3 (no self-registration); kept for history
+  APPROVED // shown as 'Joined'
   NOT_INTERESTED
   NOT_A_FIT
   DO_NOT_CONTACT
@@ -92,6 +93,9 @@ model User {
   rejectedAt           DateTime?
   reviewNote           String?        @db.Text // internal admin note on approve/reject
   lockedUntil          DateTime? // global backstop lock (G7)
+  charterVersion       Int? // version of the community charter accepted (R3 F2)
+  charterAcceptedAt    DateTime?
+  charterNoticeVersion Int? // last charter version we emailed about
   lastActiveAt         DateTime       @default(now())
   createdAt            DateTime       @default(now())
   updatedAt            DateTime       @updatedAt
@@ -373,6 +377,7 @@ model PotentialMember {
   attempts      OutreachAttempt[]
   statusChanges PotentialMemberStatusChange[]
   invitations   Invitation[]
+  requests      InvitationRequest[]
 
   @@index([outreachStatus])
   @@index([nextFollowUpDate])
@@ -428,9 +433,54 @@ model Invitation {
   expiresAt         DateTime
   usedAt            DateTime?
   revokedAt         DateTime?
+  reminderSentAt    DateTime? // one reminder after 7 days (R3 F4)
   createdAt         DateTime         @default(now())
 
   @@index([email])
+}
+
+enum InviteRequestStatus {
+  OPEN
+  INVITED
+  DECLINED
+  SPAM
+}
+
+// A public "Request an invitation" submission (R3 F3). Always belongs to a prospect record.
+model InvitationRequest {
+  id                String              @id @default(cuid())
+  potentialMemberId String
+  potentialMember   PotentialMember     @relation(fields: [potentialMemberId], references: [id], onDelete: Cascade)
+  name              String
+  email             String
+  linkedInUrl       String?
+  primaryRole       RoleType
+  city              String?
+  country           String
+  statement         String              @db.Text
+  referrer          String?
+  consentAt         DateTime
+  status            InviteRequestStatus @default(OPEN)
+  slaStartsAt       DateTime            @default(now()) // the 21-day answer clock
+  decidedAt         DateTime?
+  decidedById       String?
+  decisionNote      String?             @db.Text
+  createdAt         DateTime            @default(now())
+
+  @@index([status, slaStartsAt])
+  @@index([potentialMemberId])
+}
+
+// Throttling for public forms without storing raw IP addresses (R3 F3).
+model PublicSubmission {
+  id        String   @id @default(cuid())
+  kind      String
+  ipHash    String
+  email     String?
+  createdAt DateTime @default(now())
+
+  @@index([kind, ipHash, createdAt])
+  @@index([kind, email, createdAt])
 }
 
 model AuditLog {

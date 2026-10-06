@@ -16,6 +16,7 @@ export interface SessionUser {
   accountStatus: AccountStatus;
   deactivatedBy: DeactivatedBy | null;
   emailVerifiedAt: Date | null;
+  charterVersion: number | null;
   profile: {
     primaryRole: RoleType;
     completenessScore: number;
@@ -77,6 +78,7 @@ export async function findSessionUser(token: string): Promise<SessionUser | null
     accountStatus: u.accountStatus,
     deactivatedBy: u.deactivatedBy,
     emailVerifiedAt: u.emailVerifiedAt,
+    charterVersion: u.charterVersion,
     profile: u.profile,
   };
 }

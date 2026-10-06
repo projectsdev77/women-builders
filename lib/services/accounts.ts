@@ -10,131 +10,97 @@ import { randomToken, sha256 } from '@/lib/security/tokens';
 import { normalizeEmail } from '@/lib/validation/common';
 import { calculateCompleteness } from './profile-fields';
 import { changeProspectStatus } from './prospect-status';
+import { lock } from './locks';
+import { CHARTER_VERSION } from '@/content/charter';
 
-export interface RegisterInput {
-  email: string;
-  password: string;
+export interface JoinInput {
+  invitationToken: string;
   name: string;
+  password: string;
   primaryRole: RoleType;
   headline: string;
-  applicationStatement: string;
-  invitationToken?: string;
+  city: string | null;
+  country: string;
+  acceptCharter: true;
 }
 
-export type RegisterResult = { userId: string; status: 'PENDING' | 'ACTIVE' };
+async function findLiveInvitation(db: Pick<typeof prisma, 'invitation'>, token: string) {
+  const inv = await db.invitation.findUnique({
+    where: { tokenHash: sha256(token) },
+    include: { potentialMember: { include: { requests: { orderBy: { createdAt: 'desc' }, take: 1 } } } },
+  });
+  if (!inv || inv.usedAt || inv.revokedAt || inv.expiresAt < new Date()) return null;
+  return inv;
+}
+
+/** What the join page pre-fills from the invitation and its request (R3 F4). */
+export async function previewInvitation(token: string) {
+  const inv = await findLiveInvitation(prisma, token);
+  if (!inv) return null;
+  const request = inv.potentialMember?.requests[0];
+  return {
+    email: inv.email,
+    name: request?.name ?? inv.potentialMember?.name ?? '',
+    primaryRole: request?.primaryRole ?? null,
+    city: request?.city ?? null,
+    country: request?.country || null,
+  };
+}
 
 /**
- * Registration (Req 18, G10, G11):
- * - Profile row created immediately (G15).
- * - With a valid invitation for this email: ACTIVE right away (email verified by the token).
- * - Otherwise: PENDING and a verification email; only verified applications reach admins.
- * - A matching prospect is linked and moved to APPLIED (or APPROVED via invitation).
- * - A REJECTED email may re-apply after 90 days (the row is recycled).
+ * Joining is by invitation only (R3 F4). The invitation link proves the email address, so
+ * the account is active immediately; the charter must be accepted; the prospect becomes
+ * "Joined" (APPROVED).
  */
-export async function register(input: RegisterInput): Promise<RegisterResult> {
-  const email = normalizeEmail(input.email);
+export async function joinWithInvitation(input: JoinInput): Promise<{ userId: string }> {
   const passwordHash = await hashPassword(input.password);
-
   return prisma.$transaction(async (tx) => {
-    let invitation = null as null | { id: string; potentialMemberId: string | null };
-    if (input.invitationToken) {
-      const inv = await tx.invitation.findUnique({
-        where: { tokenHash: sha256(input.invitationToken) },
-      });
-      if (!inv || inv.usedAt || inv.revokedAt || inv.expiresAt < new Date()) {
-        throw new AppError('INVALID_INVITATION', 'This invitation link is invalid or has expired.', 400);
-      }
-      if (inv.email !== email) {
-        throw new AppError(
-          'INVITATION_EMAIL_MISMATCH',
-          'Please register with the email address the invitation was sent to.',
-          400,
-        );
-      }
-      invitation = inv;
+    const inv = await findLiveInvitation(tx, input.invitationToken);
+    if (!inv) {
+      throw new AppError('INVALID_INVITATION', 'This invitation has expired or has already been used.', 400);
     }
+    await lock(tx, `join:${inv.email}`);
+    const existing = await tx.user.findUnique({ where: { email: inv.email } });
+    if (existing) throw new AppError('EMAIL_TAKEN', 'An account with this email already exists. Try logging in.', 409);
 
-    const existing = await tx.user.findUnique({ where: { email } });
-    if (existing) {
-      const canReapply =
-        existing.accountStatus === 'REJECTED' &&
-        !!existing.rejectedAt &&
-        Date.now() - existing.rejectedAt.getTime() >= DURATIONS_MS.reapplyAfterRejection;
-      if (!canReapply) {
-        throw new AppError('EMAIL_TAKEN', 'An account with this email is already registered.', 409);
-      }
-      await tx.user.delete({ where: { id: existing.id } });
-    }
-
-    const active = !!invitation;
     const now = new Date();
     const profileData = {
       primaryRole: input.primaryRole,
       secondaryRoles: [] as RoleType[],
       headline: input.headline.trim() || null,
+      city: input.city,
+      country: input.country,
     };
     const user = await tx.user.create({
       data: {
-        email,
+        email: inv.email,
         passwordHash,
         name: input.name.trim(),
-        applicationStatement: input.applicationStatement.trim() || null,
-        accountStatus: active ? 'ACTIVE' : 'PENDING',
-        emailVerifiedAt: active ? now : null,
-        approvedAt: active ? now : null,
-        profile: {
-          create: {
-            ...profileData,
-            completenessScore: calculateCompleteness(profileData),
-          },
-        },
+        accountStatus: 'ACTIVE',
+        emailVerifiedAt: now,
+        approvedAt: now,
+        charterVersion: CHARTER_VERSION,
+        charterAcceptedAt: now,
+        charterNoticeVersion: CHARTER_VERSION,
+        profile: { create: { ...profileData, completenessScore: calculateCompleteness(profileData) } },
         notificationPreference: { create: {} },
       },
     });
+    await tx.invitation.update({ where: { id: inv.id }, data: { usedAt: now } });
 
-    if (invitation) {
-      await tx.invitation.update({ where: { id: invitation.id }, data: { usedAt: now } });
-    }
-
-    // Link to an existing prospect record (G10).
-    const prospect = await tx.potentialMember.findFirst({
-      where: invitation?.potentialMemberId
-        ? { id: invitation.potentialMemberId }
-        : { email, userId: null },
-    });
+    const prospect = inv.potentialMemberId
+      ? await tx.potentialMember.findUnique({ where: { id: inv.potentialMemberId } })
+      : await tx.potentialMember.findUnique({ where: { email: inv.email } });
     if (prospect && prospect.outreachStatus !== 'DO_NOT_CONTACT') {
       await tx.potentialMember.update({ where: { id: prospect.id }, data: { userId: user.id } });
-      await changeProspectStatus(tx, prospect.id, 'APPLIED', null);
-      if (active) await changeProspectStatus(tx, prospect.id, 'APPROVED', null);
+      await changeProspectStatus(tx, prospect.id, 'APPROVED', null);
     }
-
-    if (!active) await issueVerification(tx, user.id, user.email, user.name);
-    else await enqueueEmail(tx, { to: user.email, kind: 'welcome', content: templates.welcome(user.name) });
-
-    return { userId: user.id, status: active ? 'ACTIVE' : 'PENDING' };
+    await enqueueEmail(tx, { to: user.email, kind: 'welcome', content: templates.welcome(user.name) });
+    return { userId: user.id };
   });
 }
 
-type Db = Parameters<Parameters<typeof prisma.$transaction>[0]>[0];
-
-async function issueVerification(db: Db, userId: string, email: string, name: string) {
-  const token = randomToken();
-  await db.authToken.create({
-    data: {
-      tokenHash: sha256(token),
-      purpose: 'EMAIL_VERIFICATION',
-      userId,
-      expiresAt: new Date(Date.now() + DURATIONS_MS.emailVerification),
-    },
-  });
-  await enqueueEmail(db, {
-    to: email,
-    kind: 'verify_email',
-    content: templates.verifyEmail(name, `${appUrl()}/verify-email?token=${encodeURIComponent(token)}`),
-  });
-}
-
-async function consumeToken(token: string, purpose: 'EMAIL_VERIFICATION' | 'PASSWORD_RESET') {
+async function consumeToken(token: string, purpose: 'PASSWORD_RESET') {
   const record = await prisma.authToken.findUnique({ where: { tokenHash: sha256(token) } });
   if (!record || record.purpose !== purpose || record.usedAt || record.expiresAt < new Date()) {
     throw new AppError('INVALID_TOKEN', 'This link is invalid or has expired.', 400);
@@ -145,26 +111,6 @@ async function consumeToken(token: string, purpose: 'EMAIL_VERIFICATION' | 'PASS
   });
   if (used.count === 0) throw new AppError('INVALID_TOKEN', 'This link has already been used.', 400);
   return record;
-}
-
-export async function verifyEmail(token: string): Promise<void> {
-  const record = await consumeToken(token, 'EMAIL_VERIFICATION');
-  await prisma.user.update({ where: { id: record.userId }, data: { emailVerifiedAt: new Date() } });
-}
-
-export async function resendVerification(userId: string): Promise<void> {
-  const user = await prisma.user.findUnique({ where: { id: userId } });
-  if (!user) throw Errors.notFound('User');
-  if (user.emailVerifiedAt) return;
-  const recent = await prisma.authToken.count({
-    where: {
-      userId,
-      purpose: 'EMAIL_VERIFICATION',
-      createdAt: { gt: new Date(Date.now() - 60 * 60 * 1000) },
-    },
-  });
-  if (recent >= 3) throw Errors.rateLimited('Please wait a while before requesting another email.');
-  await prisma.$transaction((tx) => issueVerification(tx, user.id, user.email, user.name));
 }
 
 /** Always succeeds from the caller's point of view (no enumeration) (G11). */

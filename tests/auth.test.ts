@@ -2,12 +2,11 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { prisma } from '@/lib/db';
 import { attemptLogin, INVALID_CREDENTIALS } from '@/lib/auth/login';
 import { createSession, findSessionUser } from '@/lib/auth/session';
-import {
-  register,
-  requestPasswordReset,
-  resetPassword,
-  verifyEmail,
-} from '@/lib/services/accounts';
+import { joinWithInvitation, previewInvitation, requestPasswordReset, resetPassword } from '@/lib/services/accounts';
+import { createInvitation, sendInvitationReminders } from '@/lib/services/admin/invitations';
+import { acceptCharter, sendCharterNotices } from '@/lib/services/charter';
+import { homeFor } from '@/lib/auth/guards';
+import { CHARTER_VERSION } from '@/content/charter';
 import { randomToken, sha256 } from '@/lib/security/tokens';
 import { isAllowedOrigin } from '@/lib/security/origin';
 import { canonicalLinkedInUrl } from '@/lib/validation/common';
@@ -19,8 +18,16 @@ const base = {
   name: 'Ada Lovelace',
   primaryRole: 'BUILDER' as const,
   headline: 'Engineer',
-  applicationStatement: 'Building an analytical engine for everyone.',
+  city: 'London',
+  country: 'GB',
+  acceptCharter: true as const,
 };
+
+async function invite(email = 'ada@example.com') {
+  const admin = await createMember({ isAdmin: true });
+  await createInvitation(admin.id, { email });
+  return tokenFromOutbox('invitation', 'invite');
+}
 
 async function tokenFromOutbox(kind: string, param: string) {
   const email = await prisma.emailOutbox.findFirstOrThrow({ where: { kind }, orderBy: { createdAt: 'desc' } });
@@ -30,78 +37,77 @@ async function tokenFromOutbox(kind: string, param: string) {
 
 beforeEach(resetDb);
 
-describe('registration (Req 18, G10, G11, G15)', () => {
-  it('creates a PENDING account with a profile, normalized email and a verification email', async () => {
-    const res = await register({ ...base, email: '  Ada@Example.COM ' });
-    expect(res.status).toBe('PENDING');
-    const user = await prisma.user.findUniqueOrThrow({ where: { id: res.userId }, include: { profile: true } });
+describe('joining by invitation (R3 F4)', () => {
+  it('creates an ACTIVE member with the charter accepted and marks the prospect Joined', async () => {
+    const prospect = await prisma.potentialMember.create({ data: { name: 'Ada', email: 'ada@example.com', outreachStatus: 'CONTACTED' } });
+    const token = await invite('Ada@Example.com');
+    expect(await previewInvitation(token)).toMatchObject({ email: 'ada@example.com', name: 'Ada' });
+
+    const { userId } = await joinWithInvitation({ ...base, invitationToken: token });
+    const user = await prisma.user.findUniqueOrThrow({ where: { id: userId }, include: { profile: true } });
+    expect(user.accountStatus).toBe('ACTIVE');
     expect(user.email).toBe('ada@example.com');
-    expect(user.profile?.primaryRole).toBe('BUILDER');
-    expect(user.profile?.completenessScore).toBeGreaterThan(0);
-    expect(await prisma.emailOutbox.count({ where: { kind: 'verify_email', to: 'ada@example.com' } })).toBe(1);
-  });
-
-  it('rejects duplicate emails case-insensitively', async () => {
-    await register({ ...base, email: 'ada@example.com' });
-    await expect(register({ ...base, email: 'ADA@example.com' })).rejects.toMatchObject({ code: 'EMAIL_TAKEN' });
-  });
-
-  it('verifies email with a single-use token', async () => {
-    const { userId } = await register({ ...base, email: 'ada@example.com' });
-    const token = await tokenFromOutbox('verify_email', 'token');
-    await verifyEmail(token);
-    expect((await prisma.user.findUniqueOrThrow({ where: { id: userId } })).emailVerifiedAt).not.toBeNull();
-    await expect(verifyEmail(token)).rejects.toMatchObject({ code: 'INVALID_TOKEN' });
-  });
-
-  it('activates immediately with a valid invitation and marks the prospect APPROVED', async () => {
-    const token = randomToken();
-    const prospect = await prisma.potentialMember.create({
-      data: { name: 'Ada', email: 'ada@example.com', outreachStatus: 'INVITED' },
-    });
-    await prisma.invitation.create({
-      data: {
-        email: 'ada@example.com',
-        tokenHash: sha256(token),
-        potentialMemberId: prospect.id,
-        expiresAt: new Date(Date.now() + 86400000),
-      },
-    });
-    const res = await register({ ...base, email: 'Ada@example.com', invitationToken: token });
-    expect(res.status).toBe('ACTIVE');
+    expect(user.charterVersion).toBe(CHARTER_VERSION);
+    expect(user.profile).toMatchObject({ primaryRole: 'BUILDER', city: 'London', country: 'GB' });
     const p = await prisma.potentialMember.findUniqueOrThrow({ where: { id: prospect.id } });
-    expect(p.userId).toBe(res.userId);
+    expect(p.userId).toBe(userId);
     expect(p.outreachStatus).toBe('APPROVED');
-    const history = await prisma.potentialMemberStatusChange.findMany({ where: { potentialMemberId: prospect.id } });
-    expect(history.map((h) => h.toStatus)).toEqual(['APPLIED', 'APPROVED']);
-    await expect(register({ ...base, email: 'x@example.com', invitationToken: token })).rejects.toMatchObject({
-      code: 'INVALID_INVITATION',
-    });
+    const history = await prisma.potentialMemberStatusChange.findMany({ where: { potentialMemberId: prospect.id }, orderBy: { createdAt: 'asc' } });
+    expect(history.map((h) => h.toStatus)).toEqual(['INVITED', 'APPROVED']);
+    expect(await prisma.emailOutbox.count({ where: { kind: 'welcome', to: 'ada@example.com' } })).toBe(1);
   });
 
-  it('rejects an invitation used with a different email', async () => {
-    const token = randomToken();
-    await prisma.invitation.create({
-      data: { email: 'ada@example.com', tokenHash: sha256(token), expiresAt: new Date(Date.now() + 86400000) },
-    });
-    await expect(register({ ...base, email: 'eve@example.com', invitationToken: token })).rejects.toMatchObject({
-      code: 'INVITATION_EMAIL_MISMATCH',
-    });
+  it('works once only', async () => {
+    const token = await invite();
+    await joinWithInvitation({ ...base, invitationToken: token });
+    expect(await previewInvitation(token)).toBeNull();
+    await expect(joinWithInvitation({ ...base, invitationToken: token })).rejects.toMatchObject({ code: 'INVALID_INVITATION' });
   });
 
-  it('links a matching prospect and moves it to APPLIED', async () => {
-    const p = await prisma.potentialMember.create({ data: { name: 'Ada', email: 'ada@example.com', outreachStatus: 'CONTACTED' } });
-    await register({ ...base, email: 'ada@example.com' });
-    expect((await prisma.potentialMember.findUniqueOrThrow({ where: { id: p.id } })).outreachStatus).toBe('APPLIED');
+  it('rejects expired and revoked invitations', async () => {
+    const token = await invite();
+    await prisma.invitation.updateMany({ data: { expiresAt: new Date(Date.now() - 1000) } });
+    await expect(joinWithInvitation({ ...base, invitationToken: token })).rejects.toMatchObject({ code: 'INVALID_INVITATION' });
+    const t2 = await invite('eve@example.com');
+    await prisma.invitation.updateMany({ where: { email: 'eve@example.com' }, data: { revokedAt: new Date() } });
+    await expect(joinWithInvitation({ ...base, invitationToken: t2 })).rejects.toMatchObject({ code: 'INVALID_INVITATION' });
   });
 
-  it('lets a rejected applicant re-apply only after 90 days', async () => {
-    const u = await createMember({ email: 'ada@example.com', accountStatus: 'REJECTED' });
-    await prisma.user.update({ where: { id: u.id }, data: { rejectedAt: new Date() } });
-    await expect(register({ ...base, email: 'ada@example.com' })).rejects.toMatchObject({ code: 'EMAIL_TAKEN' });
-    await prisma.user.update({ where: { id: u.id }, data: { rejectedAt: new Date(Date.now() - 91 * 86400000) } });
-    const res = await register({ ...base, email: 'ada@example.com' });
-    expect(res.status).toBe('PENDING');
+  it('refuses to invite an existing member or a do-not-contact prospect', async () => {
+    const admin = await createMember({ isAdmin: true });
+    await createMember({ email: 'ada@example.com' });
+    await expect(createInvitation(admin.id, { email: 'ada@example.com' })).rejects.toBeTruthy();
+    await prisma.potentialMember.create({ data: { name: 'Eve', email: 'eve@example.com', outreachStatus: 'DO_NOT_CONTACT' } });
+    await expect(createInvitation(admin.id, { email: 'eve@example.com' })).rejects.toBeTruthy();
+  });
+
+  it('sends one reminder after 7 days with a fresh link; the old link stops working', async () => {
+    const token = await invite();
+    expect(await sendInvitationReminders()).toBe(0);
+    const later = new Date(Date.now() + 8 * 86_400_000);
+    expect(await sendInvitationReminders(later)).toBe(1);
+    expect(await sendInvitationReminders(later)).toBe(0);
+    expect(await previewInvitation(token)).toBeNull();
+    const fresh = await tokenFromOutbox('invitation_reminder', 'invite');
+    expect(await previewInvitation(fresh)).toMatchObject({ email: 'ada@example.com' });
+  });
+});
+
+describe('community charter (R3 F2)', () => {
+  it('sends members with an older charter to the accept page, once accepted they go home', async () => {
+    const u = await createMember({ charterVersion: null });
+    const token = await createSession(u.id);
+    expect(homeFor((await findSessionUser(token))!)).toBe('/charter/accept');
+    await acceptCharter(u.id);
+    expect(homeFor((await findSessionUser(token))!)).toBe('/dashboard');
+  });
+
+  it('emails each member about a charter update only once', async () => {
+    await createMember({ charterVersion: null });
+    await createMember();
+    expect(await sendCharterNotices()).toBe(1);
+    expect(await sendCharterNotices()).toBe(0);
+    expect(await prisma.emailOutbox.count({ where: { kind: 'charter_updated' } })).toBe(1);
   });
 });
 
@@ -149,11 +155,6 @@ describe('login (G7)', () => {
     await expect(attemptLogin({ email: 'ada@example.com', password: TEST_PASSWORD, ip: '3.3.3.3' })).rejects.toMatchObject({
       message: INVALID_CREDENTIALS,
     });
-  });
-
-  it('lets PENDING users log in (they are routed to /pending)', async () => {
-    await createMember({ email: 'p@example.com', accountStatus: 'PENDING' });
-    await expect(attemptLogin({ email: 'p@example.com', password: TEST_PASSWORD, ip: '1.1.1.1' })).resolves.toMatchObject({ ok: true });
   });
 
   it('blocks admin-deactivated accounts but offers self-deactivated ones reactivation', async () => {

@@ -17,12 +17,12 @@ export default async function InvitationsPage() {
   return (
     <div className="space-y-4">
       <h1 className="text-2xl font-semibold">Invitations</h1>
-      <p className="text-sm text-gray-600">Invited people skip the approval queue. Links expire after 14 days and work only for the invited email.</p>
+      <p className="text-sm text-gray-600">Joining is by invitation only. Links expire after 14 days and work only for the invited email. If an invitation isn&apos;t used after 7 days, we send one reminder with a fresh link.</p>
       <InviteForm />
       {invitations.length === 0 ? <EmptyState title="No invitations sent yet" /> : (
         <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white">
           <table className="w-full text-sm">
-            <thead className="bg-gray-50 text-left text-gray-600"><tr><th className="p-3">Email</th><th className="p-3">Status</th><th className="p-3">Sent</th><th className="p-3">Expires</th><th className="p-3">By</th><th className="p-3"><span className="sr-only">Actions</span></th></tr></thead>
+            <thead className="bg-gray-50 text-left text-gray-600"><tr><th className="p-3">Email</th><th className="p-3">Status</th><th className="p-3">Sent</th><th className="p-3">Expires</th><th className="p-3">Reminder</th><th className="p-3">By</th><th className="p-3"><span className="sr-only">Actions</span></th></tr></thead>
             <tbody className="divide-y divide-gray-100">
               {invitations.map((i) => (
                 <tr key={i.id}>
@@ -30,6 +30,7 @@ export default async function InvitationsPage() {
                   <td className="p-3"><Badge tone={TONE[i.status as keyof typeof TONE]}>{i.status}</Badge></td>
                   <td className="p-3">{fmtDate(i.createdAt)}</td>
                   <td className="p-3">{fmtDate(i.expiresAt)}</td>
+                  <td className="p-3">{i.reminderSentAt ? fmtDate(i.reminderSentAt) : '—'}</td>
                   <td className="p-3">{i.invitedBy ?? '—'}</td>
                   <td className="p-3">{i.status === 'pending' && <ActionButton label="Revoke" variant="ghost" method="DELETE" path={`/api/admin/invitations/${i.id}`} />}</td>
                 </tr>

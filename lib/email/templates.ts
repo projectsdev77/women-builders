@@ -49,15 +49,6 @@ ${cta ? `<p><a href="${escapeHtml(cta.url)}" style="display:inline-block;backgro
 }
 
 export const templates = {
-  verifyEmail: (name: string, url: string) =>
-    layout({
-      subject: `Confirm your email for ${APP_NAME}`,
-      heading: `Welcome, ${name}`,
-      paragraphs: [
-        'Please confirm your email address to submit your application. This link expires in 24 hours.',
-      ],
-      cta: { label: 'Confirm email', url },
-    }),
   passwordReset: (url: string) =>
     layout({
       subject: `Reset your ${APP_NAME} password`,
@@ -87,15 +78,6 @@ export const templates = {
       ],
       cta: { label: 'Complete your profile', url: `${appUrl()}/onboarding` },
     }),
-  applicationRejected: (name: string) =>
-    layout({
-      subject: `An update on your ${APP_NAME} application`,
-      heading: `Thank you, ${name}`,
-      paragraphs: [
-        "Thank you for applying. We aren't able to offer membership right now.",
-        'You are welcome to apply again in 90 days.',
-      ],
-    }),
   invitation: (url: string, inviterName?: string) =>
     layout({
       subject: `You're invited to join ${APP_NAME}`,
@@ -105,6 +87,60 @@ export const templates = {
         'This invitation expires in 14 days.',
       ],
       cta: { label: 'Accept invitation', url },
+    }),
+  requestReceived: (name: string) =>
+    layout({
+      subject: `We've received your request to join ${APP_NAME}`,
+      heading: `Thank you, ${name}`,
+      paragraphs: [
+        'We have your request for an invitation. Our team reads every request personally.',
+        "You'll hear back from us within three weeks, either way.",
+      ],
+    }),
+  alreadyMember: () =>
+    layout({
+      subject: `You already have a ${APP_NAME} account`,
+      heading: 'You already have an account',
+      paragraphs: [
+        'Someone asked for an invitation using this email address, but it already belongs to a member account.',
+        "If it was you, just log in. If you've forgotten your password, you can reset it. If it wasn't you, you can ignore this email.",
+      ],
+      cta: { label: 'Log in', url: `${appUrl()}/login` },
+    }),
+  requestDeclined: (name: string) =>
+    layout({
+      subject: `An update on your ${APP_NAME} request`,
+      heading: `Thank you, ${name}`,
+      paragraphs: [
+        "Thank you for asking to join. We aren't able to offer membership right now.",
+        "You're welcome to ask again in 90 days.",
+      ],
+    }),
+  invitationReminder: (url: string, expiresAt: Date) =>
+    layout({
+      subject: `Your invitation to ${APP_NAME} is waiting`,
+      heading: 'Your invitation is still waiting',
+      paragraphs: [
+        `You were invited to join ${APP_NAME}. Your invitation expires on ${expiresAt.toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}.`,
+        'This link replaces the one in your first invitation email.',
+      ],
+      cta: { label: 'Accept invitation', url },
+    }),
+  overdueRequestsDigest: (count: number) =>
+    layout({
+      subject: `${count} invitation request${count === 1 ? '' : 's'} waiting more than 3 weeks`,
+      heading: `${count} request${count === 1 ? ' has' : 's have'} waited more than 3 weeks`,
+      paragraphs: ["We promise everyone an answer within three weeks. These requests haven't had a decision yet."],
+      cta: { label: 'Open the Requests queue', url: `${appUrl()}/admin/requests` },
+    }),
+  charterUpdated: (name: string) =>
+    layout({
+      subject: `We've updated the ${APP_NAME} community charter`,
+      heading: `Hi ${name}, our charter has changed`,
+      paragraphs: [
+        "We've updated the community charter. You'll be asked to read and accept it the next time you visit.",
+      ],
+      cta: { label: 'Read the charter', url: `${appUrl()}/charter` },
     }),
   photoRemoved: (name: string) =>
     layout({

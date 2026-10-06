@@ -6,7 +6,7 @@ import { cx } from '@/components/ui';
 
 const ITEMS = [
   { href: '/admin', label: 'Dashboard', exact: true },
-  { href: '/admin/applications', label: 'Applications', badge: 'applications' as const },
+  { href: '/admin/requests', label: 'Requests', badge: 'requests' as const },
   { href: '/admin/members', label: 'Members' },
   { href: '/admin/prospects', label: 'Potential members' },
   { href: '/admin/follow-ups', label: 'Follow-ups', badge: 'followUps' as const },
@@ -15,7 +15,7 @@ const ITEMS = [
   { href: '/admin/audit', label: 'Audit log' },
 ];
 
-export function AdminNav({ counts }: { counts: { applications: number; followUps: number; reports: number } }) {
+export function AdminNav({ counts }: { counts: { requests: number; requestsOverdue: number; followUps: number; reports: number } }) {
   const pathname = usePathname();
   return (
     <nav aria-label="Admin" className="flex gap-1 overflow-x-auto lg:flex-col">
@@ -33,7 +33,12 @@ export function AdminNav({ counts }: { counts: { applications: number; followUps
             )}
           >
             {item.label}
-            {count > 0 && <span className="rounded-full bg-brand-600 px-2 text-xs text-white">{count}</span>}
+            {count > 0 && (
+              <span className={cx('rounded-full px-2 text-xs text-white', item.badge === 'requests' && counts.requestsOverdue > 0 ? 'bg-red-600' : 'bg-brand-600')}>
+                {count}
+                {item.badge === 'requests' && counts.requestsOverdue > 0 && <span className="sr-only"> ({counts.requestsOverdue} overdue)</span>}
+              </span>
+            )}
           </Link>
         );
       })}

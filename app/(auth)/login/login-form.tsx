@@ -66,7 +66,7 @@ export function LoginForm({ passwordReset }: { passwordReset: boolean }) {
       )}
       <div className="flex justify-between text-sm">
         <Link href="/forgot-password" className="text-brand-700 underline">Forgot password?</Link>
-        <Link href="/register" className="text-brand-700 underline">Apply to join</Link>
+        <Link href="/request-invite" className="text-brand-700 underline">Request an invitation</Link>
       </div>
     </Card>
   );

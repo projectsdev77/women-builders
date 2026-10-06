@@ -2,6 +2,7 @@ import type { OutreachStatus } from '@prisma/client';
 import { prisma } from '@/lib/db';
 import { OUTREACH_STATUSES, followUpQueue } from './prospects';
 import { addDays, formatDateOnly, todayInAppTz } from './dates';
+import { openRequestCounts } from '../invite-requests';
 
 export interface DateRange {
   from: Date;
@@ -18,10 +19,9 @@ export function defaultRange(): DateRange {
  * the range and how many of those later reached APPROVED (non-linear funnel, G16).
  */
 export async function dashboardMetrics(range: DateRange) {
-  const [activeMembers, pendingVerified, pendingUnverified, openReports, byStatusRaw, changes, approvals, followUps] = await Promise.all([
+  const [activeMembers, requests, openReports, byStatusRaw, changes, approvals, followUps] = await Promise.all([
     prisma.user.count({ where: { accountStatus: 'ACTIVE', profile: { isNot: null } } }),
-    prisma.user.count({ where: { accountStatus: 'PENDING', emailVerifiedAt: { not: null } } }),
-    prisma.user.count({ where: { accountStatus: 'PENDING', emailVerifiedAt: null } }),
+    openRequestCounts(),
     prisma.report.count({ where: { status: 'OPEN' } }),
     prisma.potentialMember.groupBy({ by: ['outreachStatus'], where: { archivedAt: null }, _count: { _all: true } }),
     prisma.potentialMemberStatusChange.findMany({
@@ -82,7 +82,7 @@ export async function dashboardMetrics(range: DateRange) {
     range: { from: formatDateOnly(range.from)!, to: formatDateOnly(addDays(range.to, -1))! },
     activeMembers,
     newMembersInRange,
-    pendingApplications: { verified: pendingVerified, unverified: pendingUnverified },
+    requests,
     openReports,
     potentialMembersByStatus,
     conversion,

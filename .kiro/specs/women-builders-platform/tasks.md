@@ -110,7 +110,12 @@ Not taken (see spec section 12): paid membership, Deal Flow, The Season program 
 
 ## R3 progress
 - [x] Step 1: Profile foundations (features 1–5)
-- [ ] Step 2: Front door (features 6–9)
+- [x] Step 2: Front door (features 6–9)
+  - Public `/request-invite` form: honeypot, 5 per network per hour, 3 per email per day. The visitor sees the same confirmation every time, so the form never reveals who is already known.
+  - Admin `/admin/requests` queue: oldest first, overdue after 21 days (red badge in the nav), invite / decline (kind email, can ask again after 90 days) / spam (no email). Weekly overdue digest for admins.
+  - Self-registration, email verification and the applications queue are removed. `/join?invite=` creates an active member directly and requires accepting the charter. Legacy pending applicants were migrated into open requests.
+  - Invitation reminder after 7 days carries a fresh link, because only token hashes are stored.
+  - `/charter` (public), plus a `/charter/accept` interstitial when the version goes up. It offers export, deactivate or delete for members who don't accept. Members get a one-time email per charter version.
 - [ ] Step 3: Capital (features 10–12)
 - [ ] Step 4: Introductions (features 13–15)
 - [ ] Step 5: Gatherings (features 16–17)

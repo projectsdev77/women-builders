@@ -6,7 +6,7 @@ import { Button, Field, Input, Notice, Select, Textarea } from '@/components/ui'
 import { api, firstError, type ApiError } from '@/lib/client/api';
 import { STATUS_LABELS } from '@/components/admin/labels';
 
-const STATUSES = Object.keys(STATUS_LABELS);
+const STATUSES = Object.keys(STATUS_LABELS).filter((s) => s !== 'APPLIED');
 
 export function OutreachForm({ prospectId, today, currentStatus }: { prospectId: string; today: string; currentStatus: string }) {
   const router = useRouter();

@@ -47,10 +47,6 @@ export default async function AdminMemberPage({ params }: { params: { id: string
         </div>
         {!self && (
           <div className="flex flex-wrap gap-2">
-            {user.accountStatus === 'PENDING' && user.emailVerifiedAt && (
-              <ActionButton label="Approve" variant="primary" path={`/api/admin/applications/${user.id}/approve`} noteField="note"
-                confirm={{ title: `Approve ${user.name}?`, description: 'They get a welcome email.' }} />
-            )}
             {user.accountStatus === 'ACTIVE' && (
               <ActionButton label="Deactivate" variant="danger" path={`/api/admin/members/${user.id}/deactivate`} noteField="reason" noteLabel="Reason (internal)"
                 confirm={{ title: `Deactivate ${user.name}?`, description: 'They are signed out everywhere immediately, hidden from members, and emailed. Their data is kept and you can reactivate later.' }} />
@@ -65,7 +61,7 @@ export default async function AdminMemberPage({ params }: { params: { id: string
                 path={`/api/admin/members/${user.id}/admin`}
                 method="PUT"
                 body={{ isAdmin: !user.isAdmin }}
-                confirm={{ title: user.isAdmin ? 'Remove admin access?' : 'Grant admin access?', description: user.isAdmin ? 'They lose access to the admin area immediately.' : 'They can manage members, applications, outreach and reports.' }}
+                confirm={{ title: user.isAdmin ? 'Remove admin access?' : 'Grant admin access?', description: user.isAdmin ? 'They lose access to the admin area immediately.' : 'They can manage members, invitation requests, outreach and reports.' }}
               />
             )}
           </div>

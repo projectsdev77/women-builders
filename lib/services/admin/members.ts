@@ -6,57 +6,6 @@ import { templates } from '@/lib/email/templates';
 import { audit } from '../audit';
 import { changeProspectStatus } from '../prospect-status';
 
-/** Applications waiting for review; verified ones first (only those can be approved). */
-export async function listApplications() {
-  const users = await prisma.user.findMany({
-    where: { accountStatus: 'PENDING' },
-    include: { profile: { select: { primaryRole: true, headline: true } }, potentialMember: { select: { id: true, outreachStatus: true, discoverySource: true, referrerName: true } } },
-    orderBy: [{ emailVerifiedAt: { sort: 'asc', nulls: 'last' } }, { createdAt: 'asc' }],
-  });
-  return users.map((u) => ({
-    id: u.id,
-    name: u.name,
-    email: u.email,
-    primaryRole: u.profile?.primaryRole ?? null,
-    headline: u.profile?.headline ?? null,
-    applicationStatement: u.applicationStatement,
-    emailVerified: !!u.emailVerifiedAt,
-    appliedAt: u.createdAt.toISOString(),
-    prospect: u.potentialMember,
-  }));
-}
-
-export async function approveApplication(actorId: string, userId: string, note?: string | null) {
-  await prisma.$transaction(async (tx) => {
-    const user = await tx.user.findUnique({ where: { id: userId }, include: { potentialMember: true } });
-    if (!user || user.accountStatus !== 'PENDING') throw Errors.notFound('Application');
-    if (!user.emailVerifiedAt) {
-      throw new AppError('EMAIL_NOT_VERIFIED', "This applicant hasn't confirmed their email yet.", 409);
-    }
-    await tx.user.update({
-      where: { id: userId },
-      data: { accountStatus: 'ACTIVE', approvedAt: new Date(), reviewNote: note?.trim() || null },
-    });
-    if (user.potentialMember) await changeProspectStatus(tx, user.potentialMember.id, 'APPROVED', actorId);
-    await enqueueEmail(tx, { to: user.email, kind: 'welcome', content: templates.welcome(user.name) });
-    await audit(tx, { actorId, action: 'application.approve', targetType: 'user', targetId: userId, details: note ? { note } : undefined });
-  });
-}
-
-export async function rejectApplication(actorId: string, userId: string, note?: string | null) {
-  await prisma.$transaction(async (tx) => {
-    const user = await tx.user.findUnique({ where: { id: userId } });
-    if (!user || user.accountStatus !== 'PENDING') throw Errors.notFound('Application');
-    await tx.user.update({
-      where: { id: userId },
-      data: { accountStatus: 'REJECTED', rejectedAt: new Date(), reviewNote: note?.trim() || null },
-    });
-    await tx.session.deleteMany({ where: { userId } });
-    await enqueueEmail(tx, { to: user.email, kind: 'application_rejected', content: templates.applicationRejected(user.name) });
-    await audit(tx, { actorId, action: 'application.reject', targetType: 'user', targetId: userId, details: note ? { note } : undefined });
-  });
-}
-
 export async function listMembers(opts: { q?: string; status?: AccountStatus | 'ALL'; admins?: boolean; page?: number; limit?: number }) {
   const page = Math.max(1, opts.page ?? 1);
   const limit = Math.min(100, opts.limit ?? 25);

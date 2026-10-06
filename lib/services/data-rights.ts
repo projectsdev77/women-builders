@@ -60,7 +60,7 @@ export const DELETED_ACCOUNT_NAME = 'Deleted account';
  * is erased, but the conversations stay. The other person keeps their history, now shown as
  * coming from "Deleted account" and read-only. The user row itself is kept as an anonymous
  * shell so those conversations, and any reports about the member, stay intact for
- * accountability. The email address is released, so it can be used to register again.
+ * accountability. The email address is released, so the person can be invited again.
  */
 export async function deleteAccount(userId: string, password: string) {
   const user = await confirmPassword(userId, password);
@@ -88,7 +88,7 @@ export async function deleteAccount(userId: string, password: string) {
         accountStatus: 'DELETED',
         deactivatedBy: null,
         name: DELETED_ACCOUNT_NAME,
-        // Unique, unroutable placeholder; the real address becomes free to register again.
+        // Unique, unroutable placeholder; the real address becomes free to be invited again.
         email: `deleted-${userId}@deleted.invalid`,
         passwordHash: '!',
         isAdmin: false,

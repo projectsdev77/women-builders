@@ -1,13 +1,17 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { prisma } from '@/lib/db';
 import { createSession, findSessionUser } from '@/lib/auth/session';
+import { deactivateMember, reactivateMember, setAdmin } from '@/lib/services/admin/members';
 import {
-  approveApplication,
-  deactivateMember,
-  reactivateMember,
-  rejectApplication,
-  setAdmin,
-} from '@/lib/services/admin/members';
+  declineRequest,
+  inviteFromRequest,
+  inviteRequestSchema,
+  listInviteRequests,
+  markRequestSpam,
+  openRequestCounts,
+  sendOverdueRequestsDigest,
+  submitInviteRequest,
+} from '@/lib/services/invite-requests';
 import {
   createProspect,
   followUpQueue,
@@ -28,32 +32,107 @@ beforeEach(resetDb);
 const admin = () => createMember({ isAdmin: true, profile: null });
 const prospect = (o: Record<string, unknown>) => prospectCreateSchema.parse({ name: 'Pat Prospect', ...o });
 
-describe('applications (Req 8, 18, G10)', () => {
-  it('approves only verified applications, syncs the prospect, emails and audits', async () => {
-    const a = await admin();
-    const applicant = await createMember({ accountStatus: 'PENDING' });
-    await prisma.user.update({ where: { id: applicant.id }, data: { emailVerifiedAt: null } });
-    await expect(approveApplication(a.id, applicant.id)).rejects.toMatchObject({ code: 'EMAIL_NOT_VERIFIED' });
-    await prisma.user.update({ where: { id: applicant.id }, data: { emailVerifiedAt: new Date() } });
-    const p = await prisma.potentialMember.create({ data: { name: 'x', email: applicant.email, userId: applicant.id, outreachStatus: 'APPLIED' } });
-
-    await approveApplication(a.id, applicant.id, 'Great fit');
-    const u = await prisma.user.findUniqueOrThrow({ where: { id: applicant.id } });
-    expect(u.accountStatus).toBe('ACTIVE');
-    expect(u.approvedAt).not.toBeNull();
-    expect((await prisma.potentialMember.findUniqueOrThrow({ where: { id: p.id } })).outreachStatus).toBe('APPROVED');
-    expect(await prisma.emailOutbox.count({ where: { kind: 'welcome' } })).toBe(1);
-    expect(await prisma.auditLog.count({ where: { action: 'application.approve' } })).toBe(1);
+const request = (o: Record<string, unknown> = {}) =>
+  inviteRequestSchema.parse({
+    name: 'Ada Lovelace',
+    email: 'ada@example.com',
+    primaryRole: 'BUILDER',
+    country: 'gb',
+    statement: 'Building an analytical engine for everyone, and looking for co-builders.',
+    consent: true,
+    ...o,
   });
 
-  it('rejects with a neutral email and ends sessions', async () => {
+describe('invitation requests (R3 F3, F21)', () => {
+  it('creates a prospect and an open request, and confirms by email', async () => {
+    expect(await submitInviteRequest(request(), '1.1.1.1')).toBe('created');
+    const pm = await prisma.potentialMember.findUniqueOrThrow({ where: { email: 'ada@example.com' }, include: { requests: true } });
+    expect(pm.outreachStatus).toBe('REQUESTED');
+    expect(pm.requests).toHaveLength(1);
+    expect(pm.requests[0]).toMatchObject({ status: 'OPEN', country: 'GB', primaryRole: 'BUILDER' });
+    expect(await prisma.emailOutbox.count({ where: { kind: 'request_received' } })).toBe(1);
+    expect(await openRequestCounts()).toEqual({ open: 1, overdue: 0 });
+  });
+
+  it('attaches to a prospect the team already knows, matched by LinkedIn', async () => {
     const a = await admin();
-    const applicant = await createMember({ accountStatus: 'PENDING' });
-    const token = await createSession(applicant.id);
-    await rejectApplication(a.id, applicant.id);
-    expect((await prisma.user.findUniqueOrThrow({ where: { id: applicant.id } })).accountStatus).toBe('REJECTED');
-    expect(await findSessionUser(token)).toBeNull();
-    expect(await prisma.emailOutbox.count({ where: { kind: 'application_rejected' } })).toBe(1);
+    const known = await createProspect(a.id, prospect({ linkedInUrl: 'https://www.linkedin.com/in/ada' }));
+    expect(await submitInviteRequest(request({ linkedInUrl: 'linkedin.com/in/Ada/' }), '1.1.1.1')).toBe('attached');
+    const pm = await prisma.potentialMember.findUniqueOrThrow({ where: { id: known.id } });
+    expect(pm.outreachStatus).toBe('REQUESTED');
+    expect(pm.email).toBe('ada@example.com');
+  });
+
+  it('never opens a second request, and silently drops honeypot submissions', async () => {
+    await submitInviteRequest(request(), '1.1.1.1');
+    expect(await submitInviteRequest(request(), '1.1.1.2')).toBe('already_open');
+    expect(await submitInviteRequest(request({ email: 'bot@example.com', website: 'spam.io' }), '1.1.1.3')).toBe('ignored');
+    expect(await prisma.invitationRequest.count()).toBe(1);
+  });
+
+  it('emails existing members instead, and records do-not-contact people without emailing', async () => {
+    await createMember({ email: 'ada@example.com' });
+    expect(await submitInviteRequest(request(), '1.1.1.1')).toBe('existing_member');
+    expect(await prisma.emailOutbox.count({ where: { kind: 'already_member' } })).toBe(1);
+
+    await prisma.potentialMember.create({ data: { name: 'Eve', email: 'eve@example.com', outreachStatus: 'DO_NOT_CONTACT' } });
+    const before = await prisma.emailOutbox.count();
+    expect(await submitInviteRequest(request({ email: 'eve@example.com' }), '1.1.1.1')).toBe('do_not_contact');
+    expect(await prisma.emailOutbox.count()).toBe(before);
+    expect(await prisma.invitationRequest.count()).toBe(0);
+  });
+
+  it('rate-limits one network to 5 an hour', async () => {
+    for (let i = 0; i < 5; i++) await submitInviteRequest(request({ email: `p${i}@example.com` }), '9.9.9.9');
+    await expect(submitInviteRequest(request({ email: 'p6@example.com' }), '9.9.9.9')).rejects.toMatchObject({ code: 'RATE_LIMITED' });
+    expect(await submitInviteRequest(request({ email: 'p6@example.com' }), '8.8.8.8')).toBe('created');
+  });
+
+  it('invite: sends the invitation, closes the request and audits', async () => {
+    const a = await admin();
+    await submitInviteRequest(request(), '1.1.1.1');
+    const [r] = await listInviteRequests('OPEN');
+    await inviteFromRequest(a.id, r!.id, 'Strong fit');
+    expect(await prisma.invitationRequest.findUniqueOrThrow({ where: { id: r!.id } })).toMatchObject({ status: 'INVITED', decidedById: a.id });
+    expect((await prisma.potentialMember.findUniqueOrThrow({ where: { id: r!.potentialMemberId } })).outreachStatus).toBe('INVITED');
+    expect(await prisma.emailOutbox.count({ where: { kind: 'invitation', to: 'ada@example.com' } })).toBe(1);
+    expect(await prisma.auditLog.count({ where: { action: 'request.invite' } })).toBe(1);
+    await expect(inviteFromRequest(a.id, r!.id)).rejects.toMatchObject({ code: 'NOT_FOUND' });
+  });
+
+  it('decline: kind email, Not a fit, and no new request for 90 days', async () => {
+    const a = await admin();
+    await submitInviteRequest(request(), '1.1.1.1');
+    const [r] = await listInviteRequests('OPEN');
+    await declineRequest(a.id, r!.id, 'Not building yet');
+    expect(await prisma.emailOutbox.count({ where: { kind: 'request_declined' } })).toBe(1);
+    expect((await prisma.potentialMember.findUniqueOrThrow({ where: { id: r!.potentialMemberId } })).outreachStatus).toBe('NOT_A_FIT');
+    expect(await submitInviteRequest(request(), '1.1.1.2')).toBe('recently_declined');
+
+    await prisma.potentialMemberStatusChange.updateMany({ where: { toStatus: 'NOT_A_FIT' }, data: { createdAt: new Date(Date.now() - 91 * 86_400_000) } });
+    expect(await submitInviteRequest(request(), '1.1.1.3')).toBe('attached');
+    expect((await listInviteRequests('OPEN'))[0]!.previousRequests).toBe(1);
+  });
+
+  it('spam: archives without email', async () => {
+    const a = await admin();
+    await submitInviteRequest(request(), '1.1.1.1');
+    const [r] = await listInviteRequests('OPEN');
+    const before = await prisma.emailOutbox.count();
+    await markRequestSpam(a.id, r!.id);
+    expect(await prisma.emailOutbox.count()).toBe(before);
+    expect((await prisma.potentialMember.findUniqueOrThrow({ where: { id: r!.potentialMemberId } })).archivedAt).not.toBeNull();
+  });
+
+  it('flags requests older than three weeks and emails admins a digest', async () => {
+    await admin();
+    await submitInviteRequest(request(), '1.1.1.1');
+    expect(await sendOverdueRequestsDigest()).toBe(0);
+    await prisma.invitationRequest.updateMany({ data: { slaStartsAt: new Date(Date.now() - 22 * 86_400_000) } });
+    expect(await openRequestCounts()).toEqual({ open: 1, overdue: 1 });
+    expect((await listInviteRequests('OPEN'))[0]).toMatchObject({ overdue: true, daysWaiting: 22 });
+    expect(await sendOverdueRequestsDigest()).toBe(1);
+    expect(await prisma.emailOutbox.count({ where: { kind: 'overdue_requests_digest' } })).toBe(1);
   });
 });
 
@@ -211,7 +290,7 @@ describe('reports and dashboard (Req 20, 21.5)', () => {
   it('computes counts, non-linear conversion and growth by approval month', async () => {
     const a = await admin();
     await createMember();
-    await createMember({ accountStatus: 'PENDING' });
+    await submitInviteRequest(request(), '1.1.1.1');
     const p1 = await createProspect(a.id, prospect({ email: 'p1@example.com' }));
     const p2 = await createProspect(a.id, prospect({ email: 'p2@example.com' }));
     await updateProspect(a.id, p1.id, { outreachStatus: 'CONTACTED' });
@@ -220,7 +299,7 @@ describe('reports and dashboard (Req 20, 21.5)', () => {
     await updateProspect(a.id, p2.id, { outreachStatus: 'NOT_INTERESTED' });
     const m = await dashboardMetrics(defaultRange());
     expect(m.activeMembers).toBe(1); // admin has no profile
-    expect(m.pendingApplications.verified).toBe(1);
+    expect(m.requests).toEqual({ open: 1, overdue: 0 });
     const contacted = m.conversion.find((c) => c.status === 'CONTACTED')!;
     expect(contacted).toMatchObject({ entered: 2, reachedApproved: 1, rate: 50 });
     expect(m.potentialMembersByStatus.NOT_INTERESTED).toBe(1);

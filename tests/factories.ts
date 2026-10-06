@@ -1,6 +1,7 @@
-import type { RoleType } from '@prisma/client';
+import type { AccountStatus, RoleType } from '@prisma/client';
 import { prisma } from '@/lib/db';
 import { calculateCompleteness } from '@/lib/services/profile-fields';
+import { CHARTER_VERSION } from '@/content/charter';
 
 // Pre-computed bcrypt hash of "Password123" (cost 4, fast for tests).
 export const TEST_PASSWORD = 'Password123';
@@ -12,7 +13,8 @@ export interface MemberOverrides {
   name?: string;
   email?: string;
   isAdmin?: boolean;
-  accountStatus?: 'PENDING' | 'ACTIVE' | 'REJECTED' | 'DEACTIVATED';
+  accountStatus?: AccountStatus;
+  charterVersion?: number | null;
   lastActiveAt?: Date;
   profile?: Partial<{
     primaryRole: RoleType;
@@ -69,6 +71,7 @@ export async function createMember(o: MemberOverrides = {}) {
       emailVerifiedAt: new Date(),
       approvedAt: (o.accountStatus ?? 'ACTIVE') === 'ACTIVE' ? new Date() : null,
       lastActiveAt: o.lastActiveAt ?? new Date(),
+      charterVersion: o.charterVersion === undefined ? CHARTER_VERSION : o.charterVersion,
       profile: profile
         ? {
             create: {

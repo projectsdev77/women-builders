@@ -7,7 +7,8 @@ import { createSession, findSessionUser } from '@/lib/auth/session';
 import { getMemberProfile } from '@/lib/services/profiles';
 import { searchMembers, searchQuerySchema } from '@/lib/services/discovery';
 import { getConversation, listConversations, sendMessage } from '@/lib/services/messaging';
-import { register } from '@/lib/services/accounts';
+import { joinWithInvitation } from '@/lib/services/accounts';
+import { createInvitation } from '@/lib/services/admin/invitations';
 import { pair } from '@/lib/services/relationships';
 import { resetDb } from './helpers';
 import { createMember, TEST_PASSWORD } from './factories';
@@ -65,12 +66,16 @@ describe('data rights (Req 25, G11)', () => {
     expect(await prisma.report.findFirstOrThrow()).toMatchObject({ reportedUserName: 'Bad Actor', reporterId: a.id });
   });
 
-  it('frees the email address for a fresh registration', async () => {
+  it('frees the email address so she can be invited again', async () => {
     const u = await createMember({ email: 'back@example.com' });
     await deleteAccount(u.id, TEST_PASSWORD);
-    const res = await register({
-      email: 'back@example.com', password: 'GoodPass123', name: 'Back Again', primaryRole: 'BUILDER',
-      headline: 'Engineer', applicationStatement: 'Coming back to the community to build things.',
+    const admin = await createMember({ isAdmin: true, profile: null });
+    await createInvitation(admin.id, { email: 'back@example.com' });
+    const mail = await prisma.emailOutbox.findFirstOrThrow({ where: { kind: 'invitation' } });
+    const token = decodeURIComponent(mail.text.match(/invite=([^\s]+)/)![1]!);
+    const res = await joinWithInvitation({
+      invitationToken: token, password: 'GoodPass123', name: 'Back Again', primaryRole: 'BUILDER',
+      headline: 'Engineer', city: null, country: 'US', acceptCharter: true,
     });
     expect(res.userId).not.toBe(u.id);
   });

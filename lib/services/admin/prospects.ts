@@ -9,7 +9,7 @@ import { addDays, formatDateOnly, parseDateOnly, todayInAppTz } from './dates';
 
 export const OUTREACH_STATUSES = [
   'IDENTIFIED', 'REVIEWED', 'CONTACTED', 'FOLLOW_UP_NEEDED', 'INTERESTED', 'INVITED',
-  'APPLIED', 'APPROVED', 'NOT_INTERESTED', 'NOT_A_FIT', 'DO_NOT_CONTACT',
+  'REQUESTED', 'APPROVED', 'NOT_INTERESTED', 'NOT_A_FIT', 'DO_NOT_CONTACT',
 ] as const satisfies readonly OutreachStatus[];
 
 /** Statuses that never show up in the follow-up queue (Req 7.3 R2). */

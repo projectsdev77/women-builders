@@ -5,6 +5,7 @@
 import { PrismaClient, type RoleType } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import { calculateCompleteness } from '../lib/services/profile-fields';
+import { CHARTER_VERSION } from '../content/charter';
 
 const prisma = new PrismaClient();
 
@@ -49,6 +50,8 @@ async function main() {
       accountStatus: 'ACTIVE',
       emailVerifiedAt: new Date(),
       approvedAt: new Date(),
+      charterVersion: CHARTER_VERSION,
+      charterAcceptedAt: new Date(),
       notificationPreference: { create: {} },
     },
   });
@@ -81,6 +84,8 @@ async function main() {
         accountStatus: 'ACTIVE',
         emailVerifiedAt: new Date(),
         approvedAt: new Date(Date.now() - (DEMO.length - i) * 20 * 86400000),
+        charterVersion: CHARTER_VERSION,
+        charterAcceptedAt: new Date(),
         lastActiveAt: new Date(Date.now() - i * 3 * 86400000),
         profile: {
           create: {
@@ -93,20 +98,31 @@ async function main() {
       },
     });
   }
-  // A couple of applications waiting for review, and some prospects.
-  for (const name of ['Nadia Petrova', 'Chloe Dubois']) {
-    const email = `${name.split(' ')[0]!.toLowerCase()}@applicant.womenbuilders.test`;
-    await prisma.user.upsert({
-      where: { email },
-      update: {},
-      create: {
+  // A couple of invitation requests waiting for review (R3 F3).
+  const requests = [
+    { name: 'Nadia Petrova', role: 'FOUNDER' as const, city: 'Berlin', country: 'DE', daysAgo: 3, referrer: 'Amara Okafor',
+      statement: 'I am building a marketplace for independent women-owned design studios and want to meet other founders.' },
+    { name: 'Chloe Dubois', role: 'OPERATOR' as const, city: 'Lyon', country: 'FR', daysAgo: 23, referrer: null,
+      statement: 'Head of operations at a climate hardware startup. I would love to swap notes on scaling teams across countries.' },
+  ];
+  for (const r of requests) {
+    const email = `${r.name.split(' ')[0]!.toLowerCase()}@request.womenbuilders.test`;
+    if (await prisma.potentialMember.findUnique({ where: { email } })) continue;
+    const at = new Date(Date.now() - r.daysAgo * 86400000);
+    await prisma.potentialMember.create({
+      data: {
+        name: r.name,
         email,
-        passwordHash: demoHash,
-        name,
-        emailVerifiedAt: new Date(),
-        applicationStatement: 'I am building a marketplace for independent women-owned design studios and want to meet other founders.',
-        profile: { create: { primaryRole: 'FOUNDER', headline: 'Founder, early-stage marketplace', completenessScore: 9 } },
-        notificationPreference: { create: {} },
+        role: r.role.charAt(0) + r.role.slice(1).toLowerCase(),
+        discoverySource: 'Website request',
+        outreachStatus: 'REQUESTED',
+        statusChanges: { create: { fromStatus: null, toStatus: 'REQUESTED' } },
+        requests: {
+          create: {
+            name: r.name, email, primaryRole: r.role, city: r.city, country: r.country, statement: r.statement,
+            referrer: r.referrer, consentAt: at, slaStartsAt: at, createdAt: at,
+          },
+        },
       },
     });
   }

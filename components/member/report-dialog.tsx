@@ -10,6 +10,7 @@ const REASONS = [
   ['SPAM', 'Spam or unsolicited selling'],
   ['FAKE_PROFILE', 'Fake or impersonating profile'],
   ['INAPPROPRIATE_CONTENT', 'Inappropriate content'],
+  ['INAPPROPRIATE_PHOTO', 'Inappropriate profile photo'],
   ['OTHER', 'Something else'],
 ] as const;
 
@@ -53,7 +54,7 @@ export function ReportDialog({
         </div>
       ) : (
         <div className="space-y-4">
-          <p className="text-sm text-gray-600">Reports are confidential and reviewed by the Women Builders team.</p>
+          <p className="text-sm text-gray-600">Reports are confidential and reviewed by the Women Builders team against our <a href="/charter" target="_blank" className="underline">community charter</a>.</p>
           {error && <Notice tone="error">{error}</Notice>}
           <Field id="report-reason" label="What's wrong?" required>
             <Select id="report-reason" value={reason} onChange={(e) => setReason(e.target.value)}>

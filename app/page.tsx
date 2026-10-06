@@ -13,8 +13,8 @@ export default function LandingPage({ searchParams }: { searchParams: { deleted?
       </p>
       <p className="text-gray-600">{ELIGIBILITY_STATEMENT}</p>
       <div className="flex gap-3">
-        <Link href="/register" className="rounded-md bg-brand-600 px-4 py-2 font-medium text-white">
-          Apply to join
+        <Link href="/request-invite" className="rounded-md bg-brand-600 px-4 py-2 font-medium text-white">
+          Request an invitation
         </Link>
         <Link href="/login" className="rounded-md border border-gray-300 bg-white px-4 py-2 font-medium">
           Log in

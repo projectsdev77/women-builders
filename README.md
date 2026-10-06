@@ -38,9 +38,10 @@ Seed accounts:
 |---|---|---|
 | Admin | `$ADMIN_EMAIL` | `$ADMIN_INITIAL_PASSWORD` |
 | Demo members | `amara@demo.womenbuilders.test`, `priya@…`, `mei@…` and more | `DemoPass123` |
-| Pending applicants | `nadia@applicant.womenbuilders.test`, `chloe@…` | `DemoPass123` |
 
-Without `RESEND_API_KEY`, every email (verification links, password resets, invitations) is printed to the server console. That's how you follow links locally.
+Joining is by invitation only. The seed adds two open invitation requests (Nadia and Chloe) to `/admin/requests`. Without `RESEND_API_KEY`, every email (invitation links, password resets) is printed to the server console. That's how you follow links locally.
+
+Seed users accept the current community charter. Members whose charter version is older see `/charter/accept` on their next visit.
 
 ## Scripts
 
@@ -65,6 +66,7 @@ Without `RESEND_API_KEY`, every email (verification links, password resets, invi
 | `APP_SECRET` | Signs one-click unsubscribe links |
 | `CRON_SECRET` | Bearer token that the cron routes require |
 | `RESEND_API_KEY`, `EMAIL_FROM` | Email delivery (optional in dev) |
+| `STORAGE_DRIVER`, `STORAGE_DIR`, `S3_*` | Profile photo storage: local disk by default, or any S3-compatible bucket |
 | `ADMIN_EMAIL`, `ADMIN_INITIAL_PASSWORD` | Seed admin |
 
 ## Scheduled jobs (`vercel.json`)
@@ -74,16 +76,19 @@ Without `RESEND_API_KEY`, every email (verification links, password resets, invi
 | `/api/cron/outbox` | every minute | Send queued emails, with retries and backoff |
 | `/api/cron/expire-requests` | daily | Expire connection requests after 30 days |
 | `/api/cron/archive` | weekly | Soft-archive closed prospects after 2 years (never do-not-contact records) |
+| `/api/cron/daily` | daily 08:00 | Invitation reminders (after 7 days), charter update emails |
+| `/api/cron/requests-digest` | Mondays 09:00 | Email admins when invitation requests are past the 21-day promise |
 
 Every cron request must include `Authorization: Bearer $CRON_SECRET`. Per-minute crons need a Vercel Pro plan. On other hosts, call the routes from any scheduler.
 
 ## Code map
 
 ```
-app/(auth)/        login, register, verify-email, forgot/reset password, pending
+app/(auth)/        login, request-invite, join (invitation only), forgot/reset password
+app/charter/       public charter + /charter/accept interstitial
 app/onboarding/    4-step profile wizard
 app/(member)/      dashboard, search, recommendations, members/[id], connections, messages, profile, settings
-app/(admin)/admin/ dashboard, applications, members, prospects (+import), follow-ups, invitations, reports, audit
+app/(admin)/admin/ dashboard, requests, members, prospects (+import), follow-ups, invitations, reports, audit
 app/api/           REST API (see docs/designer-handoff.md, "API surface")
 lib/services/      business rules (one module per domain; the gap IDs G1–G18 are referenced in comments)
 lib/auth/          sessions, guards, login throttling
