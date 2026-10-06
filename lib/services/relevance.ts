@@ -157,7 +157,8 @@ export type ReasonType =
   | 'offers_what_they_need'
   | 'expertise'
   | 'mutual_connection'
-  | 'same_city';
+  | 'same_city'
+  | 'same_gathering';
 export interface Reason {
   type: ReasonType;
   description: string;
@@ -194,7 +195,7 @@ function intersect(a: Set<string>, b: Set<string>): Set<string> {
 export function calculateRelevance(
   viewer: RelevanceInput,
   target: RelevanceInput,
-  opts: { mutualConnections?: number; now?: Date } = {},
+  opts: { mutualConnections?: number; sameGathering?: string | null; now?: Date } = {},
 ): RelevanceScore {
   const role = roleMatch(viewer, target);
 
@@ -250,6 +251,9 @@ export function calculateRelevance(
       type: 'mutual_connection',
       description: `${mutual} mutual connection${mutual === 1 ? '' : 's'} can introduce you`,
     });
+  }
+  if (opts.sameGathering) {
+    reasons.push({ type: 'same_gathering', description: `Going to the same gathering: ${opts.sameGathering}` });
   }
   // "Also in <city>" is a reason only; it never changes the score (R3 F10).
   if (viewer.city && target.city && viewer.country === target.country && viewer.city.trim().toLowerCase() === target.city.trim().toLowerCase()) {

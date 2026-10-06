@@ -31,7 +31,7 @@ export function MemberActions({
   const router = useRouter();
   const first = memberName.split(' ')[0];
   const [dialog, setDialog] = useState<null | 'connect' | 'block' | 'report' | 'remove' | 'intro' | 'team'>(null);
-  const [note, setNote] = useState('');
+  const [note, setNote] = useState(intro.metAt ? `We met at ${intro.metAt}.` : '');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [flash, setFlash] = useState<string | null>(null);
@@ -63,13 +63,14 @@ export function MemberActions({
 
       {status === 'none' && (
         <>
-          {!intro.preferIntroductions &&
+          {(!intro.preferIntroductions || intro.metAt) &&
             (canRequest ? (
               <Button onClick={() => setDialog('connect')}>Connect</Button>
             ) : (
               <Button disabled aria-describedby="connect-help">Connect</Button>
             ))}
-          {intro.preferIntroductions && <p className="text-sm text-gray-700">{first} prefers introductions.</p>}
+          {intro.preferIntroductions && !intro.metAt && <p className="text-sm text-gray-700">{first} prefers introductions.</p>}
+          {intro.metAt && <p className="text-xs text-gray-600">You met at {intro.metAt}.</p>}
           {intro.hasOpenRequest ? (
             <Link href="/introductions?tab=mine" className="inline-flex min-h-[44px] items-center justify-center rounded-md border border-gray-300 bg-white px-4 text-sm">
               Introduction requested

@@ -12,6 +12,7 @@ import { photoUrl } from './photo-url';
 import { canSendConnectionRequests } from './profile-fields';
 import { activeConnection, isBlockedEitherWay, pair } from './relationships';
 import { todayInAppTz } from './admin/dates';
+import { metAtGathering } from './gatherings';
 
 /**
  * Warm introductions (R3 F12). A (requester) asks B (introducer, a mutual connection) or
@@ -95,12 +96,13 @@ function monthStart(now: Date) {
 /** Everything the profile page needs to offer an introduction (R3 F12). */
 export async function introductionOptions(viewerId: string, targetId: string) {
   const now = new Date();
-  const [target, introducerIds, open, teamThisMonth, viewer] = await Promise.all([
+  const [target, introducerIds, open, teamThisMonth, viewer, metAt] = await Promise.all([
     prisma.user.findUnique({ where: { id: targetId }, select: { preferIntroductions: true } }),
     eligibleIntroducerIds(prisma, viewerId, targetId),
     prisma.introduction.findFirst({ where: { requesterId: viewerId, targetId, ...openForRequester(now) }, select: { id: true } }),
     prisma.introduction.count({ where: { requesterId: viewerId, viaTeam: true, createdAt: { gte: monthStart(now) } } }),
     prisma.profile.findUnique({ where: { userId: viewerId } }),
+    metAtGathering(prisma, viewerId, targetId),
   ]);
   const introducers = await prisma.user.findMany({
     where: { id: { in: introducerIds } },
@@ -109,6 +111,8 @@ export async function introductionOptions(viewerId: string, targetId: string) {
   });
   return {
     preferIntroductions: !!target?.preferIntroductions,
+    /** They met at a gathering in the last 30 days: direct Connect is allowed (R3 F11). */
+    metAt,
     introducers: introducers.map((u) => ({
       id: u.id,
       name: u.name,

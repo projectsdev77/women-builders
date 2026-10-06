@@ -142,7 +142,25 @@ Not taken (see spec section 12): paid membership, Deal Flow, The Season program 
   - `/introductions` has three tabs, with a nav badge for items waiting on the member and a Report action.
   - Admin dashboard: introductions made and accepted, with team introductions counted separately.
   - The daily cron expires introductions.
-- [ ] Step 5: Gatherings (features 16–17)
+- [x] Step 5: Gatherings (features 16–17)
+  - **Member side:** `/gatherings` with Upcoming and My gatherings.
+    - Order: her country first, then online, then others. Filters: type, city, online.
+    - Detail shows local time, plus "your time" for online sessions. The venue or link appears only once confirmed.
+    - Request a seat (curated) or take one (open, with waitlist and automatic promotion). Cancel; within 24 hours it's a late cancellation.
+    - "Who's coming": blocked pairs never see each other. `.ics` download.
+  - **People you met:** for 30 days after a gathering (no-shows excluded), with one-tap Connect pre-filled "We met at <title>". It works even when she prefers introductions, and the profile offers Connect too.
+  - **Admin side:** `/admin/gatherings` list and create/edit form (time zone aware), hosts and invitees picker.
+    - Request queue: role mix, blocked-pair conflict flags, no-show history (flag at 2), single and bulk confirm, waitlist, "not this time".
+    - Attendance marking, a message to confirmed guests, and cancel with a reason.
+  - **Emails:**
+    - new gathering near you (opt-out in Settings);
+    - invite-only invitation;
+    - seat confirmed / waitlisted / declined;
+    - changed / cancelled;
+    - reminders 2 days before and on the morning of (by the gathering's local calendar; new hourly cron).
+  - **Recommendations:** new reason, "Going to the same gathering: <title>".
+  - **Account deletion:** frees upcoming seats and host spots. The data export includes seats and introductions.
+  - **Implementation note:** Prisma `NOT: { attendance: 'NO_SHOW' }` also drops NULL rows (SQL three-valued logic). Use an explicit `OR [null, ATTENDED]`. Covered by a test.
 - [ ] Step 6: Public website, home and dashboard, designer brief (features 18–20)
 - [ ] Step 7 (R2): Review rules and site settings (feature 21)
 - [ ] Step 8 (R2): Wins (feature 22)

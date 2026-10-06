@@ -126,6 +126,9 @@ model User {
   introsRequested         Introduction[]             @relation("IntroRequester")
   introsAskedOfMe         Introduction[]             @relation("IntroIntroducer")
   introsForMe             Introduction[]             @relation("IntroTarget")
+  gatheringsHosted        GatheringHost[]
+  gatheringInvites        GatheringInvite[]
+  seatRequests            SeatRequest[]
 
   @@index([accountStatus, createdAt])
   @@index([approvedAt])
@@ -337,6 +340,7 @@ model NotificationPreference {
   newMessage         Boolean  @default(true)
   investingCheckins  Boolean  @default(true)
   introductions      Boolean  @default(true)
+  gatheringsNearMe   Boolean  @default(true)
   updatedAt          DateTime @updatedAt
 }
 
@@ -544,4 +548,112 @@ model Introduction {
   @@index([introducerId, status])
   @@index([targetId, status])
   @@index([viaTeam, status])
+}
+
+// ---------------------------------------------------------------- R3 F14/F23: gatherings
+
+enum GatheringType {
+  DINNER
+  WORKING_SESSION
+  OTHER
+}
+
+enum GatheringAudience {
+  ALL
+  ROLES
+  INVITE_ONLY
+}
+
+enum SeatMode {
+  CURATED // members request, the team confirms
+  OPEN    // first come, first served, with a waitlist
+}
+
+enum GatheringStatus {
+  SCHEDULED
+  CANCELLED
+}
+
+enum SeatStatus {
+  REQUESTED
+  CONFIRMED
+  WAITLISTED
+  DECLINED
+  CANCELLED
+}
+
+enum Attendance {
+  ATTENDED
+  NO_SHOW
+}
+
+model Gathering {
+  id                String            @id @default(cuid())
+  title             String
+  type              GatheringType
+  description       String            @db.Text
+  startsAt          DateTime // UTC
+  timeZone          String // IANA, e.g. Africa/Lagos
+  durationMinutes   Int
+  online            Boolean           @default(false)
+  city              String?
+  country           String? // ISO 3166-1 alpha-2
+  /// Venue address or online link: confirmed attendees and hosts only.
+  venue             String?           @db.Text
+  capacity          Int
+  audience          GatheringAudience @default(ALL)
+  audienceRoles     RoleType[]
+  seatMode          SeatMode          @default(CURATED)
+  requestsCloseAt   DateTime
+  teamHosted        Boolean           @default(true)
+  showOnPublicSite  Boolean           @default(false)
+  status            GatheringStatus   @default(SCHEDULED)
+  cancelReason      String?           @db.Text
+  createdById       String?
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  nearbyNotifiedAt  DateTime?
+  reminder2dSentAt  DateTime?
+  reminderDaySentAt DateTime?
+  hosts             GatheringHost[]
+  invites           GatheringInvite[]
+  seats             SeatRequest[]
+
+  @@index([status, startsAt])
+}
+
+model GatheringHost {
+  gatheringId String
+  gathering   Gathering @relation(fields: [gatheringId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([gatheringId, userId])
+}
+
+/// Members invited to an invite-only gathering.
+model GatheringInvite {
+  gatheringId String
+  gathering   Gathering @relation(fields: [gatheringId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([gatheringId, userId])
+}
+
+model SeatRequest {
+  id          String      @id @default(cuid())
+  gatheringId String
+  gathering   Gathering   @relation(fields: [gatheringId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  note        String?     @db.Text
+  status      SeatStatus  @default(REQUESTED)
+  lateCancel  Boolean     @default(false)
+  attendance  Attendance?
+  createdAt   DateTime    @default(now())
+  decidedAt   DateTime?
+
+  @@unique([gatheringId, userId])
+  @@index([userId, status])
 }

@@ -10,7 +10,8 @@ export type NotificationType =
   | 'connection_accepted'
   | 'new_message'
   | 'investing_checkin'
-  | 'introduction';
+  | 'introduction'
+  | 'gathering_nearby';
 
 const PREF_FIELD = {
   connection_request: 'connectionRequest',
@@ -18,6 +19,7 @@ const PREF_FIELD = {
   new_message: 'newMessage',
   investing_checkin: 'investingCheckins',
   introduction: 'introductions',
+  gathering_nearby: 'gatheringsNearMe',
 } as const;
 
 /** One-click unsubscribe link for a single notification type (Req 16.6). */

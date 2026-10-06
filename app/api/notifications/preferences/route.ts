@@ -3,7 +3,7 @@ import { route, parseBody } from '@/lib/api';
 import { apiActiveUser } from '@/lib/auth/guards';
 import { prisma } from '@/lib/db';
 
-const select = { connectionRequest: true, connectionAccepted: true, newMessage: true, investingCheckins: true, introductions: true } as const;
+const select = { connectionRequest: true, connectionAccepted: true, newMessage: true, investingCheckins: true, introductions: true, gatheringsNearMe: true } as const;
 
 export const GET = route(async () => {
   const user = await apiActiveUser();
@@ -14,7 +14,7 @@ export const PATCH = route(async (req) => {
   const user = await apiActiveUser();
   const data = await parseBody(
     req,
-    z.object({ connectionRequest: z.boolean(), connectionAccepted: z.boolean(), newMessage: z.boolean(), investingCheckins: z.boolean(), introductions: z.boolean() }).partial(),
+    z.object({ connectionRequest: z.boolean(), connectionAccepted: z.boolean(), newMessage: z.boolean(), investingCheckins: z.boolean(), introductions: z.boolean(), gatheringsNearMe: z.boolean() }).partial(),
   );
   return prisma.notificationPreference.upsert({
     where: { userId: user.id },

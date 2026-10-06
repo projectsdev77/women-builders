@@ -14,6 +14,7 @@ import {
   type RelevanceInput,
 } from './relevance';
 import { relationshipSets, statusFromSets, type RelationshipSets } from './relationships';
+import { sameUpcomingGathering } from './gatherings';
 
 export type Candidate = ProfileWithUser & { user: ProfileWithUser['user'] & { lastActiveAt: Date } };
 
@@ -266,11 +267,17 @@ export async function getRecommendations(viewerId: string) {
     take: LIMITS.candidateCap,
   })) as Candidate[];
 
-  const mutuals = await mutualCounts(sets.connected, candidates.map((c) => c.userId));
+  const [mutuals, gatherings] = await Promise.all([
+    mutualCounts(sets.connected, candidates.map((c) => c.userId)),
+    sameUpcomingGathering(viewerId),
+  ]);
   const scored = candidates
     .map((c) => {
       const viewer: Viewer = { isSelf: false, connected: false };
-      const rel = calculateRelevance(viewerInput, visibleInput(c, viewer), { mutualConnections: mutuals.get(c.userId) ?? 0 });
+      const rel = calculateRelevance(viewerInput, visibleInput(c, viewer), {
+        mutualConnections: mutuals.get(c.userId) ?? 0,
+        sameGathering: gatherings.get(c.userId),
+      });
       return { c, viewer, rel, mutual: mutuals.get(c.userId) ?? 0 };
     })
     .filter((s) => s.rel.total > 0)

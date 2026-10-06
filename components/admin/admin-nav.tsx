@@ -10,6 +10,7 @@ const ITEMS = [
   { href: '/admin/members', label: 'Members' },
   { href: '/admin/prospects', label: 'Potential members' },
   { href: '/admin/follow-ups', label: 'Follow-ups', badge: 'followUps' as const },
+  { href: '/admin/gatherings', label: 'Gatherings' },
   { href: '/admin/invitations', label: 'Invitations' },
   { href: '/admin/introductions', label: 'Introduction requests', badge: 'introductions' as const },
   { href: '/admin/reports', label: 'Reports', badge: 'reports' as const },

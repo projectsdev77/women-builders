@@ -7,6 +7,7 @@ import { api, firstError, type ApiError } from '@/lib/client/api';
 
 export interface IntroOptions {
   preferIntroductions: boolean;
+  metAt: string | null;
   introducers: Array<{ id: string; name: string; headline: string | null; photoUrl: string | null }>;
   teamAvailable: boolean;
   teamRemainingThisMonth: number;

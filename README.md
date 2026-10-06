@@ -76,7 +76,8 @@ Seed users accept the current community charter. Members whose charter version i
 | `/api/cron/outbox` | every minute | Send queued emails, with retries and backoff |
 | `/api/cron/expire-requests` | daily | Expire connection requests after 30 days |
 | `/api/cron/archive` | weekly | Soft-archive closed prospects after 2 years (never do-not-contact records) |
-| `/api/cron/daily` | daily 08:00 | Invitation reminders (after 7 days), charter update emails |
+| `/api/cron/daily` | daily 08:00 | Invitation reminders (after 7 days), charter update emails, introduction expiry, investing check-ins |
+| `/api/cron/hourly` | hourly | Gathering reminders (2 days before, and from 7:00 local time on the day) |
 | `/api/cron/requests-digest` | Mondays 09:00 | Email admins when invitation requests are past the 21-day promise |
 
 Every cron request must include `Authorization: Bearer $CRON_SECRET`. Per-minute crons need a Vercel Pro plan. On other hosts, call the routes from any scheduler.

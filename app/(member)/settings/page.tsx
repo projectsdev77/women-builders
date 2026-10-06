@@ -33,6 +33,7 @@ export default async function SettingsPage() {
             newMessage: prefs.newMessage,
             investingCheckins: prefs.investingCheckins,
             introductions: prefs.introductions,
+            gatheringsNearMe: prefs.gatheringsNearMe,
           }}
           isInvestor={user.profile?.primaryRole === 'INVESTOR' || !!user.profile?.secondaryRoles.includes('INVESTOR')}
         />

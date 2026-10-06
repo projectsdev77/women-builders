@@ -48,7 +48,84 @@ ${cta ? `<p><a href="${escapeHtml(cta.url)}" style="display:inline-block;backgro
   return { subject, html, text };
 }
 
+/** What gathering emails need to describe it (R3 F14). */
+export interface GatheringSummary {
+  id: string;
+  title: string;
+  when: string; // already formatted in the gathering's time zone
+  where: string; // "Lagos, Nigeria" or "Online"
+}
+const gatheringUrl = (id: string) => `${appUrl()}/gatherings/${id}`;
+
 export const templates = {
+  gatheringNearby: (g: GatheringSummary, unsubscribeUrl: string) =>
+    layout({
+      subject: `New gathering: ${g.title}`,
+      heading: g.title,
+      paragraphs: [`${g.when} · ${g.where}`, 'Seats are limited. Have a look and ask for a seat if it suits you.'],
+      cta: { label: 'See the gathering', url: gatheringUrl(g.id) },
+      unsubscribeUrl,
+    }),
+  gatheringInvite: (g: GatheringSummary) =>
+    layout({
+      subject: `You're invited: ${g.title}`,
+      heading: `You're invited to ${g.title}`,
+      paragraphs: [`${g.when} · ${g.where}`, 'This gathering is by invitation. Let us know if you can come.'],
+      cta: { label: 'See the gathering', url: gatheringUrl(g.id) },
+    }),
+  seatConfirmed: (g: GatheringSummary, venue: string | null) =>
+    layout({
+      subject: `Your seat is confirmed: ${g.title}`,
+      heading: `See you at ${g.title}`,
+      paragraphs: [
+        `${g.when} · ${g.where}`,
+        ...(venue ? [`Where: ${venue}`] : []),
+        'You can see who is coming and add it to your calendar on the gathering page. If you can no longer come, please cancel your seat so someone else can have it.',
+      ],
+      cta: { label: 'Open the gathering', url: gatheringUrl(g.id) },
+    }),
+  seatWaitlisted: (g: GatheringSummary) =>
+    layout({
+      subject: `You're on the waitlist: ${g.title}`,
+      heading: `You're on the waitlist for ${g.title}`,
+      paragraphs: [`${g.when} · ${g.where}`, "We'll email you straight away if a seat opens up."],
+      cta: { label: 'Open the gathering', url: gatheringUrl(g.id) },
+    }),
+  seatDeclined: (g: GatheringSummary) =>
+    layout({
+      subject: `About ${g.title}`,
+      heading: `We couldn't fit you at ${g.title}`,
+      paragraphs: ["We couldn't fit you at this one. We'd love to see you at the next."],
+      cta: { label: 'See upcoming gatherings', url: `${appUrl()}/gatherings` },
+    }),
+  gatheringReminder: (g: GatheringSummary, when: 'soon' | 'today', venue: string | null) =>
+    layout({
+      subject: when === 'today' ? `Today: ${g.title}` : `In two days: ${g.title}`,
+      heading: when === 'today' ? `${g.title} is today` : `${g.title} is in two days`,
+      paragraphs: [`${g.when} · ${g.where}`, ...(venue ? [`Where: ${venue}`] : []), "Can't make it any more? Please cancel your seat so someone else can come."],
+      cta: { label: 'Open the gathering', url: gatheringUrl(g.id) },
+    }),
+  gatheringChanged: (g: GatheringSummary, venue: string | null) =>
+    layout({
+      subject: `Updated: ${g.title}`,
+      heading: `${g.title} has changed`,
+      paragraphs: ['The details of a gathering you are going to have changed. Here they are now:', `${g.when} · ${g.where}`, ...(venue ? [`Where: ${venue}`] : [])],
+      cta: { label: 'Open the gathering', url: gatheringUrl(g.id) },
+    }),
+  gatheringCancelled: (g: GatheringSummary, reason: string) =>
+    layout({
+      subject: `Cancelled: ${g.title}`,
+      heading: `${g.title} is cancelled`,
+      paragraphs: [`${g.when} · ${g.where}`, reason, "We're sorry. We hope to see you at another gathering soon."],
+      cta: { label: 'See upcoming gatherings', url: `${appUrl()}/gatherings` },
+    }),
+  gatheringMessage: (g: GatheringSummary, subject: string, body: string) =>
+    layout({
+      subject: `${g.title}: ${subject}`,
+      heading: subject,
+      paragraphs: body.split(/\n{2,}/),
+      cta: { label: 'Open the gathering', url: gatheringUrl(g.id) },
+    }),
   passwordReset: (url: string) =>
     layout({
       subject: `Reset your ${APP_NAME} password`,

@@ -6,6 +6,7 @@ import { canSendConnectionRequests } from './profile-fields';
 import { toMemberCard, type MemberCard, type ProfileWithUser } from './privacy';
 import { activeConnection, isBlockedEitherWay, pair } from './relationships';
 import { notifyConnectionAccepted, notifyConnectionRequest } from './notifications';
+import { metAtGathering } from './gatherings';
 
 type Tx = Parameters<Parameters<typeof prisma.$transaction>[0]>[0];
 
@@ -72,7 +73,8 @@ export async function sendConnectionRequest(senderId: string, receiverId: string
     }
 
     // "Prefer introductions": no direct requests; the button becomes "Ask for an introduction" (R3 F11).
-    if (receiver.preferIntroductions) {
+    // Exception: people who met at a gathering can connect directly for 30 days.
+    if (receiver.preferIntroductions && !(await metAtGathering(tx, senderId, receiverId))) {
       throw new AppError(
         'PREFERS_INTRODUCTIONS',
         `${receiver.name.split(' ')[0]} prefers introductions. Ask a mutual connection to introduce you.`,

@@ -27,6 +27,8 @@ export async function exportMemberData(userId: string) {
       blocksMade: { select: { blockedId: true, createdAt: true } },
       reportsMade: { select: { reportedUserName: true, reason: true, details: true, status: true, createdAt: true } },
       dismissals: { select: { dismissedUserId: true, dismissedAt: true } },
+      seatRequests: { select: { gatheringId: true, note: true, status: true, attendance: true, createdAt: true } },
+      introsRequested: { select: { targetId: true, introducerId: true, viaTeam: true, noteToIntroducer: true, noteToTarget: true, status: true, createdAt: true } },
     },
   });
   if (!user) throw Errors.notFound('User');
@@ -84,6 +86,14 @@ export async function deleteAccount(userId: string, password: string) {
     prisma.connectionRequest.deleteMany({ where: { OR: [{ senderId: userId }, { receiverId: userId }] } }),
     prisma.dismissedRecommendation.deleteMany({ where: { OR: [{ userId }, { dismissedUserId: userId }] } }),
     prisma.block.deleteMany({ where: { blockerId: userId } }),
+    // Free her upcoming seats and host spots; past attendance stays for the gathering's records.
+    prisma.seatRequest.updateMany({
+      where: { userId, status: { in: ['REQUESTED', 'CONFIRMED', 'WAITLISTED'] }, gathering: { startsAt: { gt: new Date() } } },
+      data: { status: 'CANCELLED' },
+    }),
+    prisma.seatRequest.updateMany({ where: { userId }, data: { note: null } }),
+    prisma.gatheringHost.deleteMany({ where: { userId } }),
+    prisma.gatheringInvite.deleteMany({ where: { userId } }),
     prisma.potentialMember.updateMany({ where: { userId }, data: { userId: null } }),
     prisma.user.update({
       where: { id: userId },

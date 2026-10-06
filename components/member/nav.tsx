@@ -11,6 +11,7 @@ const ITEMS = [
   { href: '/dashboard', label: 'Home' },
   { href: '/search', label: 'Discover' },
   { href: '/capital', label: 'Capital' },
+  { href: '/gatherings', label: 'Gatherings' },
   { href: '/recommendations', label: 'For you' },
   { href: '/connections', label: 'Connections' },
   { href: '/introductions', label: 'Introductions', badge: 'introductions' as const },
