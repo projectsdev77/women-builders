@@ -11,3 +11,6 @@ coverage/
 e2e-report/
 e2e-results/
 playwright-report/
+.env.*.local
+.env.production*
+.env.staging*
