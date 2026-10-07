@@ -1,7 +1,7 @@
 /**
  * Minimal object storage (R3 F6). Development and tests use the local disk. On Vercel, use a private
- * Vercel Blob store (STORAGE_DRIVER=blob with BLOB_READ_WRITE_TOKEN, which Vercel adds when a store is
- * connected to the project). Any S3-compatible service also works:
+ * Vercel Blob store (picked automatically when Vercel adds BLOB_STORE_ID or BLOB_READ_WRITE_TOKEN by connecting a
+ * store to the project; or set STORAGE_DRIVER=blob). Any S3-compatible service also works:
  *   STORAGE_DRIVER=s3, S3_BUCKET, S3_REGION, S3_ENDPOINT (optional), S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY
  * Objects are never public: the app reads them and serves them through access-checked routes.
  */
@@ -103,7 +103,7 @@ class BlobStorage implements Storage {
 let instance: Storage | undefined;
 export function storage(): Storage {
   if (instance) return instance;
-  const driver = process.env.STORAGE_DRIVER || (process.env.BLOB_READ_WRITE_TOKEN ? 'blob' : 'local');
+  const driver = process.env.STORAGE_DRIVER || (process.env.BLOB_READ_WRITE_TOKEN || process.env.BLOB_STORE_ID ? 'blob' : 'local');
   if (driver === 'blob') {
     instance = new BlobStorage();
   } else if (driver === 's3') {

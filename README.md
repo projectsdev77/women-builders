@@ -67,7 +67,7 @@ Seed users accept the current community charter. Members whose charter version i
 | `APP_SECRET` | Signs one-click unsubscribe links |
 | `CRON_SECRET` | Bearer token that the cron routes require |
 | `RESEND_API_KEY`, `EMAIL_FROM` | Email delivery (optional in dev) |
-| `STORAGE_DRIVER`, `STORAGE_DIR`, `BLOB_READ_WRITE_TOKEN`, `S3_*` | Profile photo storage: local disk by default, a private Vercel Blob store on Vercel (`blob`, picked automatically when the token is set), or any S3-compatible bucket |
+| `STORAGE_DRIVER`, `STORAGE_DIR`, `BLOB_READ_WRITE_TOKEN`, `S3_*` | Profile photo storage: local disk by default, a private Vercel Blob store on Vercel (`blob`, picked automatically when `BLOB_STORE_ID` or the token is set), or any S3-compatible bucket |
 | `ADMIN_EMAIL`, `ADMIN_INITIAL_PASSWORD` | Seed admin |
 
 ## Scheduled jobs (`vercel.json`)

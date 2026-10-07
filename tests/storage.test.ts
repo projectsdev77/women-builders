@@ -32,6 +32,13 @@ describe('Vercel Blob storage driver', () => {
     });
   });
 
+  it('is also picked when only a store id is present (token-less Vercel Blob)', async () => {
+    const s = await freshStorage({ STORAGE_DRIVER: undefined, BLOB_READ_WRITE_TOKEN: undefined, BLOB_STORE_ID: 'store_abc' });
+    await s.put('avatars/u2/128-1.jpg', Buffer.from('x'), 'image/jpeg');
+    expect(put).toHaveBeenCalled();
+    delete process.env.BLOB_STORE_ID;
+  });
+
   it('reads an object back and returns null when it is missing', async () => {
     const s = await freshStorage({ STORAGE_DRIVER: 'blob' });
     get.mockResolvedValueOnce({ statusCode: 200, stream: new Response('hello').body });

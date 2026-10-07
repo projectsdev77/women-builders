@@ -35,7 +35,7 @@ The work is on branch `claude/spec-review-gaps-9fg743` of `projectsdev77/women-b
 
 ## 3. Photo storage (Vercel Blob)
 
-Project → **Storage → Create → Blob** → choose **Private** access → connect to the project. Vercel adds `BLOB_READ_WRITE_TOKEN`. The app detects it and stores profile photos there (never public; every photo is served through the app's own access-checked route). No other setting is needed.
+Project → **Storage → Create → Blob** → choose **Private** access → connect to the project. Vercel adds `BLOB_STORE_ID` (and sometimes `BLOB_READ_WRITE_TOKEN`). The app detects either and stores profile photos there (never public; every photo is served through the app's own access-checked route). No other setting is needed.
 
 Photos are limited to **4 MB** because Vercel rejects request bodies over 4.5 MB.
 
