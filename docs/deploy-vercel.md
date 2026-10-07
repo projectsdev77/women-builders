@@ -62,7 +62,7 @@ SEED_DEMO=1 \
 npx tsx prisma/seed.ts
 ```
 
-- `SEED_DEMO=1` also creates 13 demo members (`adaeze@demo.womenbuilders.test`, password `DemoPass123`) that the automated tests and your manual testing use.
+- `SEED_DEMO=1` also creates demo members (`adaeze@demo.womenbuilders.test`, password `DemoPass123`) that the automated tests and your manual testing use.
 - **Before real members arrive, use a fresh empty database** (a new Neon branch or database, run the seed again with `SEED_DEMO=0`) so no demo accounts with a known password exist.
 
 ## 7. Check the deploy, then run the automated tests against it
