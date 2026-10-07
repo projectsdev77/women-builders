@@ -82,6 +82,10 @@ Seed users accept the current community charter. Members whose charter version i
 
 Every cron request must include `Authorization: Bearer $CRON_SECRET`. Per-minute crons need a Vercel Pro plan. On other hosts, call the routes from any scheduler.
 
+## Visual design
+
+The designer's system lives in `tailwind.config.ts` (palette, role colours, radii, press shadows), `app/globals.css` (type, focus rings) and `components/ui/` (Button, fields, Avatar, SegmentedTabs, role colours in `roles.ts`, choice controls). Fonts (Young Serif, Figtree, Geist Mono) are self-hosted via `@fontsource`. Legacy `gray`/`brand` Tailwind scales are remapped onto the palette, so older classes stay on-brand. Role colours are never hierarchical: text is always forest and the role is always written out.
+
 ## Code map
 
 ```

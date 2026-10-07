@@ -15,7 +15,7 @@ export default async function AdminGatheringsPage({ searchParams }: { searchPara
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h1 className="text-2xl font-semibold">Gatherings</h1>
+        <h1>Gatherings</h1>
         <Link href="/admin/gatherings/new" className="inline-flex min-h-[44px] items-center justify-center whitespace-nowrap rounded-full bg-forest px-5 text-[15px] font-bold text-cream shadow-press-sm hover:bg-[#2E5A40]">New gathering</Link>
       </div>
       <nav aria-label="View" className="flex gap-3 text-sm">

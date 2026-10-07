@@ -22,7 +22,7 @@ export function AdminNav({ counts, reviewerOnly = false }: {
   reviewerOnly?: boolean; counts: { requests: number; requestsOverdue: number; followUps: number; reports: number; introductions: number } }) {
   const pathname = usePathname();
   return (
-    <nav aria-label="Admin" className="flex gap-1 overflow-x-auto lg:flex-col">
+    <nav aria-label="Admin" className="flex gap-1 overflow-x-auto lg:flex-col lg:gap-0.5">
       {ITEMS.filter((i) => !reviewerOnly || i.href === '/admin/requests').map((item) => {
         const active = item.exact ? pathname === item.href : pathname.startsWith(item.href);
         const count = item.badge ? counts[item.badge] : 0;
@@ -32,13 +32,13 @@ export function AdminNav({ counts, reviewerOnly = false }: {
             href={item.href}
             aria-current={active ? 'page' : undefined}
             className={cx(
-              'flex min-h-[44px] shrink-0 items-center justify-between gap-2 rounded-md px-3 text-sm',
-              active ? 'bg-brand-50 font-medium text-brand-700' : 'text-gray-700 hover:bg-gray-100',
+              'flex min-h-[44px] shrink-0 items-center justify-between gap-3 rounded-[12px] px-3.5 text-[15px] transition-colors',
+              active ? 'bg-forest font-bold text-cream' : 'font-medium hover:bg-wash',
             )}
           >
             {item.label}
             {count > 0 && (
-              <span className={cx('rounded-full px-2 text-xs text-white', item.badge === 'requests' && counts.requestsOverdue > 0 ? 'bg-red-600' : 'bg-brand-600')}>
+              <span className={cx('inline-flex h-[22px] min-w-[22px] items-center justify-center rounded-full px-1.5 font-mono text-[12px] font-medium text-white', item.badge === 'requests' && counts.requestsOverdue > 0 ? 'bg-danger' : 'bg-rose')}>
                 {count}
                 {item.badge === 'requests' && counts.requestsOverdue > 0 && <span className="sr-only"> ({counts.requestsOverdue} overdue)</span>}
               </span>

@@ -32,12 +32,12 @@ export function TagInput({
   return (
     <div className="flex min-h-[44px] flex-wrap items-center gap-1 rounded-md border border-gray-300 bg-white px-2 py-1">
       {value.map((tag) => (
-        <span key={tag} className="inline-flex items-center gap-1 rounded-full bg-brand-50 px-2 py-0.5 text-xs text-brand-700">
+        <span key={tag} className="inline-flex items-center gap-1 rounded-full bg-wash px-2.5 py-0.5 text-[13px] font-semibold">
           {tag}
           <button
             type="button"
             aria-label={`Remove ${tag}`}
-            className="rounded-full px-1 hover:bg-brand-100"
+            className="rounded-full px-1 hover:bg-line"
             onClick={() => onChange(value.filter((t) => t !== tag))}
           >
             ×

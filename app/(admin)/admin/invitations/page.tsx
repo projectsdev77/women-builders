@@ -16,7 +16,7 @@ export default async function InvitationsPage() {
   const invitations = await listInvitations();
   return (
     <div className="space-y-4">
-      <h1 className="text-2xl font-semibold">Invitations</h1>
+      <h1>Invitations</h1>
       <p className="text-sm text-gray-600">Joining is by invitation only. Links expire after 14 days and work only for the invited email. If an invitation isn&apos;t used after 7 days, we send one reminder with a fresh link.</p>
       <InviteForm />
       {invitations.length === 0 ? <EmptyState title="No invitations sent yet" /> : (

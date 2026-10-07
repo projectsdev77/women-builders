@@ -11,7 +11,7 @@ export default async function NewGatheringPage() {
   const tz = appTimezone();
   return (
     <div className="max-w-3xl space-y-4">
-      <h1 className="text-2xl font-semibold">New gathering</h1>
+      <h1>New gathering</h1>
       <GatheringForm
         timeZones={Intl.supportedValuesOf('timeZone')}
         countries={countryOptions()}

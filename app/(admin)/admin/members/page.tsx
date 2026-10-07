@@ -18,7 +18,7 @@ export default async function AdminMembersPage({ searchParams }: { searchParams:
   const href = (p: number) => `/admin/members?${new URLSearchParams({ ...(searchParams.q ? { q: searchParams.q } : {}), status, page: String(p) })}`;
   return (
     <div className="space-y-4">
-      <h1 className="text-2xl font-semibold">Members <span className="text-base font-normal text-gray-500">({pagination.total})</span></h1>
+      <h1>Members <span className="text-base font-normal text-gray-500">({pagination.total})</span></h1>
       <form method="get" className="flex flex-wrap gap-2" role="search">
         <label htmlFor="q" className="sr-only">Search</label>
         <Input id="q" name="q" defaultValue={searchParams.q} placeholder="Name, email, company…" className="max-w-xs" />
@@ -41,7 +41,7 @@ export default async function AdminMembersPage({ searchParams }: { searchParams:
                 <tr key={m.id}>
                   <td className="p-3">
                     <Link href={`/admin/members/${m.id}`} className="font-medium underline">{m.name}</Link>
-                    {m.isAdmin && <Badge tone="brand">Admin</Badge>}
+                    {m.isAdmin && <span className="ml-2"><Badge tone="brand">Admin</Badge></span>}
                     <div className="text-xs text-gray-500">{m.email}</div>
                   </td>
                   <td className="p-3">{m.primaryRole ? ROLE_LABELS[m.primaryRole] : '—'}</td>

@@ -5,7 +5,7 @@ import { getSiteSettings } from '@/lib/services/site-settings';
 import { VoteButtons } from './vote-buttons';
 import { listInviteRequests, REQUEST_ANSWER_DAYS } from '@/lib/services/invite-requests';
 import { formatLocation } from '@/lib/countries';
-import { Badge, Card, EmptyState } from '@/components/ui';
+import { Badge, Card, EmptyState, SegmentedTabs } from '@/components/ui';
 import { ActionButton } from '@/components/admin/action-button';
 import { STATUS_LABELS, fmtDate } from '@/components/admin/labels';
 
@@ -20,7 +20,7 @@ export default async function RequestsPage({ searchParams }: { searchParams: { s
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="text-2xl font-semibold">Invitation requests</h1>
+        <h1>Invitation requests</h1>
         <p className="text-sm text-gray-600">
           Every request gets an answer within {REQUEST_ANSWER_DAYS} days. Oldest first. {settings.requiredApprovals} {settings.requiredApprovals === 1 ? 'vote decides' : 'matching votes decide'} automatically
           {user.isAdmin ? '; any admin can decide directly.' : '.'}
@@ -30,13 +30,7 @@ export default async function RequestsPage({ searchParams }: { searchParams: { s
         )}
         {!user.isAdmin && <p className="mt-1 text-sm text-gray-600">You&apos;re a member reviewer: you see the tally and your own vote. Admins see every vote.</p>}
       </div>
-      <nav aria-label="Request status" className="flex flex-wrap gap-3 text-sm">
-        {TABS.map((t) => (
-          <Link key={t} href={`/admin/requests?status=${t}`} aria-current={t === status ? 'page' : undefined} className={t === status ? 'font-semibold underline' : 'underline'}>
-            {t.charAt(0) + t.slice(1).toLowerCase()}
-          </Link>
-        ))}
-      </nav>
+      <SegmentedTabs label="Request status" tabs={TABS.map((t) => ({ href: `/admin/requests?status=${t}`, label: t.charAt(0) + t.slice(1).toLowerCase(), active: t === status }))} />
       {requests.length === 0 ? <EmptyState title={status === 'OPEN' ? 'No requests waiting' : 'Nothing here'} /> : (
         <ul className="space-y-3">
           {requests.map((r) => {

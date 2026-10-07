@@ -25,7 +25,7 @@ export default async function TeamIntroductionsPage({ searchParams }: { searchPa
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="text-2xl font-semibold">Introduction requests</h1>
+        <h1>Introduction requests</h1>
         <p className="text-sm text-gray-600">
           Members with no mutual connection can ask the team to introduce them (2 a month). If you introduce, the member sees
           &ldquo;{TEAM_LABEL} would like to introduce you to…&rdquo;. Passing is silent.

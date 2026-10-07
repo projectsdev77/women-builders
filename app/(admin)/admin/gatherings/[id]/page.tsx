@@ -26,7 +26,7 @@ export default async function AdminGatheringPage({ params }: { params: { id: str
     <div className="space-y-6">
       <div className="space-y-1">
         <Link href="/admin/gatherings" className="text-sm underline">← Gatherings</Link>
-        <h1 className="text-2xl font-semibold">{g.values.title}</h1>
+        <h1>{g.values.title}</h1>
         <p className="text-sm text-gray-700">{formatInZone(g.startsAt, g.values.timeZone)} · <Link className="underline" href={`/gatherings/${g.id}`}>Member view</Link></p>
         {g.status === 'CANCELLED' && <Notice tone="error">Cancelled: {g.cancelReason}</Notice>}
       </div>

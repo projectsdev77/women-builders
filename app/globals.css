@@ -51,3 +51,8 @@ main h1 {
   line-height: 1;
   letter-spacing: -0.02em;
 }
+
+input[type='checkbox'],
+input[type='radio'] {
+  accent-color: #1f3d2b;
+}

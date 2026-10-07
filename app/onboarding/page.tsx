@@ -18,7 +18,7 @@ export default async function OnboardingPage() {
   ]);
   return (
     <main id="main" className="mx-auto max-w-2xl px-4 py-8">
-      <p className="mb-2 font-bold text-brand-700">{APP_NAME}</p>
+      <p className="mb-2 font-display text-[22px]">{APP_NAME}</p>
       <OnboardingWizard initial={toEditable(profile.user.name, profile)} introSettings={introSettings} />
     </main>
   );

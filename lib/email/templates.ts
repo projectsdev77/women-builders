@@ -24,15 +24,15 @@ interface LayoutInput {
 }
 
 function layout({ subject, heading, paragraphs, cta, unsubscribeUrl }: LayoutInput): EmailContent {
-  const html = `<!doctype html><html><body style="font-family:system-ui,sans-serif;color:#111;max-width:560px;margin:0 auto;padding:24px">
-<p style="font-weight:700;color:#6d28d9">${escapeHtml(APP_NAME)}</p>
+  const html = `<!doctype html><html><body style="font-family:Figtree,system-ui,sans-serif;color:#1F3D2B;background:#FBF4EC;max-width:560px;margin:0 auto;padding:28px;line-height:1.55">
+<p style="font-family:'Young Serif',Georgia,serif;font-size:22px;margin:0 0 16px">${escapeHtml(APP_NAME.toLowerCase())}<span style="color:#C2557A">.</span></p>
 <h1 style="font-size:20px">${escapeHtml(heading)}</h1>
 ${paragraphs.map((p) => `<p style="line-height:1.5">${escapeHtml(p)}</p>`).join('\n')}
-${cta ? `<p><a href="${escapeHtml(cta.url)}" style="display:inline-block;background:#6d28d9;color:#fff;padding:10px 16px;border-radius:6px;text-decoration:none">${escapeHtml(cta.label)}</a></p>` : ''}
-<hr style="border:none;border-top:1px solid #eee;margin:24px 0">
-<p style="font-size:12px;color:#666">${escapeHtml(APP_NAME)} · ${escapeHtml(appUrl())}${
+${cta ? `<p><a href="${escapeHtml(cta.url)}" style="display:inline-block;background:#1F3D2B;color:#FBF4EC;padding:12px 22px;border-radius:999px;font-weight:700;text-decoration:none">${escapeHtml(cta.label)}</a></p>` : ''}
+<hr style="border:none;border-top:1px solid #EADCCB;margin:24px 0">
+<p style="font-size:12px;color:#4D6B58">${escapeHtml(APP_NAME)} · ${escapeHtml(appUrl())}${
     unsubscribeUrl
-      ? ` · <a href="${escapeHtml(unsubscribeUrl)}" style="color:#666">Unsubscribe from these emails</a>`
+      ? ` · <a href="${escapeHtml(unsubscribeUrl)}" style="color:#4D6B58">Unsubscribe from these emails</a>`
       : ''
   }</p>
 </body></html>`;

@@ -37,7 +37,7 @@ export default async function AdminMemberPage({ params }: { params: { id: string
       <Link href="/admin/members" className="text-sm underline">← Members</Link>
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold">{user.name}</h1>
+          <h1>{user.name}</h1>
           <p className="text-gray-600">{user.email}</p>
           <div className="mt-1 flex flex-wrap gap-1">
             <Badge tone={ACCOUNT_TONE[user.accountStatus]}>{user.accountStatus.toLowerCase()}{user.deactivatedBy ? ` by ${user.deactivatedBy.toLowerCase()}` : ''}</Badge>

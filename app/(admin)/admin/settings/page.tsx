@@ -21,7 +21,7 @@ export default async function SiteSettingsPage() {
   ]);
   return (
     <div className="max-w-3xl space-y-4">
-      <h1 className="text-2xl font-semibold">Site settings</h1>
+      <h1>Site settings</h1>
       <p className="text-sm text-gray-600">Every change is recorded in the audit log.</p>
       <SettingsForm initial={settings} current={current} />
 

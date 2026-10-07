@@ -14,7 +14,7 @@ export default async function FollowUpsPage({ searchParams }: { searchParams: { 
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h1 className="text-2xl font-semibold">Follow-ups</h1>
+        <h1>Follow-ups</h1>
         <div className="flex gap-2 text-sm">
           <Link href="/admin/follow-ups" aria-current={!week ? 'page' : undefined} className={!week ? 'font-semibold underline' : 'underline'}>Due now</Link>
           <Link href="/admin/follow-ups?week=1" aria-current={week ? 'page' : undefined} className={week ? 'font-semibold underline' : 'underline'}>Next 7 days</Link>

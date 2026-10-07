@@ -52,12 +52,12 @@ export function OnboardingWizard({
     <div className="space-y-6">
       <div>
         <p className="text-sm text-gray-500">Step {step + 1} of {STEPS.length}</p>
-        <h1 className="text-2xl font-semibold">{current.title}</h1>
+        <h1>{current.title}</h1>
         <p className="text-gray-600">{current.intro}</p>
       </div>
       <ol className="flex gap-2" aria-label="Progress">
         {STEPS.map((s, i) => (
-          <li key={s.title} className={`h-1.5 flex-1 rounded-full ${i <= step ? 'bg-brand-600' : 'bg-gray-200'}`}>
+          <li key={s.title} className={`h-1.5 flex-1 rounded-full ${i <= step ? 'bg-forest' : 'bg-line'}`}>
             <span className="sr-only">{s.title}{i < step ? ' (done)' : i === step ? ' (current)' : ''}</span>
           </li>
         ))}

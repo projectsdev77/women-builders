@@ -10,7 +10,7 @@ export default async function ImportPage() {
   return (
     <div className="space-y-4">
       <Link href="/admin/prospects" className="text-sm underline">← Potential members</Link>
-      <h1 className="text-2xl font-semibold">Import potential members from CSV</h1>
+      <h1>Import potential members from CSV</h1>
       <div className="rounded-lg border border-gray-200 bg-white p-4 text-sm text-gray-700">
         <p>The first row must be a header. Recognized columns (any order, case-insensitive):</p>
         <p className="mt-1 font-mono text-xs">name, email, company, role, linkedInUrl, discoverySource, referrerName, referrerEmail</p>

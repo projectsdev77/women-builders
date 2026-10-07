@@ -23,7 +23,7 @@ export default async function ProspectsPage({ searchParams }: { searchParams: Re
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h1 className="text-2xl font-semibold">Potential members <span className="text-base font-normal text-gray-500">({pagination.total})</span></h1>
+        <h1>Potential members <span className="text-base font-normal text-gray-500">({pagination.total})</span></h1>
         <div className="flex gap-2">
           <Link href="/admin/prospects/import" className="inline-flex min-h-[44px] items-center rounded-md border border-gray-300 bg-white px-4 text-sm font-medium">Import CSV</Link>
           <AddProspect admins={admins} />

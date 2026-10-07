@@ -12,7 +12,7 @@ export default async function AuditPage({ searchParams }: { searchParams: { page
   const { entries, pagination } = await listAuditLog(page);
   return (
     <div className="space-y-4">
-      <h1 className="text-2xl font-semibold">Audit log</h1>
+      <h1>Audit log</h1>
       {entries.length === 0 ? <EmptyState title="No admin actions yet" /> : (
         <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white">
           <table className="w-full text-sm">

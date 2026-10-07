@@ -9,13 +9,13 @@ import { STATUS_LABELS, STATUS_TONE, fmtDay } from '@/components/admin/labels';
 
 export const metadata: Metadata = { title: 'Admin dashboard' };
 
-function Stat({ label, value, href, sub }: { label: string; value: number; href?: string; sub?: string }) {
+function Stat({ label, value, href, sub, tint }: { label: string; value: number; href?: string; sub?: string; tint?: string }) {
   const body = (
-    <Card className="h-full">
-      <p className="text-sm text-gray-600">{label}</p>
-      <p className="text-3xl font-semibold">{value.toLocaleString()}</p>
-      {sub && <p className="text-xs text-gray-500">{sub}</p>}
-    </Card>
+    <div className={`flex h-full flex-col gap-1 rounded-[18px] p-[18px] ${tint ?? 'bg-white'}`}>
+      <p className="text-[14px] font-semibold text-ink-muted">{label}</p>
+      <p className="font-display text-[40px] leading-none">{value.toLocaleString()}</p>
+      {sub && <p className="text-[13px]">{sub}</p>}
+    </div>
   );
   return href ? <Link href={href} className="block hover:opacity-90">{body}</Link> : body;
 }
@@ -31,7 +31,7 @@ export default async function AdminDashboard({ searchParams }: { searchParams: {
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
-        <h1 className="text-2xl font-semibold">Dashboard</h1>
+        <h1>Dashboard</h1>
         <form method="get" className="flex flex-wrap items-end gap-2">
           <div>
             <label htmlFor="from" className="block text-xs text-gray-600">From</label>
@@ -47,9 +47,9 @@ export default async function AdminDashboard({ searchParams }: { searchParams: {
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <Stat label="Active members" value={m.activeMembers} href="/admin/members?status=ACTIVE" sub={`${m.newMembersInRange} new in range`} />
-        <Stat label="Invitation requests to review" value={m.requests.open} href="/admin/requests" sub={m.requests.overdue ? `${m.requests.overdue} waiting over 3 weeks` : 'None overdue'} />
+        <Stat label="Invitation requests to review" tint="bg-founder-tint" value={m.requests.open} href="/admin/requests" sub={m.requests.overdue ? `${m.requests.overdue} waiting over 3 weeks` : 'None overdue'} />
         <Stat label="Open reports" value={m.openReports} href="/admin/reports" />
-        <Stat label="Follow-ups in next 7 days" value={m.upcomingFollowUps.length} href="/admin/follow-ups" />
+        <Stat label="Follow-ups in next 7 days" tint="bg-butter-tint" value={m.upcomingFollowUps.length} href="/admin/follow-ups" />
         <Stat label="Active in the last 30 days" value={m.activeLast30Days} sub={`of ${m.activeMembers} members`} />
         <Stat label="Introductions in range" value={m.introductions.made} sub={`${m.introductions.asked} asked · ${m.introductions.made} made · ${m.introductions.accepted} accepted`} />
         <Stat label="Team introductions in range" value={m.introductions.teamMade} href="/admin/introductions?status=HANDLED" sub={`${m.introductions.teamAccepted} accepted · ${m.introductions.teamWaiting} waiting`} />
@@ -63,7 +63,7 @@ export default async function AdminDashboard({ searchParams }: { searchParams: {
               <div key={g.month} className="flex flex-1 flex-col items-center gap-1">
                 <span className="text-xs text-gray-600">{g.newMembers || ''}</span>
                 <div className="flex h-28 w-full items-end">
-                  <div className="w-full rounded-t bg-brand-500" style={{ height: `${(g.newMembers / maxGrowth) * 100}%`, minHeight: g.newMembers ? 4 : 1 }} />
+                  <div className="w-full rounded-t bg-forest" style={{ height: `${(g.newMembers / maxGrowth) * 100}%`, minHeight: g.newMembers ? 4 : 1 }} />
                 </div>
                 <span className="text-[10px] text-gray-500">{g.month.slice(5)}</span>
               </div>

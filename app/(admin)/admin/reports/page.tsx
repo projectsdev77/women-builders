@@ -15,7 +15,7 @@ export default async function ReportsPage({ searchParams }: { searchParams: { st
   const reports = await listReports(status);
   return (
     <div className="space-y-4">
-      <h1 className="text-2xl font-semibold">Reports</h1>
+      <h1>Reports</h1>
       <nav aria-label="Report status" className="flex gap-3 text-sm">
         {TABS.map((t) => (
           <Link key={t} href={`/admin/reports?status=${t}`} aria-current={t === status ? 'page' : undefined} className={t === status ? 'font-semibold underline' : 'underline'}>

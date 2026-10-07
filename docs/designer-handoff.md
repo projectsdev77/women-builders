@@ -7,6 +7,8 @@
 
 You shouldn't need anything else, but questions are welcome (section 15).
 
+> **Update:** the designer's visual guide (Homepage v2, Member App v2, Member Card v2, Account v2, Design System) is now implemented across the app. Admin, edit profile, settings, onboarding, error pages and emails follow the same system using the legacy-r2 admin shell. The screenshots in `docs/handoff-screens/` show the earlier placeholder UI.
+
 The platform is **built and working**, with placeholder styling. Your job is the visual and interaction design; everything listed here already exists and behaves as described. Screenshots of the current placeholder UI are in `docs/handoff-screens/`. **Treat them as wireframes showing content and structure, not as a style to follow.**
 
 **What changed since the previous handoff (R2):**

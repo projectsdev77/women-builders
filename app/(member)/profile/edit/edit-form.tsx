@@ -26,7 +26,7 @@ export function ProfileEditForm({ initial }: { initial: EditableProfile }) {
     >
       <div className="flex items-center justify-between">
         <h1>Edit profile</h1>
-        <Link href="/profile" className="text-sm text-brand-700 underline">View my profile</Link>
+        <Link href="/profile" className="text-[14px] font-semibold underline underline-offset-4">View my profile</Link>
       </div>
       <div className="sticky top-0 z-10">
         <CompletenessMeter profile={editor.profile} />

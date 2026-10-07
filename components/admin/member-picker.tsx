@@ -24,7 +24,7 @@ export function MemberPicker({ id, label, value, onChange }: { id: string; label
       {value.length > 0 && (
         <ul className="flex flex-wrap gap-2">
           {value.map((m) => (
-            <li key={m.id} className="inline-flex items-center gap-1 rounded-full bg-brand-50 px-3 py-1 text-sm">
+            <li key={m.id} className="inline-flex items-center gap-1 rounded-full bg-builder-tint px-3 py-1 text-[14px] font-semibold">
               {m.name}
               <button type="button" aria-label={`Remove ${m.name}`} className="px-1 text-gray-600" onClick={() => onChange(value.filter((v) => v.id !== m.id))}>×</button>
             </li>

@@ -65,7 +65,7 @@ export function SettingsForm({ initial, current }: { initial: SiteSettings; curr
               <tr key={k}>
                 <td className="py-2">{NUMBER_LABELS[k]}</td>
                 <td>{current[k].toLocaleString('en-US')}</td>
-                <td><Input aria-label={`${NUMBER_LABELS[k]} threshold`} type="number" min={0} className="w-28" value={s.publicNumbers.thresholds[k]} onChange={(e) => setThreshold(k, Number(e.target.value))} /></td>
+                <td><Input aria-label={`${NUMBER_LABELS[k]} threshold`} type="number" min={0} className="!w-28" value={s.publicNumbers.thresholds[k]} onChange={(e) => setThreshold(k, Number(e.target.value))} /></td>
                 <td><input type="checkbox" aria-label={`Hide ${NUMBER_LABELS[k]}`} checked={s.publicNumbers.hidden.includes(k)} onChange={(e) => toggleHidden(k, e.target.checked)} /></td>
               </tr>
             ))}
