@@ -13,6 +13,7 @@ export function AcceptCharterButton() {
     <div className="space-y-2">
       {error && <Notice tone="error">{error}</Notice>}
       <Button
+        size="lg"
         disabled={busy}
         onClick={async () => {
           setBusy(true);

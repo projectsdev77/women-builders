@@ -2,7 +2,8 @@
 
 import { Suspense, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Button, Card, Field, Input, Notice } from '@/components/ui';
+import { Button, Field, Input, Notice } from '@/components/ui';
+import { AuthShell, AuthTitle } from '@/components/public/auth-shell';
 import { api, firstError, type ApiError } from '@/lib/client/api';
 
 function ResetForm() {
@@ -34,18 +35,18 @@ function ResetForm() {
       >
         <Input id="password" type="password" autoComplete="new-password" value={password} onChange={(e) => setPassword(e.target.value)} />
       </Field>
-      <Button type="submit" className="w-full" disabled={busy}>Set new password</Button>
+      <Button type="submit" size="lg" className="w-full" disabled={busy}>Set new password</Button>
     </form>
   );
 }
 
 export default function ResetPasswordPage() {
   return (
-    <Card className="space-y-4 p-6">
-      <h1 className="text-2xl font-semibold">Choose a new password</h1>
+    <AuthShell art="lavender" kicker="Almost there" line="Choose something only you would guess.">
+      <AuthTitle title="Choose a new password." />
       <Suspense>
         <ResetForm />
       </Suspense>
-    </Card>
+    </AuthShell>
   );
 }

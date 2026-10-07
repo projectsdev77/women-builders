@@ -26,7 +26,7 @@ describe('public showcase (R3 F16)', () => {
     await setShowcaseOptIn(ada.id, true);
     await setShowcase(admin.id, [ada.id]);
     expect(await publicShowcase()).toEqual([
-      { name: 'Ada', headline: 'Founder, Paystride', role: 'Founder', city: 'Lagos, Nigeria', photoUrl: null },
+      { name: 'Ada', headline: 'Founder, Paystride', role: 'Founder', roleKey: 'FOUNDER', city: 'Lagos, Nigeria', photoUrl: null },
     ]);
     expect(await isShowcased(ada.id)).toBe(true);
     expect(await isShowcased(bea.id)).toBe(false);

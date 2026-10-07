@@ -132,6 +132,7 @@ export async function publicShowcase() {
       name: u.name,
       headline: p.headline,
       role: ROLE_LABELS[p.primaryRole],
+      roleKey: p.primaryRole,
       // Respect "location hidden from non-connections": the public is not a connection.
       city: p.hiddenFields.includes('location') ? null : formatLocation(p.city, p.country) || null,
       photoUrl: p.photoKey ? `/api/public/showcase-photo/${u.id}?v=${p.photoVersion}` : null,

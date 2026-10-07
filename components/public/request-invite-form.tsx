@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { Button, Field, Input, Notice, Select, Textarea } from '@/components/ui';
+import { CheckRow, RolePicker } from '@/components/ui/choice';
 import { api, firstError, type ApiError } from '@/lib/client/api';
 import { countryOptions } from '@/lib/countries';
 
@@ -18,10 +19,8 @@ const EMPTY = { name: '', email: '', linkedInUrl: '', primaryRole: '', city: '',
 
 /** The public front door (R3 F3). Used on /request-invite and on the homepage. */
 export function RequestInviteForm({
-  compact = false,
   waitlist = null,
 }: {
-  compact?: boolean;
   /** Applications are closed: the form becomes "Join the waitlist" (R3 F21, R2). */
   waitlist?: { nextReview: string | null } | null;
 }) {
@@ -36,19 +35,21 @@ export function RequestInviteForm({
 
   if (sent) {
     return (
-      <Notice tone="success">
-        {waitlist ? (
-          <>Thank you. You&apos;re on the waitlist. {waitlist.nextReview ? `${waitlist.nextReview}. ` : ''}You&apos;ll hear back within three weeks of our next review, either way.</>
-        ) : (
-          <>Thank you. We&apos;ve received your request. Our team reads every request, and you&apos;ll hear back within three weeks, either way.</>
-        )}
-      </Notice>
+      <div role="status" className="flex flex-col items-start gap-4 rounded-[28px] bg-builder-tint p-[clamp(28px,4vw,48px)]">
+        <span aria-hidden className="flex h-[72px] w-[72px] items-center justify-center rounded-full bg-forest text-[30px] text-cream">✓</span>
+        <h3 className="text-[36px] leading-[1.05]">{waitlist ? "You're on the waitlist." : 'Thank you.'}</h3>
+        <p className="text-[17px] leading-relaxed">
+          {waitlist
+            ? `${waitlist.nextReview ? `${waitlist.nextReview}. ` : ''}We review requests in rounds, and you'll hear back within three weeks of our next review, either way.`
+            : "We've received your request. Our team reads every request, and you'll hear back within three weeks, either way."}
+        </p>
+      </div>
     );
   }
 
   return (
     <form
-      className="space-y-4"
+      className="grid gap-[18px] sm:grid-cols-2"
       noValidate
       onSubmit={async (e) => {
         e.preventDefault();
@@ -60,56 +61,56 @@ export function RequestInviteForm({
         setSent(true);
       }}
     >
-      {error && !Object.keys(fe).length && <Notice tone="error">{error.message}</Notice>}
-      <div className={compact ? 'grid gap-4 sm:grid-cols-2' : 'space-y-4'}>
-        <Field id="ri-name" label="Full name" required error={firstError(fe, 'name')}>
-          <Input id="ri-name" autoComplete="name" value={form.name} onChange={set('name')} {...aria('name')} />
-        </Field>
-        <Field id="ri-email" label="Email" required error={firstError(fe, 'email')}>
-          <Input id="ri-email" type="email" autoComplete="email" value={form.email} onChange={set('email')} {...aria('email')} />
-        </Field>
-        <Field id="ri-primaryRole" label="Your primary role" required error={firstError(fe, 'primaryRole')}>
-          <Select id="ri-primaryRole" value={form.primaryRole} onChange={set('primaryRole')} {...aria('primaryRole')}>
-            <option value="">Choose…</option>
-            {ROLES.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
-          </Select>
-        </Field>
-        <Field id="ri-linkedin" label="LinkedIn profile" hint="Optional, but it helps us review faster" error={firstError(fe, 'linkedInUrl')}>
+      {error && !Object.keys(fe).length && <div className="sm:col-span-2"><Notice tone="error">{error.message}</Notice></div>}
+      <Field id="ri-name" label="Full name" required error={firstError(fe, 'name')}>
+        <Input id="ri-name" autoComplete="name" value={form.name} onChange={set('name')} {...aria('name')} />
+      </Field>
+      <Field id="ri-email" label="Email" required error={firstError(fe, 'email')}>
+        <Input id="ri-email" type="email" autoComplete="email" value={form.email} onChange={set('email')} {...aria('email')} />
+      </Field>
+      <fieldset className="sm:col-span-2">
+        <legend className="mb-2.5 text-[15px] font-semibold">Your primary role <span aria-hidden className="text-danger">*</span></legend>
+        <RolePicker value={form.primaryRole} onChange={(v) => setForm((f) => ({ ...f, primaryRole: v }))} name="ri-primaryRole" describedBy={fe.primaryRole ? 'ri-primaryRole-error' : undefined} invalid={!!fe.primaryRole} />
+        {fe.primaryRole && <p id="ri-primaryRole-error" className="mt-1.5 text-[13px] font-medium text-danger">{firstError(fe, 'primaryRole')}</p>}
+      </fieldset>
+      <Field id="ri-city" label="City" error={firstError(fe, 'city')}>
+        <Input id="ri-city" autoComplete="address-level2" value={form.city} onChange={set('city')} />
+      </Field>
+      <Field id="ri-country" label="Country" required error={firstError(fe, 'country')}>
+        <Select id="ri-country" autoComplete="country" value={form.country} onChange={set('country')} {...aria('country')}>
+          <option value="">Choose…</option>
+          {COUNTRIES.map((c) => <option key={c.code} value={c.code}>{c.name}</option>)}
+        </Select>
+      </Field>
+      <div className="sm:col-span-2">
+        <Field id="ri-linkedin" label="LinkedIn profile · optional, helps us review faster" error={firstError(fe, 'linkedInUrl')}>
           <Input id="ri-linkedin" inputMode="url" placeholder="https://www.linkedin.com/in/your-name" value={form.linkedInUrl} onChange={set('linkedInUrl')} {...aria('linkedInUrl')} />
         </Field>
-        <Field id="ri-city" label="City" error={firstError(fe, 'city')}>
-          <Input id="ri-city" autoComplete="address-level2" value={form.city} onChange={set('city')} />
+      </div>
+      <div className="sm:col-span-2">
+        <Field id="ri-statement" label="What are you building or working on?" required hint="A few sentences is perfect." error={firstError(fe, 'statement')}>
+          <Textarea id="ri-statement" rows={4} maxLength={1000} value={form.statement} onChange={set('statement')} {...aria('statement')} />
         </Field>
-        <Field id="ri-country" label="Country" required error={firstError(fe, 'country')}>
-          <Select id="ri-country" autoComplete="country" value={form.country} onChange={set('country')} {...aria('country')}>
-            <option value="">Choose…</option>
-            {COUNTRIES.map((c) => <option key={c.code} value={c.code}>{c.name}</option>)}
-          </Select>
+        <p className="mt-1 text-right font-mono text-[12px] text-ink-subtle" aria-live="off">{form.statement.length}/1,000</p>
+      </div>
+      <div className="sm:col-span-2">
+        <Field id="ri-referrer" label="Who referred you? · optional" error={firstError(fe, 'referrer')}>
+          <Input id="ri-referrer" value={form.referrer} onChange={set('referrer')} />
         </Field>
       </div>
-      <Field id="ri-statement" label="What are you building or working on?" required hint="A few sentences is perfect." error={firstError(fe, 'statement')}>
-        <Textarea id="ri-statement" rows={4} maxLength={1000} value={form.statement} onChange={set('statement')} {...aria('statement')} />
-      </Field>
-      <Field id="ri-referrer" label="Who referred you?" hint="Optional" error={firstError(fe, 'referrer')}>
-        <Input id="ri-referrer" value={form.referrer} onChange={set('referrer')} />
-      </Field>
       {/* Honeypot for bots: hidden from people and assistive technology. */}
       <div aria-hidden="true" className="absolute left-[-9999px] h-px w-px overflow-hidden">
         <label htmlFor="ri-website">Website</label>
         <input id="ri-website" tabIndex={-1} autoComplete="off" value={form.website} onChange={set('website')} />
       </div>
-      <div>
-        <label className="flex items-start gap-2 text-sm">
-          <input type="checkbox" className="mt-1" checked={consent} onChange={(e) => setConsent(e.target.checked)} aria-describedby={fe.consent ? 'ri-consent-error' : undefined} />
-          <span>
-            I agree that Women Builders may store these details to review my request. See the{' '}
-            <Link href="/privacy" className="underline">privacy policy</Link>.
-          </span>
-        </label>
-        {fe.consent && <p id="ri-consent-error" className="text-xs text-red-600">{firstError(fe, 'consent')}</p>}
+      <div className="sm:col-span-2">
+        <CheckRow checked={consent} onChange={setConsent} describedBy={fe.consent ? 'ri-consent-error' : undefined}>
+          I agree that Women Builders may store these details to review my request. See the{' '}
+          <Link href="/privacy" className="underline">privacy policy</Link>.
+        </CheckRow>
+        {fe.consent && <p id="ri-consent-error" className="mt-1.5 text-[13px] font-medium text-danger">{firstError(fe, 'consent')}</p>}
       </div>
-      <Button type="submit" disabled={busy} className="w-full sm:w-auto">{busy ? 'Sending…' : waitlist ? 'Join the waitlist' : 'Request an invitation'}</Button>
-      <p className="text-xs text-gray-500">No newsletter, no spam. One reply from a human, either way.</p>
+      <Button type="submit" size="lg" disabled={busy} className="sm:col-span-2">{busy ? 'Sending…' : waitlist ? 'Join the waitlist' : 'Request an invitation'}</Button>
     </form>
   );
 }
