@@ -39,7 +39,7 @@ export default async function GatheringPage({ params }: { params: { id: string }
           {g.mySeat && <Badge tone={SEAT_LABEL[g.mySeat.status][1]}>{SEAT_LABEL[g.mySeat.status][0]}</Badge>}
           {g.isHost && <Badge tone="green">You&apos;re hosting</Badge>}
         </div>
-        <h1 className="text-2xl font-semibold">{g.title}</h1>
+        <h1>{g.title}</h1>
         <dl className="grid gap-3 sm:grid-cols-2">
           <div>
             <dt className="text-xs font-medium uppercase text-gray-500">When</dt>

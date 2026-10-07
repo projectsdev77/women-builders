@@ -56,7 +56,7 @@ export default async function IntroductionsPage({ searchParams }: { searchParams
   return (
     <div className="mx-auto max-w-3xl space-y-4">
       <div>
-        <h1 className="text-2xl font-semibold">Introductions</h1>
+        <h1>Introductions</h1>
         <p className="text-sm text-gray-600">Warm introductions through people who know you both. Nobody is ever told who said no.</p>
       </div>
       <nav aria-label="Introductions" className="flex gap-4 border-b border-gray-200">

@@ -17,7 +17,7 @@ export default async function MessagesPage() {
   const conversations = await listConversations(user.id);
   return (
     <div className="mx-auto max-w-3xl space-y-4">
-      <h1 className="text-2xl font-semibold">Messages</h1>
+      <h1>Messages</h1>
       {conversations.length === 0 ? (
         <EmptyState title="No conversations yet">
           You can message anyone you&apos;re connected with. <Link href="/connections" className="underline">See your connections</Link>

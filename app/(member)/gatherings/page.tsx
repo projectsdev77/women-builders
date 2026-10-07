@@ -19,7 +19,7 @@ export default async function GatheringsPage({ searchParams }: { searchParams: R
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="text-2xl font-semibold">Gatherings</h1>
+        <h1>Gatherings</h1>
         <p className="text-sm text-gray-600">Small dinners and working sessions, in person and online. Seats are limited so everyone gets to talk.</p>
       </div>
       <nav aria-label="Gatherings" className="flex gap-4 border-b border-gray-200">

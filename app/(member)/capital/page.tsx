@@ -106,7 +106,7 @@ export default async function CapitalPage({ searchParams }: { searchParams: SP }
   );
   const intro = (
     <div className="space-y-1">
-      <h1 className="text-2xl font-semibold">Capital</h1>
+      <h1>Capital</h1>
       <p className="text-sm text-gray-600">A view of the same community, for raising and investing. Every role matters equally here, and Discover shows everyone.</p>
     </div>
   );

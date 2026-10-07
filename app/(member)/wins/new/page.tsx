@@ -22,7 +22,7 @@ export default async function NewWinPage({ searchParams }: { searchParams: { wit
   return (
     <div className="mx-auto max-w-2xl space-y-4">
       <Link href="/wins" className="text-sm text-brand-700 underline">← Wins</Link>
-      <h1 className="text-2xl font-semibold">Share a win</h1>
+      <h1>Share a win</h1>
       <p className="text-sm text-gray-600">Something came of it? Tell us. It celebrates the people involved and shows the network works.</p>
       <Card className="p-6">
         <WinForm

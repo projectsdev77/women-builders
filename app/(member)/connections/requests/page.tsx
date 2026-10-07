@@ -17,7 +17,7 @@ export default async function RequestsPage() {
     <div className="space-y-8">
       <div>
         <Link href="/connections" className="text-sm text-brand-700 underline">← Connections</Link>
-        <h1 className="text-2xl font-semibold">Connection requests</h1>
+        <h1>Connection requests</h1>
       </div>
       <section aria-labelledby="incoming" className="space-y-3">
         <h2 id="incoming" className="text-lg font-semibold">Received ({incoming.length})</h2>

@@ -19,7 +19,7 @@ export default async function ConnectionsPage({ searchParams }: { searchParams: 
     <div className="space-y-4">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold">Connections</h1>
+          <h1>Connections</h1>
           <p className="text-gray-600">{connections.length} {q ? 'matching' : 'total'}</p>
         </div>
         <Link href="/connections/requests" className="inline-flex min-h-[44px] items-center rounded-md border border-gray-300 bg-white px-4 text-sm font-medium">

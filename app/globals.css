@@ -44,3 +44,10 @@ dialog::backdrop {
     animation: none !important;
   }
 }
+
+/* App page titles (designer: Young Serif clamp(36px,4.6vw,56px)). */
+main h1 {
+  font-size: clamp(36px, 4.6vw, 56px);
+  line-height: 1;
+  letter-spacing: -0.02em;
+}

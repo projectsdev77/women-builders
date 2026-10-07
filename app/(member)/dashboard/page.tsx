@@ -49,7 +49,7 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-semibold">Welcome back, {user.name.split(' ')[0]}</h1>
+      <h1>Welcome back, {user.name.split(' ')[0]}</h1>
       {!ready && (
         <Notice tone="warning">
           Your profile is {profile.completenessScore}% complete

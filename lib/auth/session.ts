@@ -24,6 +24,8 @@ export interface SessionUser {
     secondaryRoles: RoleType[];
     completenessScore: number;
     onboardingCompletedAt: Date | null;
+    photoKey: string | null;
+    photoVersion: number;
   } | null;
 }
 
@@ -52,7 +54,7 @@ export async function findSessionUser(token: string): Promise<SessionUser | null
       user: {
         include: {
           profile: {
-            select: { primaryRole: true, secondaryRoles: true, completenessScore: true, onboardingCompletedAt: true },
+            select: { primaryRole: true, secondaryRoles: true, completenessScore: true, onboardingCompletedAt: true, photoKey: true, photoVersion: true },
           },
         },
       },

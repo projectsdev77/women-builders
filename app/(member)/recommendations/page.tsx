@@ -14,7 +14,7 @@ export default async function RecommendationsPage() {
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="text-2xl font-semibold">Recommended for you</h1>
+        <h1>Recommended for you</h1>
         <p className="text-gray-600">Members matched to your roles, needs, offerings and expertise.</p>
       </div>
       {recommendations.length === 0 ? (
