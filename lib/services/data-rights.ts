@@ -3,6 +3,9 @@ import { AppError, Errors } from '@/lib/errors';
 import { verifyPassword } from '@/lib/auth/password';
 import { removeProfilePhoto } from './photos';
 import { closeIntroductionsFor } from './introductions';
+import { promoteFromWaitlist, summary } from './gatherings';
+import { enqueueEmail } from '@/lib/email/outbox';
+import { templates } from '@/lib/email/templates';
 
 async function confirmPassword(userId: string, password: string) {
   const user = await prisma.user.findUnique({ where: { id: userId } });
@@ -75,6 +78,10 @@ export async function deleteAccount(userId: string, password: string) {
   // Photo files live outside the database, so remove them first (R3 F19).
   await removeProfilePhoto(userId);
   await prisma.$transaction((tx) => closeIntroductionsFor(tx, userId));
+  const soonSeats = await prisma.seatRequest.findMany({
+    where: { userId, status: 'CONFIRMED', gathering: { status: 'SCHEDULED', startsAt: { gt: new Date(), lt: new Date(Date.now() + 7 * 86_400_000) } } },
+    include: { gathering: true },
+  });
   await prisma.$transaction([
     prisma.session.deleteMany({ where: { userId } }),
     prisma.authToken.deleteMany({ where: { userId } }),
@@ -112,4 +119,16 @@ export async function deleteAccount(userId: string, password: string) {
       },
     }),
   ]);
+  // Seats freed at gatherings in the next 7 days: open mode moves the waitlist up; admins are told (R3 F19).
+  if (soonSeats.length) {
+    await prisma.$transaction(async (tx) => {
+      const admins = await tx.user.findMany({ where: { isAdmin: true, accountStatus: 'ACTIVE' }, select: { email: true } });
+      for (const s of soonSeats) {
+        await promoteFromWaitlist(tx, s.gatheringId);
+        for (const a of admins) {
+          await enqueueEmail(tx, { to: a.email, kind: 'seat_freed', content: templates.seatFreedByDeletion(summary(s.gathering)) });
+        }
+      }
+    });
+  }
 }

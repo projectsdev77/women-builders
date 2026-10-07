@@ -49,6 +49,14 @@ export const LOGIN = {
 export const COMPLETENESS_THRESHOLD = 60; // G15
 
 // Shown on the application form (G10). Policy, not code; edit freely.
+/**
+ * A public number appears only once it reaches its threshold (R3 F1). R2 moves these into
+ * admin-editable site settings (F26).
+ */
+export const PUBLIC_NUMBER_THRESHOLDS = { members: 50, countries: 5, introductions: 25, gatherings: 3 } as const;
+
+export const CONTACT_EMAIL = process.env.CONTACT_EMAIL ?? 'hello@womenbuilders.com';
+
 export const ELIGIBILITY_STATEMENT =
   'Women Builders is a community for women founders, operators, investors and builders.';
 

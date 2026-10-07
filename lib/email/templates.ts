@@ -119,6 +119,13 @@ export const templates = {
       paragraphs: [`${g.when} · ${g.where}`, reason, "We're sorry. We hope to see you at another gathering soon."],
       cta: { label: 'See upcoming gatherings', url: `${appUrl()}/gatherings` },
     }),
+  seatFreedByDeletion: (g: GatheringSummary) =>
+    layout({
+      subject: `A seat opened up: ${g.title}`,
+      heading: `A confirmed guest left ${g.title}`,
+      paragraphs: [`${g.when} · ${g.where}`, 'A confirmed guest deleted her account, so a seat is free. You may want to offer it to someone on the waitlist.'],
+      cta: { label: 'Open the request queue', url: `${appUrl()}/admin/gatherings/${g.id}` },
+    }),
   gatheringMessage: (g: GatheringSummary, subject: string, body: string) =>
     layout({
       subject: `${g.title}: ${subject}`,

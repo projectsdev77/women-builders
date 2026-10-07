@@ -49,7 +49,8 @@ export default async function AdminDashboard({ searchParams }: { searchParams: {
         <Stat label="Invitation requests to review" value={m.requests.open} href="/admin/requests" sub={m.requests.overdue ? `${m.requests.overdue} waiting over 3 weeks` : 'None overdue'} />
         <Stat label="Open reports" value={m.openReports} href="/admin/reports" />
         <Stat label="Follow-ups in next 7 days" value={m.upcomingFollowUps.length} href="/admin/follow-ups" />
-        <Stat label="Introductions made in range" value={m.introductions.made} sub={`${m.introductions.accepted} accepted`} />
+        <Stat label="Active in the last 30 days" value={m.activeLast30Days} sub={`of ${m.activeMembers} members`} />
+        <Stat label="Introductions in range" value={m.introductions.made} sub={`${m.introductions.asked} asked · ${m.introductions.made} made · ${m.introductions.accepted} accepted`} />
         <Stat label="Team introductions in range" value={m.introductions.teamMade} href="/admin/introductions?status=HANDLED" sub={`${m.introductions.teamAccepted} accepted · ${m.introductions.teamWaiting} waiting`} />
       </div>
 
@@ -67,6 +68,31 @@ export default async function AdminDashboard({ searchParams }: { searchParams: {
               </div>
             ))}
           </div>
+        </Card>
+
+        <Card className="space-y-3">
+          <h2 className="font-semibold">Upcoming gatherings</h2>
+          {m.upcomingGatherings.length === 0 ? <p className="text-sm text-gray-600">None scheduled. <Link className="underline" href="/admin/gatherings/new">Create one</Link></p> : (
+            <ul className="space-y-2 text-sm">
+              {m.upcomingGatherings.map((g) => (
+                <li key={g.id} className="flex items-center justify-between gap-2">
+                  <Link className="underline" href={`/admin/gatherings/${g.id}`}>{g.title}</Link>
+                  <span className="text-gray-700">{g.confirmed}/{g.capacity} seats{g.pending ? ` · ${g.pending} to review` : ''}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </Card>
+
+        <Card className="space-y-3">
+          <h2 className="font-semibold">Members by country (top 10)</h2>
+          {m.membersByCountry.length === 0 ? <p className="text-sm text-gray-600">No countries yet.</p> : (
+            <ul className="space-y-1 text-sm">
+              {m.membersByCountry.map((c) => (
+                <li key={c.country} className="flex justify-between"><span>{c.country}</span><span className="font-medium">{c.count}</span></li>
+              ))}
+            </ul>
+          )}
         </Card>
 
         <Card className="space-y-3">

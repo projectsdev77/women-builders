@@ -492,14 +492,15 @@ export async function listTeamIntroductions(status: 'ASKED' | 'HANDLED' = 'ASKED
 
 export async function introductionCounts(from?: Date, to?: Date) {
   const range = from && to ? { gte: from, lt: to } : undefined;
-  const [made, accepted, teamMade, teamAccepted, teamWaiting] = await Promise.all([
+  const [asked, made, accepted, teamMade, teamAccepted, teamWaiting] = await Promise.all([
+    prisma.introduction.count({ where: { viaTeam: false, ...(range ? { createdAt: range } : {}) } }),
     prisma.introduction.count({ where: { viaTeam: false, forwardedAt: range ?? { not: null } } }),
     prisma.introduction.count({ where: { viaTeam: false, status: 'ACCEPTED', ...(range ? { respondedAt: range } : {}) } }),
     prisma.introduction.count({ where: { viaTeam: true, forwardedAt: range ?? { not: null } } }),
     prisma.introduction.count({ where: { viaTeam: true, status: 'ACCEPTED', ...(range ? { respondedAt: range } : {}) } }),
     prisma.introduction.count({ where: { viaTeam: true, status: 'ASKED', introducerDueAt: { gt: new Date() } } }),
   ]);
-  return { made, accepted, teamMade, teamAccepted, teamWaiting };
+  return { asked, made, accepted, teamMade, teamAccepted, teamWaiting };
 }
 
 /** Daily: close requests whose time ran out. Nobody is notified (R3 F12). */

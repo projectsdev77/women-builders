@@ -9,18 +9,35 @@ import { COMPLETENESS_THRESHOLD } from '@/lib/config';
 import { MemberCard } from '@/components/member/member-card';
 import { InvestingCheck } from '@/components/member/investing-check';
 import { needsInvestingCheck } from '@/lib/services/investing';
+import { introductionsAwaiting } from '@/lib/services/introductions';
+import { listGatherings } from '@/lib/services/gatherings';
+import { formatInZone } from '@/lib/time';
 import { Avatar, Card, EmptyState, Notice } from '@/components/ui';
 
 export const metadata: Metadata = { title: 'Home' };
 
 export default async function DashboardPage() {
   const user = await pageActiveMember();
-  const [profile, incoming, recs, conversations] = await Promise.all([
+  const [profile, incoming, recs, conversations, introsWaiting, upcoming, mine, seatUpdates] = await Promise.all([
     prisma.profile.findUniqueOrThrow({ where: { userId: user.id } }),
     prisma.connectionRequest.count({ where: { receiverId: user.id, status: 'PENDING', expiresAt: { gt: new Date() } } }),
     getRecommendations(user.id),
     listConversations(user.id),
+    introductionsAwaiting(user.id),
+    listGatherings(user.id, { view: 'upcoming', city: '' }),
+    listGatherings(user.id, { view: 'mine', city: '' }),
+    // Seat decisions in the last 14 days (R3 F18 "seat updates").
+    prisma.seatRequest.count({
+      where: { userId: user.id, status: { in: ['CONFIRMED', 'WAITLISTED', 'DECLINED'] }, decidedAt: { gt: new Date(Date.now() - 14 * 86_400_000) }, gathering: { startsAt: { gt: new Date() } } },
+    }),
   ]);
+  const myNext = mine.filter((g) => !g.past && g.status === 'SCHEDULED' && (g.mySeat === 'CONFIRMED' || g.hosts.some((h) => h.id === user.id))).slice(0, 3);
+  const nearby = upcoming.filter((g) => !g.mySeat && g.rank < 2 && !myNext.some((m) => m.id === g.id)).slice(0, 3);
+  const todo = [
+    incoming > 0 && { href: '/connections/requests', text: `${incoming} connection ${incoming === 1 ? 'request' : 'requests'} waiting` },
+    introsWaiting > 0 && { href: '/introductions', text: `${introsWaiting} ${introsWaiting === 1 ? 'introduction needs' : 'introductions need'} your answer` },
+    seatUpdates > 0 && { href: '/gatherings?view=mine', text: `${seatUpdates} gathering seat ${seatUpdates === 1 ? 'update' : 'updates'}` },
+  ].filter(Boolean) as Array<{ href: string; text: string }>;
   const unread = conversations.filter((c) => c.unreadCount > 0);
   const ready = canSendConnectionRequests(profile);
   const required = missingRequiredFields(profile);
@@ -35,7 +52,22 @@ export default async function DashboardPage() {
           <Link href="/profile/edit" className="underline">Finish your profile</Link>
         </Notice>
       )}
+      {!profile.country && (
+        <Notice tone="warning">
+          Add your country so people near you can find you and you hear about gatherings nearby. <Link href="/profile/edit" className="underline">Add it now</Link>
+        </Notice>
+      )}
       {needsInvestingCheck(profile) && <InvestingCheck />}
+      {todo.length > 0 && (
+        <section aria-labelledby="todo" className="space-y-2">
+          <h2 id="todo" className="text-lg font-semibold">To do</h2>
+          <ul className="divide-y divide-gray-200 rounded-lg border border-gray-200 bg-white">
+            {todo.map((t) => (
+              <li key={t.href}><Link href={t.href} className="flex min-h-[44px] items-center justify-between p-3 hover:bg-gray-50">{t.text}<span aria-hidden>→</span></Link></li>
+            ))}
+          </ul>
+        </section>
+      )}
       <div className="grid gap-4 sm:grid-cols-3">
         <Link href="/connections/requests"><Card className="h-full hover:bg-gray-50"><p className="text-sm text-gray-600">Connection requests</p><p className="text-3xl font-semibold">{incoming}</p></Card></Link>
         <Link href="/messages"><Card className="h-full hover:bg-gray-50"><p className="text-sm text-gray-600">Unread conversations</p><p className="text-3xl font-semibold">{unread.length}</p></Card></Link>
@@ -55,6 +87,27 @@ export default async function DashboardPage() {
             ))}
           </ul>
         </section>
+      )}
+      {(myNext.length > 0 || nearby.length > 0) && (
+        <div className="grid gap-4 lg:grid-cols-2">
+          {[['Your next gatherings', myNext], ['Gatherings near you', nearby]].map(([title, list]) =>
+            (list as typeof myNext).length > 0 ? (
+              <section key={title as string} className="space-y-2">
+                <h2 className="text-lg font-semibold">{title as string}</h2>
+                <ul className="divide-y divide-gray-200 rounded-lg border border-gray-200 bg-white">
+                  {(list as typeof myNext).map((g) => (
+                    <li key={g.id}>
+                      <Link href={`/gatherings/${g.id}`} className="block p-3 hover:bg-gray-50">
+                        <span className="block font-medium">{g.title}</span>
+                        <span className="block text-sm text-gray-600">{formatInZone(g.startsAt, g.timeZone)} · {g.location}</span>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            ) : null,
+          )}
+        </div>
       )}
       <section className="space-y-3">
         <div className="flex items-center justify-between">
