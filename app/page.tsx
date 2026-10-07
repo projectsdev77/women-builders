@@ -6,6 +6,7 @@ import { getSessionUser } from '@/lib/auth/session';
 import { homeFor } from '@/lib/auth/guards';
 import { publicGatherings, publicNumbers } from '@/lib/services/public-site';
 import { getSiteSettings } from '@/lib/services/site-settings';
+import { publicQuotes, publicShowcase } from '@/lib/services/showcase';
 import { RequestInviteForm } from '@/components/public/request-invite-form';
 import { PublicFooter, PublicHeader } from '@/components/public/site-chrome';
 
@@ -37,7 +38,7 @@ const STEPS = ['Request an invitation', 'Our team reads it', 'You hear back with
 export default async function HomePage({ searchParams }: { searchParams: { deleted?: string; deactivated?: string } }) {
   const user = await getSessionUser();
   if (user && user.accountStatus === 'ACTIVE' && !searchParams.deleted) redirect(homeFor(user));
-  const [numbers, gatherings, settings] = await Promise.all([publicNumbers(), publicGatherings(), getSiteSettings()]);
+  const [numbers, gatherings, settings, featured, quotes] = await Promise.all([publicNumbers(), publicGatherings(), getSiteSettings(), publicShowcase(), publicQuotes()]);
   const waitlist = settings.applicationsOpen ? null : { nextReview: settings.nextReview };
 
   return (
@@ -138,6 +139,47 @@ export default async function HomePage({ searchParams }: { searchParams: { delet
                 ))}
               </ul>
               <p className="mt-3 text-sm text-gray-600">Gatherings are for members.</p>
+            </div>
+          </section>
+        )}
+
+ {(featured.length > 0 || quotes.length > 0) && (
+          <section aria-labelledby="members" className="bg-white py-16">
+            <div className="mx-auto max-w-5xl space-y-8 px-4">
+              <h2 id="members" className="text-2xl font-semibold">Some of the members</h2>
+              {featured.length > 0 && (
+                <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                  {featured.map((m) => (
+                    <li key={m.name} className="flex items-center gap-4">
+                      {m.photoUrl ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={m.photoUrl} alt="" width={72} height={72} className="rounded-full object-cover" style={{ width: 72, height: 72 }} />
+                      ) : (
+                        <span aria-hidden className="flex h-[72px] w-[72px] items-center justify-center rounded-full bg-brand-50 text-xl font-semibold text-brand-700">
+                          {m.name.split(' ').map((w) => w[0]).slice(0, 2).join('')}
+                        </span>
+                      )}
+                      <div className="min-w-0">
+                        <p className="font-semibold">{m.name}</p>
+                        <p className="text-sm text-gray-700">{m.headline}</p>
+                        <p className="text-xs text-gray-600">{[m.role, m.city].filter(Boolean).join(' · ')}</p>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              {quotes.length > 0 && (
+                <ul className="grid gap-6 md:grid-cols-2">
+                  {quotes.map((q) => (
+                    <li key={q.id}>
+                      <figure className="h-full rounded-lg border border-gray-200 p-5">
+                        <blockquote className="text-lg">“{q.text}”</blockquote>
+                        <figcaption className="mt-3 text-sm text-gray-600">{q.name}{q.role ? `, ${q.role}` : ''}</figcaption>
+                      </figure>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
           </section>
         )}

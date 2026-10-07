@@ -203,4 +203,15 @@ Not taken (see spec section 12): paid membership, Deal Flow, The Season program 
   - **Prompts:** daily, once per item. 60 days after an accepted introduction (to the requester) and 14 days after a gathering (to attendees). Preferences for win confirmations and prompts.
   - **Admin:** wins by type and month, from introductions and from gatherings, private investment total. The public "Wins shared" number uses the wins threshold.
   - **Deletion** keeps the count but drops the story text. The data export includes wins.
-- [ ] Step 9 (R2): Showcase and quotes (feature 23)
+- [x] Step 9 (R2): Showcase and quotes (feature 23)
+  - **Opt-in:** Settings → Public website: "Feature me on the public website" (off by default). Switching it off removes her immediately, including from the team's list.
+  - **Showcase:**
+    - Admins pick up to 6 opted-in members in Site settings, in order.
+    - The homepage shows name, photo, headline, role and city; city is left out when she hides her location.
+    - The only public photo route is `/api/public/showcase-photo/:id`, served only while she is opted in and featured; member photos stay members-only.
+  - **Quotes:**
+    - One quote from Settings (≤280), replaced by a newer one and withdrawable.
+    - Wins marked "may be quoted" with a story also go to the queue.
+    - Admins approve, decline or remove in Site settings; only approved quotes from active members appear.
+  - **Deletion** removes her quotes and her showcase spot.
+  - **The designer handoff** now covers steps 7–9 (votes, reviewer view, waitlist, site settings, wins, showcase), with 6 more screenshots.

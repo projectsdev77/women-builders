@@ -117,6 +117,10 @@ export async function logWin(authorId: string, input: WinInput) {
         participants: { create: participants.map((userId) => ({ userId })) },
       },
     });
+    // "May be quoted on the public site": the story goes to the quote approval queue (R3 F16).
+    if (input.visibility === 'QUOTABLE' && input.story) {
+      await tx.testimonial.create({ data: { authorId, text: input.story, winId: win.id } });
+    }
     const author = await tx.user.findUniqueOrThrow({ where: { id: authorId }, select: { name: true } });
     const what = `${WIN_TYPE_LABELS[input.type].toLowerCase()} together (${input.month})`;
     for (const userId of participants) {
@@ -333,5 +337,6 @@ async function promptOnce(userId: string, kind: 'INTRODUCTION' | 'GATHERING', re
 /** Account deletion: her wins keep their counts but lose their story text (R3 F19). */
 export async function anonymiseWinsFor(db: Tx, userId: string) {
   await db.win.updateMany({ where: { authorId: userId }, data: { story: null, visibility: 'ANONYMOUS' } });
+  await db.testimonial.deleteMany({ where: { authorId: userId } });
   await db.winParticipant.updateMany({ where: { userId, status: 'PENDING' }, data: { status: 'DECLINED', respondedAt: new Date() } });
 }

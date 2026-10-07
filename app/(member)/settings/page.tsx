@@ -8,15 +8,18 @@ import { PasswordSettings } from './password-settings';
 import { BlockedList } from './blocked-list';
 import { AccountSettings } from './account-settings';
 import { IntroductionSettings } from './introduction-settings';
+import { PublicPresence } from './public-presence';
+import { myPublicPresence } from '@/lib/services/showcase';
 
 export const metadata: Metadata = { title: 'Settings' };
 
 export default async function SettingsPage() {
   const user = await pageActiveMember();
-  const [prefs, blocked, intro] = await Promise.all([
+  const [prefs, blocked, intro, presence] = await Promise.all([
     prisma.notificationPreference.upsert({ where: { userId: user.id }, create: { userId: user.id }, update: {} }),
     listBlocked(user.id),
     prisma.user.findUniqueOrThrow({ where: { id: user.id }, select: { allowIntroRequests: true, preferIntroductions: true } }),
+    myPublicPresence(user.id),
   ]);
   return (
     <div className="mx-auto max-w-2xl space-y-6">
@@ -51,6 +54,10 @@ export default async function SettingsPage() {
       <Card className="space-y-4 p-6">
         <h2 className="text-lg font-semibold">Blocked members</h2>
         <BlockedList initial={blocked} />
+      </Card>
+      <Card className="space-y-4 p-6">
+        <h2 className="text-lg font-semibold">Public website</h2>
+        <PublicPresence initial={presence} />
       </Card>
       <Card className="space-y-4 p-6">
         <h2 className="text-lg font-semibold">Your account and data</h2>

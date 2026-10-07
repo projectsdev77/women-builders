@@ -98,6 +98,7 @@ model User {
   charterNoticeVersion Int? // last charter version we emailed about
   allowIntroRequests   Boolean  @default(true) // "Let members ask me for introductions" (R3 F12)
   preferIntroductions  Boolean  @default(false) // no direct connection requests (R3 F11)
+  showcaseOptIn        Boolean  @default(false) // "Feature me on the public website" (R3 F16)
   isReviewer           Boolean  @default(false) // member reviewer: votes on invitation requests (R3 F21, R2)
   lastActiveAt         DateTime       @default(now())
   createdAt            DateTime       @default(now())
@@ -131,6 +132,7 @@ model User {
   winsLogged              Win[]                      @relation("WinAuthor")
   winsWith                WinParticipant[]
   winPrompts              WinPrompt[]
+  testimonials            Testimonial[]
   gatheringsHosted        GatheringHost[]
   gatheringInvites        GatheringInvite[]
   seatRequests            SeatRequest[]
@@ -752,6 +754,7 @@ model Win {
   verifiedAt     DateTime?
   createdAt      DateTime         @default(now())
   participants   WinParticipant[]
+  testimonials   Testimonial[]
 
   @@index([authorId, createdAt])
   @@index([createdAt])
@@ -785,4 +788,30 @@ model WinPrompt {
   sentAt DateTime      @default(now())
 
   @@unique([userId, kind, refId])
+}
+
+// ---------------------------------------------------------------- R3 F16 (R2): public quotes
+
+enum TestimonialStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+/// A member's quote for the public site. Admins approve which ones appear.
+model Testimonial {
+  id          String            @id @default(cuid())
+  authorId    String
+  author      User              @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  text        String            @db.Text
+  /// Set when the quote comes from a win she allowed to be quoted.
+  winId       String?
+  win         Win?              @relation(fields: [winId], references: [id], onDelete: Cascade)
+  status      TestimonialStatus @default(PENDING)
+  decidedAt   DateTime?
+  decidedById String?
+  createdAt   DateTime          @default(now())
+
+  @@index([status, createdAt])
+  @@index([authorId])
 }

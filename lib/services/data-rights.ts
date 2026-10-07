@@ -34,6 +34,7 @@ export async function exportMemberData(userId: string) {
       seatRequests: { select: { gatheringId: true, note: true, status: true, attendance: true, createdAt: true } },
       winsLogged: { select: { type: true, month: true, amountK: true, story: true, visibility: true, createdAt: true } },
       winsWith: { select: { winId: true, status: true } },
+      testimonials: { select: { text: true, status: true, createdAt: true } },
       introsRequested: { select: { targetId: true, introducerId: true, viaTeam: true, noteToIntroducer: true, noteToTarget: true, status: true, createdAt: true } },
     },
   });
@@ -118,6 +119,8 @@ export async function deleteAccount(userId: string, password: string) {
         email: `deleted-${userId}@deleted.invalid`,
         passwordHash: '!',
         isAdmin: false,
+        isReviewer: false,
+        showcaseOptIn: false,
         applicationStatement: null,
         reviewNote: null,
         lockedUntil: null,

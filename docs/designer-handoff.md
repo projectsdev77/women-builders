@@ -22,6 +22,12 @@ The platform is **built and working**, with placeholder styling. Your job is the
   - **gatherings** (dinners and working sessions) with "People you met";
   - a full **public homepage**.
 - **New admin areas:** requests, introduction requests and gatherings. The admin dashboard has new tiles.
+- **Second-release features, now also built:**
+  - **review votes** and **member reviewers**;
+  - an **applications open / waitlist** switch;
+  - **site settings**;
+  - **Wins**;
+  - the opt-in **public showcase and quotes**.
 
 ---
 
@@ -383,7 +389,11 @@ This is the public face of the brand. Sections, in order:
    - Each number appears **only once it passes its threshold** (members 50, countries 5, introductions 25, gatherings 3).
    - Design the section for 1 to 4 numbers. It's hidden entirely when none qualify.
 6. **Upcoming gatherings teaser:** only gatherings the team marks public. Shows type, title, city or "Online", and month; never the venue, exact date or guests. Hidden when empty.
-7. **(Later release) Featured members and quotes:** opt-in only. Not built yet, but leave room.
+7. **"Some of the members":**
+   - up to 6 **featured members**, who opted in and were picked by the team, in the team's order: photo, name, headline, role, city (no city if she hides her location);
+   - **approved quotes**: "…", with name and role.
+
+   The section is hidden when empty.
 8. **Request an invitation:** the form (7.3).
 9. **Footer:** charter, privacy, terms, contact email, log in.
 
@@ -413,6 +423,12 @@ This is the public face of the brand. Sections, in order:
 - **Footnote:** "No newsletter, no spam. One reply from a human, either way."
 - **After submit:** the same calm thank-you for everyone. By design it never reveals whether the person is already known, a member or declined: "Thank you. We've received your request. You'll hear back from us within three weeks, either way." The email confirms it.
 - **Errors:** inline per field, plus the rate-limit message.
+
+**Waitlist variant** (applications closed in Site settings):
+- the title and button read **"Join the waitlist"**, with a yellow note: "We review requests in rounds and are not reviewing right now. Next review: March.";
+- the thank-you and email say she's on the waitlist.
+
+The homepage form changes the same way.
 
 ### 7.4 Join `/join?invite=…` (screenshot 03)
 - **Title:** "Welcome to Women Builders" — "You were invited, so your account is active as soon as you finish this page."
@@ -471,7 +487,10 @@ In order:
 3. **Three summary tiles:** connection requests, unread conversations, profile completeness.
 4. **New messages:** up to 3 unread conversations.
 5. **Your next gatherings** (confirmed or hosting) and **Gatherings near you** (her country or online). Up to 3 each, with title, local time and place.
-6. **Recommended for you:** the top 3 cards + "See all".
+6. **Recent wins:** up to 3 shared wins (11.32), with "Your wins" and **Share a win** links.
+7. **Recommended for you:** the top 3 cards + "See all".
+
+The To do list also includes "1 win names you: confirm it".
 
 ### 8.2 Discover `/search` (screenshot 07)
 - **Filters** (a side panel on desktop; suggest a sheet on mobile):
@@ -665,7 +684,9 @@ Unchanged:
    - new messages;
    - **introductions**;
    - **gatherings near me**;
-   - **investing check-ins** (investors only).
+   - **investing check-ins** (investors only);
+   - **win confirmations**;
+   - **win prompts**.
 
    Note: "Account and security emails, and emails about your own seats, are always sent."
 2. **Introductions:**
@@ -673,15 +694,37 @@ Unchanged:
    - **"Prefer introductions"** (off by default; explains that requests already pending aren't affected).
 3. **Password.**
 4. **Blocked members.**
-5. **Your account and data:**
-   - **Download your data:** JSON, now including introductions and gathering history.
+5. **Public website:**
+   - **"Feature me on the public website"** (off by default; switching it off removes her immediately), with a "You're featured right now" badge when picked;
+   - a **quote** box (10–280 characters), with "The team approves quotes before they appear";
+   - her quotes with a status (*Waiting for approval* / *On the website* / *Not used*) and Withdraw.
+6. **Your account and data:**
+   - **Download your data:** JSON, now including introductions, gathering history, wins and quotes.
    - **Deactivate.**
    - **Delete account** (Telegram style):
      - her name, email, profile, photo, connections and requests are erased;
      - **her conversations stay readable for the other person** as "Deleted account";
      - upcoming seats are released.
 
-### 8.12 Global states
+### 8.12 Wins `/wins` and Share a win `/wins/new` (screenshots 23, 24)
+A win is something that came of the network. There is **no feed**: wins appear on profiles, in Home's "Recent wins", and here.
+- **`/wins`:**
+  - **Waiting for you to confirm:** win cards with "Ada named you. Is this right?", **Yes, confirm** / **That's not right**. Declining is silent.
+  - **Wins you shared:** cards with the visibility ("Counted anonymously" / "Members can see it" / "May be quoted on the public site"), the **private amount** ("amount $300K (private, team totals only)"), "waiting for confirmation", and Delete.
+- **Share a win form:**
+  - **what happened:** chips for Investment, Hire, Advisor or mentor, Customer or partnership, Co-founder, Speaking or press, Other;
+  - **with whom:** a member search with chips, plus "Someone outside the network was involved";
+  - **how it happened:** an introduction (pick which), a connection, a gathering (pick which), or other;
+  - **month** (not in the future);
+  - **amount in $K** (investments only, always private);
+  - **story** (≤500);
+  - **who can see it:** three radio options with explanations; **anonymous is the default**.
+- **Entry points:** Home, accepted introductions ("Share a win"), past gatherings ("Share a win from this gathering"), and a connection's profile ("Share a win with Divya"). Each pre-fills the form.
+- **Win card** (11.32): type badge, month, **Verified** badge once a named member confirmed, "from <gathering>" / "from an introduction", the author with confirmed participants ("Adaeze Nwosu with Divya Iyer"), and the story.
+- **Profiles:** a "Wins" section under the profile, with shared wins she logged or confirmed.
+- **Prompts:** "Did anything come of meeting Cleo?" 60 days after an introduction, and "Did anything come of <gathering>?" 14 days after a gathering, by email, once each.
+
+### 8.13 Global states
 - **404:** "We couldn't find that page". Also used for unavailable profiles, gatherings she can't see, and blocked members.
 - **Error:** "Something went wrong… mention reference 1a2b3c4d." + Try again.
 - **Network error:** "Can't reach the server. Check your connection and try again."
@@ -703,6 +746,10 @@ Desktop-first (still usable on tablet). A top bar (brand · Admin, admin name, M
   - **Introductions in range** (asked · made · accepted);
   - **Team introductions** (made · accepted · waiting).
 - **Cards:**
+  - **wins in range:**
+    - total, from introductions, from gatherings;
+    - the private investment total;
+    - counts by type and by month;
   - new members by month (bar chart, 12 months);
   - **upcoming gatherings** (seats confirmed / capacity, and how many to review);
   - **members by country** (top 10);
@@ -728,13 +775,23 @@ Desktop-first (still usable on tablet). A top bar (brand · Admin, admin name, M
   - **Spam** (archives silently).
 - **Decided cards:** "Invited by Grace on Oct 6: note".
 
+**Review votes and member reviewers:**
+- **Votes:** each card has a **Your vote** box (private note, **Approve** / **Decline**). The vote can be changed until the request is decided.
+- **Tally:** a badge reads "1 approve · 1 decline · 2 needed".
+- **Split votes:** a red **Needs decision** badge.
+- **Automatic decisions:** when one side reaches the required number (Site settings, 1–3, default 2), the invitation or the decline email goes out automatically: "Enough approvals: the invitation was sent."
+- **Who voted:** admins see each vote with name and note. **Member reviewers** see only the tally and their own vote.
+- **The reviewer's view:** the same page in a cut-down admin shell. The header says "Women Builders · Reviewer" and the side nav has only Requests. There are no Invite / Decline / Spam buttons, and prospect records show as plain text. Members who are reviewers get a "Review requests" item in the member nav.
+- **Waitlist tab:** requests sent while applications were closed. They have no clock and no voting until applications reopen.
+
 ### 9.3 Members `/admin/members` and account detail (screenshot 32)
 - **List:** search, a status filter (All / Active / Deactivated / Deleted), and a table.
 - **Detail:**
   - the **photo with "Remove photo"** (the member is emailed that it didn't meet the charter);
   - all fields, including hidden ones;
   - activity, reports, admin history;
-  - Deactivate / Reactivate / Make admin.
+  - Deactivate / Reactivate / Make admin / **Make member reviewer**;
+  - a "Member reviewer" badge.
 
 ### 9.4 Potential members, prospect workspace, CSV import, follow-ups (screenshots 33–35)
 Unchanged from the previous handoff, except:
@@ -821,13 +878,28 @@ Records that came from the website show the consent note under "Why we hold this
   - **Introduce**: a dialog with an optional note the member sees;
   - **Pass**: silent; after 14 days the member sees "No introduction was made".
 
-### 9.8 Reports and audit log
+### 9.8 Site settings `/admin/settings` (screenshot 40)
+- **Applications:**
+  - Open, or **Waitlist**;
+  - a "Next review" line (≤80 characters, e.g. "Next review: March").
+  - Reopening moves waitlisted requests into the queue and starts their 21-day clock ("Saved. 3 waitlisted requests moved to the queue…").
+- **Review rules:** matching votes needed (1–3).
+- **Public numbers:** a table with Number / Today / Show from (threshold) / Hide.
+- **Homepage showcase:** a checklist of opted-in members (max 6, order = the order ticked, "#1"), with "no photo" hints, and **Save showcase**.
+- **Quotes waiting for approval:** each with the quote, "Name, Role · from a win marked quotable", **Approve** / **Don't use**. Below, **On the website** lists approved quotes with Remove.
+- Every change is audited.
+
+### 9.9 Reports and audit log
 - **Reports:** unchanged. The reasons now include **Inappropriate photo**.
 - **Audit log new actions:**
   - `request.invite`, `request.decline`, `request.spam`;
   - `photo.remove`;
   - `gathering.create`, `gathering.update`, `gathering.cancel`, `gathering.seat_confirmed`, `gathering.attendance`, `gathering.message`;
-  - `introduction.team_introduce`, `introduction.team_pass`.
+  - `introduction.team_introduce`, `introduction.team_pass`;
+  - `request.vote`;
+  - `reviewer.grant`, `reviewer.revoke`;
+  - `settings.update`;
+  - `quote.approve`, `quote.reject`.
 
   Friendlier labels are welcome.
 
@@ -867,6 +939,9 @@ Please design one responsive template that works in Gmail, Outlook and Apple Mai
 | Gathering reminder | 2 days before; morning of | When, where, venue | Open the gathering | No |
 | Gathering changed / cancelled | Admin edits time/place or cancels | New details / the reason | Open / see upcoming | No |
 | Message from the team | Admin messages guests | Admin's subject and text | Open the gathering | No |
+| Win confirmation | Named in a win | "{name} says: …" · confirm or decline | Confirm or decline | Yes |
+| "Did anything come of it?" | 60 days after an introduction; 14 days after a gathering | Invitation to share a win | Share a win | Yes |
+| Waitlist acknowledgement | Request while applications are closed | "You're on the waitlist" + next review | — | No |
 | Seat freed (admins) | A confirmed guest deleted her account within 7 days | — | Open the request queue | No |
 
 ---
@@ -922,6 +997,10 @@ Please spec each component with its states: default, hover, focus, active, disab
 29. **Role mix bar** (admin): four counts, non-hierarchical.
 30. **Public homepage blocks:** hero, role cards, benefit list, steps, number strip, gathering teaser card, footer.
 31. **Charter text block.**
+32. **Win card:** type, month, verified badge, people, story, optional action slot (confirm / delete).
+33. **Vote box:** note + Approve / Decline, with the current vote highlighted; **tally badge**; **Needs decision** badge.
+34. **Featured member tile** (public) and **quote block** (public).
+35. **Settings table** (public numbers) and **ordered picker** (showcase).
 
 ---
 
@@ -1067,6 +1146,10 @@ These are ours to decide together; your recommendation is welcome.
 | Block | Mutual invisibility + no contact; silent |
 | Report | A confidential safety report reviewed by admins |
 | Do not contact (DNC) | A prospect who asked never to be contacted; kept as suppression |
+| Member reviewer | A member who can read and vote on invitation requests, and nothing else in admin |
+| Waitlist | Applications closed: requests are collected and answered after the next review |
+| Win | Something that came of the network; anonymous by default; confirmed by the people named |
+| Showcase | Up to 6 opted-in members featured on the public homepage |
 
 ---
 
@@ -1105,3 +1188,9 @@ These are ours to decide together; your recommendation is welcome.
 | 37-admin-gathering-new | Create gathering |
 | 38-admin-gathering-queue | Seat queue |
 | 39-admin-introductions | "Ask the team" queue |
+| 23-wins | Wins page (shared wins) |
+| 24-share-win | Share a win form |
+| 25-settings-public-website | Settings: public website (showcase opt-in, quote) |
+| 26-homepage-showcase | Homepage "Some of the members" section |
+| 40-admin-settings | Site settings (applications, votes, public numbers, showcase, quotes) |
+| 41-reviewer-requests | The requests queue as a member reviewer sees it |
