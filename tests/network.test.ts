@@ -105,10 +105,10 @@ describe('connection requests (Req 3, G1, G2, G6)', () => {
 
   it('lists connections with search and supports removal', async () => {
     const a = await ready();
-    const b = await createMember({ name: 'Priya Raman', profile: { primaryRole: 'INVESTOR', expertiseAreas: ['fintech'] } });
+    const b = await createMember({ name: 'Divya Iyer', profile: { primaryRole: 'INVESTOR', expertiseAreas: ['fintech'] } });
     const { requestId } = (await sendConnectionRequest(a.id, b.id)) as { requestId: string };
     await acceptConnectionRequest(b.id, requestId);
-    expect((await listConnections(a.id, 'fintech')).map((c) => c.member.name)).toEqual(['Priya Raman']);
+    expect((await listConnections(a.id, 'fintech')).map((c) => c.member.name)).toEqual(['Divya Iyer']);
     expect(await listConnections(a.id, 'nothing')).toHaveLength(0);
     await removeConnection(a.id, b.id);
     expect(await listConnections(a.id)).toHaveLength(0);

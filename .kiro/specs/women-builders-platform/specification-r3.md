@@ -556,7 +556,7 @@ Seat-related emails always send; "new gathering near you" can be turned off.
   - **Visibility:** **Count it anonymously** (default) / **Members can see it** / **May be quoted on the public site**.
 
 **Confirmation**
-- Every named member is asked to confirm ("Amara says you closed a round together. Is that right?").
+- Every named member is asked to confirm ("Adaeze says you closed a round together. Is that right?").
 - Confirmed wins are marked *verified*.
 - A confirmed investment win updates the investor's "last check written" (F9).
 

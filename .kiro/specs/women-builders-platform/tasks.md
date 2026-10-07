@@ -161,7 +161,18 @@ Not taken (see spec section 12): paid membership, Deal Flow, The Season program 
   - **Recommendations:** new reason, "Going to the same gathering: <title>".
   - **Account deletion:** frees upcoming seats and host spots. The data export includes seats and introductions.
   - **Implementation note:** Prisma `NOT: { attendance: 'NO_SHOW' }` also drops NULL rows (SQL three-valued logic). Use an explicit `OR [null, ATTENDED]`. Covered by a test.
-- [ ] Step 6: Public website, home and dashboard, designer brief (features 18–20)
+- [x] Step 6: Public website, home and dashboard, designer brief (features 18–20)
+  - **Public homepage:**
+    - hero, four equal roles, benefits, how joining works;
+    - live numbers, each shown only above its threshold (`PUBLIC_NUMBER_THRESHOLDS`);
+    - teaser for gatherings marked public;
+    - request form; footer.
+  - `/privacy` and `/terms` are marked placeholders.
+  - **Member Home:** country prompt, To do, your next gatherings / gatherings near you.
+  - **Admin dashboard:** active in 30 days, introductions asked/made/accepted, team introductions, upcoming gatherings, members by country.
+  - **Deletion:** frees seats within 7 days, promotes the waitlist, emails admins.
+  - **Demo seed:** names and companies that matched the client's mock (Amara Okafor/Ledgerly, Priya Raman/Northlight Ventures) were renamed (Adaeze Nwosu/Paystride, Divya Iyer/Harbor Lane Capital).
+  - **Designer handoff rewritten for R3** (`docs/designer-handoff.md`), with 32 new placeholder screenshots in `docs/handoff-screens/`.
 - [ ] Step 7 (R2): Review rules and site settings (feature 21)
 - [ ] Step 8 (R2): Wins (feature 22)
 - [ ] Step 9 (R2): Showcase and quotes (feature 23)

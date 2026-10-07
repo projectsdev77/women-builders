@@ -37,7 +37,7 @@ Seed accounts:
 | Account | Email | Password |
 |---|---|---|
 | Admin | `$ADMIN_EMAIL` | `$ADMIN_INITIAL_PASSWORD` |
-| Demo members | `amara@demo.womenbuilders.test`, `priya@…`, `mei@…` and more | `DemoPass123` |
+| Demo members | `adaeze@demo.womenbuilders.test`, `divya@…`, `mei@…` and more | `DemoPass123` |
 
 Joining is by invitation only. The seed adds two open invitation requests (Nadia and Chloe) to `/admin/requests`. Without `RESEND_API_KEY`, every email (invitation links, password resets) is printed to the server console. That's how you follow links locally.
 

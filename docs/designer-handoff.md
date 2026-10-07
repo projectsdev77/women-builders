@@ -1,8 +1,27 @@
-# Women Builders: Designer Handoff
+# Women Builders: Designer Handoff (Revision 3)
 
-**This document is the complete brief for designing the Women Builders web platform.** It covers what the product is, who it serves, every screen and state, and every rule the UI must respect. You shouldn't need anything else, but questions are welcome (section 15).
+**This document is the complete brief for designing the Women Builders web platform.** It covers:
+- what the product is and who it serves;
+- every screen and state;
+- every rule the UI must respect.
 
-The platform is **fully built and working**, with placeholder styling. Your job is the visual and interaction design. You don't need to invent features: everything listed here already exists and behaves as described. Screenshots of the current placeholder UI are in `docs/handoff-screens/`. **Treat them as wireframes showing content and structure, not as a style to follow.**
+You shouldn't need anything else, but questions are welcome (section 15).
+
+The platform is **built and working**, with placeholder styling. Your job is the visual and interaction design; everything listed here already exists and behaves as described. Screenshots of the current placeholder UI are in `docs/handoff-screens/`. **Treat them as wireframes showing content and structure, not as a style to follow.**
+
+**What changed since the previous handoff (R2):**
+- **Joining is by invitation only.** Self-registration, email confirmation and the "application under review" page are gone. They are replaced by a public **Request an invitation** form, an admin **requests queue**, and an invitation-only **Join** page.
+- **New features:**
+  - a **community charter**;
+  - **profile photos**;
+  - **city and country**;
+  - an **"Open to"** field;
+  - richer **investor and founder** fields;
+  - the **Capital view**;
+  - **warm introductions**, including "Ask the team";
+  - **gatherings** (dinners and working sessions) with "People you met";
+  - a full **public homepage**.
+- **New admin areas:** requests, introduction requests and gatherings. The admin dashboard has new tiles.
 
 ---
 
@@ -13,9 +32,9 @@ The platform is **fully built and working**, with placeholder styling. Your job 
 4. [What we need from you](#4-what-we-need-from-you-deliverables)
 5. [Site map and navigation](#5-site-map-and-navigation)
 6. [Core concepts the UI must express](#6-core-concepts-the-ui-must-express)
-7. [Screen-by-screen: public and account screens](#7-screens-public-and-account)
-8. [Screen-by-screen: member area](#8-screens-member-area)
-9. [Screen-by-screen: admin area](#9-screens-admin-area)
+7. [Screens: public website and account](#7-screens-public-website-and-account)
+8. [Screens: member area](#8-screens-member-area)
+9. [Screens: admin area](#9-screens-admin-area)
 10. [Emails](#10-emails)
 11. [Components inventory](#11-components-inventory)
 12. [Content, data and limits reference](#12-content-data-and-limits-reference)
@@ -28,72 +47,94 @@ The platform is **fully built and working**, with placeholder styling. Your job 
 
 ## 1. The product in one page
 
-**Women Builders is a curated, application-only professional community** for women who are **founders, operators, investors and builders**. It solves one problem: *finding the right people*. That means the investor who backs your stage, the operator who has scaled what you're scaling, or the engineer who wants to advise.
+**Women Builders is a curated, invitation-only network** for women who are **founders, operators, investors and builders**. It helps them *find the right people and actually meet them*. That might be the investor who backs your stage, the operator who has scaled what you're scaling, or the engineer who wants to advise.
 
 The core loop:
 
-1. **Apply.** A person applies. The team reviews every application by hand, or invites people directly.
-2. **Build a profile.** An approved member builds a profile that says what she does, what she's working on, **what she needs**, and **what she can offer**.
-3. **Discover.** The platform recommends relevant members, with a plain-language reason for each ("Can help with what you need: fundraising, investor intros"). Members can also search and filter the directory.
-4. **Connect.** Members send connection requests with an optional note. The recipient accepts or declines, and a decline is never shown to the sender.
-5. **Talk.** Connected members message each other directly.
+1. **Request an invitation.** A visitor fills in a short form on the public site. The team reads every request and answers within three weeks, either way. The team also invites people directly.
+2. **Join.** An invitation link opens a short Join page: password, role, headline, location, and accepting the charter.
+3. **Build a profile.** Photo, what she does, what she's working on, **what she needs**, **what she can offer**, and what she's **open to**.
+4. **Discover.** Three ways in:
+   - recommendations with a plain-language reason ("Investing at your stage", "2 mutual connections can introduce you");
+   - the **Discover** directory;
+   - the **Capital** view of active investors and founders who are raising.
+5. **Connect.** Three routes:
+   - a direct connection request;
+   - a **warm introduction** through a mutual connection (or through the team);
+   - meeting at a **gathering**.
+6. **Talk and meet.** Connected members message each other, and members meet at small dinners and working sessions.
 
 A separate **admin area** lets the team:
-- review applications;
-- manage members;
-- run outreach to prospective members (a lightweight CRM with follow-up reminders and CSV import);
+- answer invitation requests;
+- run outreach to prospective members (a lightweight CRM);
 - send invitations;
+- run gatherings;
+- handle "Ask the team" introductions;
 - handle safety reports;
-- watch community growth.
+- watch community health.
 
-**What makes it different from LinkedIn:** it's small and curated, it matches on *needs and offers* rather than job titles, it's private by default, and it has strong safety controls (block, report, silent declines). The tone should feel **warm, trustworthy, ambitious and calm**, never like a noisy social feed.
+**What makes it different from LinkedIn:**
+- small and curated;
+- matches on *needs and offers* rather than job titles;
+- private by default;
+- introductions are warm and every "no" is silent;
+- the network becomes real at in-person gatherings.
 
-**Platform:** a responsive web app. There are no native apps, but it must work beautifully on phones (members check messages and requests on the go).
+The tone should feel **warm, trustworthy, ambitious and calm**, never like a noisy social feed.
+
+**Platform:** a responsive web app. There are no native apps, but it must work beautifully on phones.
 
 ---
 
 ## 2. Who uses it
 
 ### Member roles
-Every member has exactly **one primary role** and **zero to three secondary roles**. A founder who also angel-invests is Founder (primary) plus Investor (secondary). All four roles are equally important, so don't design a hierarchy between them.
+Every member has **one primary role** and **up to three other roles**. A founder who also angel-invests is Founder (primary) plus Investor. **All four roles are equally important.** Don't design a hierarchy, a premium tier, or a "special" color for any role. The Capital view is a lens on the directory, not a separate club.
 
 | Role | Who | Typically needs | Typically offers |
 |---|---|---|---|
-| **Founder** | Started or starting a company | Investors, early hires, operators' advice, co-founders | Domain expertise, market access, peer support |
-| **Operator** | Runs a function inside a company (VP Growth, Head of People…) | Peers, career moves, mentorship | Functional expertise (hiring, GTM, finance…) |
-| **Investor** | Angel, VC, fund | Deal flow | Capital, fundraising advice, intros |
+| **Founder** | Started or starting a company | Investors, hires, operators' advice, co-founders | Domain expertise, market access, peer support |
+| **Operator** | Runs a function inside a company | Peers, career moves, mentorship | Functional expertise (hiring, GTM, finance…) |
+| **Investor** | Angel, VC, family office, syndicate lead | Deal flow | Capital, fundraising advice, intros |
 | **Builder** | Engineer, designer, maker | Projects, collaborators, advisory roles | Technical and product skills |
 
 ### Personas to design for
-- **Amara, founder (pre-seed, Lagos).** Raising her first round. Checks the app on her phone between meetings. Wants investor intros *now* and needs to know who is worth her time.
-- **Priya, VC partner (San Francisco).** Busy. Gets many requests and needs to scan them quickly, accept a few, and politely ignore the rest without awkwardness.
-- **Mei, staff ML engineer (Toronto).** Private person. Hides her location and some details from strangers. Open to advising AI startups.
-- **Grace, community admin.** Runs outreach and reviews applications on a laptop. Needs dense, efficient screens, and wants to know at a glance who needs a follow-up today.
+- **Adaeze, founder (pre-seed, Lagos).** Raising her first round. Checks the app on her phone between meetings. She wants investors who are *actually investing at her stage*, and warm introductions to them.
+- **Divya, VC partner (San Francisco).** Busy. She turns on **"Prefer introductions"** so strangers can't cold-request her. She scans the introductions she's asked to make and answers quickly.
+- **Mei, staff ML engineer (Toronto).** A private person. She hides her location and some details from strangers. She's open to advising and goes to an online working session on AI tooling.
+- **Grace, community admin.** On a laptop, she:
+  - answers invitation requests within the three-week promise;
+  - runs outreach;
+  - curates the guest list for a 12-seat dinner.
+
+  Needs dense, efficient screens.
 
 ### Account states (the UI differs for each)
 | State | What the person sees |
 |---|---|
-| **Visitor** (logged out) | Landing, Apply, Log in, password reset |
-| **Pending applicant** | Only the "application under review" page (plus "confirm your email" prompts) |
+| **Visitor** (logged out) | Public homepage, charter, request form, log in, privacy and terms |
+| **Invited** (has a link) | The Join page. An expired or used link shows a friendly "request a new one" screen |
 | **Active member** | The member area |
-| **Active member with an incomplete profile** | Everything, but *connection requests are locked* until the profile is complete enough (see 6.3) |
-| **Rejected applicant** | A message after logging in: can re-apply after 90 days |
+| **Active member with an incomplete profile** | Everything, but *sending connection requests and asking for introductions* is locked until the profile is complete enough (6.3) |
+| **Member whose charter is out of date** | A full-page "We've updated our community charter" interstitial until she accepts, with the option to export, deactivate or delete instead |
 | **Deactivated (self)** | Login offers "Reactivate my account" |
 | **Deactivated (by admin)** | Login shows "deactivated by the team, contact us" |
-| **Deleted account** | The person is gone (cannot log in). Other members only ever see them as **"Deleted account"** in old conversations (see 6.6) |
-| **Admin** | The admin area. An admin may *also* be a member with a profile, and then gets a "Member view" / "Admin" switch |
+| **Deleted account** | The person is gone. Others see **"Deleted account"** with a ghost avatar in old conversations (6.6) |
+| **Admin** | The admin area. An admin may also be a member with a profile, and then has a "Member view" / "Admin" switch |
 
 ---
 
 ## 3. Design principles
 
-1. **People first, not feeds.** There's no timeline, no likes, no follower counts. Every screen is about *specific people and why they matter to you*.
-2. **Explain every match.** Recommendations always show *why* ("Shared expertise: fintech", "Looking for what you offer: design partner"). Make these reasons prominent and scannable.
-3. **Safety is visible but calm.** Block and Report are always reachable, but tucked into a "More" menu, not shouted. Declines are silent. Hidden details show a gentle lock notice.
-4. **Needs and offers are the heart of the profile.** Give them visual weight. They drive matching.
-5. **Curated means considered.** Generous whitespace, fewer and higher-quality elements, and confident typography. It should feel like a private club, not a job board.
-6. **Admin screens are tools.** Dense, fast, keyboard-friendly, and table-heavy is fine. Members never see them.
-7. **Inclusive by default.** WCAG 2.1 AA, 44×44px touch targets, no information by color alone, and a dark mode is welcome (optional, see section 15).
+1. **People first, not feeds.** No timeline, no likes, no follower counts. Every screen is about *specific people and why they matter to you*.
+2. **Explain every match.** Recommendations always show *why*. Make reasons prominent and scannable.
+3. **Warm routes, silent no's.** Introductions, declines and passes never announce a "no". The UI must never hint at one (6.1, 6.7).
+4. **Safety is visible but calm.** Block and Report are always reachable but tucked into "More". Hidden details show a gentle lock notice.
+5. **Needs and offers are the heart of the profile.** Give them visual weight; they drive matching.
+6. **Curated means considered.** Generous whitespace, fewer and better elements, confident typography. It should feel like a private club, not a job board.
+7. **Equal roles.** The four roles are peers in every list, card and color choice.
+8. **Admin screens are tools.** Dense, fast, keyboard-friendly, table-heavy. Members never see them.
+9. **Inclusive by default.** WCAG 2.1 AA, 44×44px touch targets, never information by color alone.
 
 ---
 
@@ -102,16 +143,27 @@ Every member has exactly **one primary role** and **zero to three secondary role
 1. **A visual design system:**
    - color tokens (light, and optionally dark), type scale, spacing, radii, elevation;
    - iconography style;
-   - avatar treatment (we use **initials avatars** for now, since photo upload is not in this release, but leave room for photos later);
+   - **avatar treatment with photos** (we now have photos, with initials as the fallback and a ghost avatar for deleted accounts);
    - component specs for everything in section 11.
-2. **High-fidelity designs** for every screen in sections 7–9, at **mobile (390px)** and **desktop (1280px)**. Tablet can be inferred.
-3. **All states** listed per screen: empty, loading, error, disabled, and the permission variants.
-4. **Mobile navigation pattern.** The current placeholder nav wraps badly on phones (see screenshot `17-mobile-for-you.png`). We suggest a bottom tab bar (Home, Discover, Messages, Profile) plus a menu for the rest, but it's your call.
-5. **Email template** (one layout that fits all emails in section 10).
-6. **Brand touches:** logo/wordmark (currently plain text "Women Builders"), favicon, and a simple landing page.
-7. Prototype links or annotations for key interactions: send request, accept/decline, messaging, the onboarding wizard, and the admin outreach log.
+2. **High-fidelity designs** for every screen in sections 7–9, at **mobile (390px)** and **desktop (1280px)**.
+3. **All states** listed per screen: empty, loading, error, disabled, and permission variants.
+4. **Mobile navigation pattern.** The member nav now has 11 destinations (section 5) and wraps on phones. We suggest:
+   - a bottom tab bar: Home, Discover, Gatherings, Messages, and a "More" sheet;
+   - Capital, Introductions, Connections, For you, Profile and Settings in the sheet, with badges.
 
-Our frontend uses **Tailwind CSS**, so tokens expressed as a Tailwind theme (colors, font sizes, spacing) are easiest for us to implement, but any clear format works.
+   It's your call.
+5. **The public homepage** (7.1): this is now a real marketing page. Please give it the most brand care.
+6. **Email template:** one responsive layout for all the emails in section 10.
+7. **Brand touches:** logo/wordmark (currently plain text), favicon, Open Graph image.
+8. **Prototype links or annotations** for key interactions:
+   - request an invitation;
+   - join;
+   - ask for an introduction, then introduce, then accept;
+   - request a seat at a gathering;
+   - the admin seat queue;
+   - messaging.
+
+Our frontend uses **Tailwind CSS**, so tokens expressed as a Tailwind theme are easiest, but any clear format works.
 
 ---
 
@@ -119,22 +171,28 @@ Our frontend uses **Tailwind CSS**, so tokens expressed as a Tailwind theme (col
 
 ```
 PUBLIC
-  /                         Landing
-  /register                 Apply to join (also: accept invitation, /register?invite=…)
+  /                         Homepage (logged-in members are sent to Home)
+  /charter                  Community charter
+  /request-invite           Request an invitation (the form is also at the bottom of the homepage)
+  /join?invite=…            Join with an invitation (invited people only)
+  /privacy, /terms          Placeholders until the client's text arrives
   /login                    Log in
   /forgot-password          Request reset link
-  /reset-password?token=    Choose new password
-  /verify-email?token=      Email confirmation result
-  /pending                  Application under review (pending applicants only)
+  /reset-password?token=    Choose a new password
   /unsubscribed             One-click email unsubscribe confirmation
-  /onboarding               4-step profile wizard (first login after approval)
+  /onboarding               4-step profile wizard (right after joining)
+  /charter/accept           Interstitial when the charter changes
 
-MEMBER AREA (main nav)
+MEMBER AREA (main nav, in this order)
   /dashboard                Home
-  /search                   Discover (directory search + filters)
+  /search                   Discover
+  /capital                  Capital (tabs: Investors, Founders raising)
+  /gatherings               Gatherings (tabs: Upcoming, My gatherings)
+    /gatherings/[id]        Gathering detail
   /recommendations          For you
   /connections              Connections
     /connections/requests   Requests (received and sent)
+  /introductions            Introductions (tabs: Asked of me, For me, My requests)
   /messages                 Inbox
     /messages/[memberId]    Conversation
   /profile                  My profile (as others see it)
@@ -142,27 +200,32 @@ MEMBER AREA (main nav)
   /settings                 Settings
   /members/[id]             Another member's profile
 
-ADMIN AREA (side nav)
+ADMIN AREA (side nav, in this order)
   /admin                    Dashboard
-  /admin/applications       Applications to review
+  /admin/requests           Invitation requests (tabs: Open, Invited, Declined, Spam, All)
   /admin/members            All accounts
-    /admin/members/[id]     Account detail + actions
+    /admin/members/[id]     Account detail and actions
   /admin/prospects          Potential members (outreach CRM)
     /admin/prospects/[id]   Prospect workspace
     /admin/prospects/import CSV import
   /admin/follow-ups         Follow-up queue
+  /admin/gatherings         Gatherings (Upcoming / Past)
+    /admin/gatherings/new   Create
+    /admin/gatherings/[id]  Seat queue, attendance, message guests, edit, cancel
   /admin/invitations        Invitations
+  /admin/introductions      "Ask the team" introduction requests
   /admin/reports            Safety reports
   /admin/audit              Audit log
 ```
 
-**Member nav badges:**
-- **Messages:** unread count. It refreshes every 30 seconds.
-- **Pending incoming requests:** today the count appears on the Home tile and on the Connections page's "Requests" button. A nav badge for it would be welcome.
+**Member nav badges** (refreshed every 30 seconds):
+- **Messages:** unread count.
+- **Introductions:** the number waiting for her answer, as introducer or as the person being introduced.
 
 **Admin nav badges:**
-- **Applications:** verified applications waiting for review.
+- **Requests:** open requests. The badge turns **red** when any is past the 21-day promise.
 - **Follow-ups:** due today or overdue.
+- **Introduction requests:** team requests waiting.
 - **Reports:** open reports.
 
 ---
@@ -170,373 +233,641 @@ ADMIN AREA (side nav)
 ## 6. Core concepts the UI must express
 
 ### 6.1 Connection status (between the viewer and another member)
-Every member card and profile shows one of four states, each with its own actions:
 
 | Status | Shown as | Primary action | Secondary |
 |---|---|---|---|
-| `none` | Nothing, or "Connect" | **Connect** (opens a note dialog) | — |
+| `none` | Nothing, or "Connect" | **Connect** (note dialog) | Ask for an introduction (if mutuals) |
+| `none` + she **prefers introductions** | "Prefers introductions" tag | **Ask for an introduction** (if mutuals), else **Ask the Women Builders team to introduce you** | — |
 | `pending_sent` | "Request pending" | Withdraw request | — |
-| `pending_received` | "Wants to connect" + their note | **Accept** | Decline (with reassurance: "they won't be notified") |
+| `pending_received` | "Wants to connect" + their note | **Accept** | Decline ("they won't be notified") |
 | `connected` | "Connected" | **Message** | Remove connection |
 
-Always available (in a "More" menu): **Report** and **Block**.
+**Rules for the profile actions:**
+- If they **met at a gathering** in the last 30 days, Connect is available even when she prefers introductions. The note is pre-filled "We met at <gathering>".
+- Always available in a "More" menu: **Report** and **Block**.
 
 > **Silent decline.** When someone declines, the sender keeps seeing "Request pending" until the request expires (30 days). Never design any UI that hints at a decline.
 
 ### 6.2 Privacy: hidden fields
 Members can mark these fields **"only connections see"**:
-- location
+- location (city and country together)
 - professional background
 - current focus
 - what I need
 - what I can offer
 - company name
 - funding status
+- raise amount
 - check size
 - LinkedIn
 - website
 
-These are **always visible to everyone**: name, headline, roles and expertise tags. **Email is never shown** to other members.
+**Always visible to every member:**
+- name, photo, headline, roles, expertise, "Open to";
+- investor type, firm, stages, sectors, leads/follows, investing status, last check.
 
-When a stranger views a profile with hidden fields, those sections simply don't appear, and a single calm notice appears: *"🔒 Mei shares some details only with connections."* In the editor, each hideable field needs a clear "Only connections" toggle. Consider a small lock icon next to fields that are currently hidden.
+**Email is never shown** to other members.
+
+When a stranger views a profile with hidden fields, those sections don't appear, and one calm notice does: *"🔒 Mei shares some details only with connections."*
+
+**Filters never reveal hidden data.** A founder who hides her funding status doesn't appear in "Founders raising" for non-connections. An investor who hides her check size isn't matched by "I'm raising checks of $X" for them.
 
 ### 6.3 Profile completeness gate
-- **Score:** a 0–100% score. There are 7 core fields (headline, background, expertise, current focus, needs, offerings, location) plus 3–4 role-specific fields **for every role the member holds**.
-- **Unlocking requests:** a member can **send connection requests only at ≥60% and** with her primary role's required fields filled:
-  - Founder: company name and stage.
-  - Operator: function and seniority.
-  - Investor: investment stages and check-size range.
-  - Builder: technical skills.
-- **Everything else stays open.** Incomplete members can still browse, search, accept requests and message connections.
-- **Where the score shows:** as a meter with a list of what's missing, on Home, My profile, the editor (sticky) and the onboarding wizard.
-- **Where the gate shows:** wherever "Connect" appears. The button is disabled with an explanation and a link: "Complete your profile to send connection requests."
+- **Score:** 0–100%.
+  - 8 core fields: headline, **photo**, background, expertise, current focus, needs, offerings, **country**.
+  - Plus 3–4 role fields **for every role held**:
+    - **Founder:** company, stage, industry, funding status.
+    - **Operator:** function, seniority, focus areas.
+    - **Investor:** investor type, stages, check size, sectors.
+    - **Builder:** skills, project types, collaboration interests.
+- **Unlocking:** at **≥60%, with the primary role's required fields filled**, she can **send connection requests and ask for introductions**. The required fields:
+  - **Founder:** company name, stage.
+  - **Operator:** function, seniority.
+  - **Investor:** stages, check size.
+  - **Builder:** skills.
+- **What stays open:** everything else — browsing, accepting requests, messaging, gatherings.
+- **Where the score shows:** as a meter with a list of what's missing, on Home, My profile, the editor (sticky) and onboarding.
+- **The gate:** disabled Connect / Ask buttons with "Complete your profile to connect or ask for introductions".
 
 ### 6.4 Recommendations and reasons
-Each recommendation includes up to three **reasons**. Design a visual treatment (icon + text) for each reason type:
+Each recommendation shows up to three **reasons**. Design an icon + text treatment for each type:
 
 | Type | Example copy |
 |---|---|
 | Needs → offers | "Can help with what you need: fintech, investor, intros" |
 | Offers → needs | "Looking for what you offer: design, partner" |
-| Role fit | "Investor: a natural fit for your work as a founder" / "Fellow founder" |
+| Stage fit (founder ↔ investor) | "Investing at your stage" / "Raising at a stage you invest in" |
+| Role fit | "Operator: a natural fit for your work as a founder" / "Fellow founder" |
 | Shared expertise | "Shared expertise: payments, fintech" |
-| Mutual connections | "2 mutual connections" |
+| Mutual connections | "2 mutual connections can introduce you" |
+| Same gathering | "Going to the same gathering: Lagos founders table" |
+| Same city | "Also in Lagos" |
 
-"Not now" hides a recommendation for 30 days. Up to 20 are shown. If there are fewer than 5, show a gentle nudge to improve the profile.
+**Behavior:**
+- "Not now" hides a recommendation for 30 days.
+- Up to 20 recommendations are shown. With fewer than 5, show a gentle nudge to improve the profile.
+- Members who prefer introductions can still be recommended; their card action becomes **Ask for an introduction**.
 
 ### 6.5 Limits (design the "hit the limit" states)
-| Limit | Value | Message tone |
+| Limit | Value | Message |
 |---|---|---|
 | Connection requests | 20 per rolling 24h | "You've sent 20 connection requests in the last 24 hours. Please try again later." |
-| Unanswered messages in one conversation | 20 in a row | "You've sent 20 messages without a reply. Wait for Priya to respond." |
-| Withdrawn request cooldown | until the original expiry date | "You withdrew a request to this member recently. You can send a new one after October 28." |
+| Unanswered messages in one conversation | 20 in a row | "You've sent 20 messages without a reply. Wait for Divya to respond." |
+| Withdrawn request cooldown | until the original expiry | "You withdrew a request to this member recently. You can send a new one after October 28." |
+| Open introduction requests | 5 per member, 1 per person, 1 per introducer–person pair per 90 days | "You can have 5 introduction requests open at a time." |
+| "Ask the team" | 2 per calendar month | "You can ask the team for 2 introductions a month." |
+| Invitation requests (public) | 5 per network per hour | "Too many requests from your network. Please try again in an hour." |
 
 ### 6.6 Read-only conversations
 A conversation becomes read-only (history visible, composer replaced by a notice) when:
-- the connection was removed: *"This connection was removed. The conversation is read-only."*
-- the other member is no longer active: *"This member is no longer active. The conversation is read-only."*
-
-- the other person **deleted their account**: *"This account was deleted. You can still read your conversation, but it is read-only."* The name shows as **"Deleted account"** with a neutral placeholder avatar (no initials, no profile link, no headline). Their messages stay exactly as they were. Design this as a distinct, calm "ghost" treatment that is clearly different from a normal member and from a blocked one.
+- **the connection was removed:** *"This connection was removed. The conversation is read-only."*
+- **the other member isn't active:** *"This member is no longer active. The conversation is read-only."*
+- **the other person deleted their account:** *"This account was deleted. You can still read your conversation, but it is read-only."*
+  - The name shows as **"Deleted account"** with a neutral **ghost avatar**: no photo, no initials, no link.
+  - Design this as a calm treatment, distinct from both a normal member and a blocked one.
 
 A **blocked** member's conversation disappears entirely for both people.
 
+**Conversations that began with an introduction** open with an **introduction note**: "Introduced by Mei Chen", the introducer's note, and "Adaeze wrote: …". It's a distinct, centered card above the first message.
+
+### 6.7 Warm introductions (the three people)
+- **The people:** **A** asks, **B** introduces (a mutual connection, or the team), **C** is the person A wants to meet.
+- **The flow:** A picks B from "*N* of your connections know C" and writes:
+  - a note to B (≤1,000 characters);
+  - an optional note for C (≤500).
+
+  Then:
+  1. B has 14 days to **Introduce** (with an optional note to C, ≤500) or answer **Not this time**.
+  2. C has 14 days to **Accept** (they're connected and the conversation opens with the notes) or answer **Not now**.
+- **What A sees:**
+  - "Waiting for B";
+  - "B introduced you, waiting for a reply";
+  - "Connected";
+  - after a deadline passes with no success, "No introduction was made".
+- **Every "no" is silent.** A's status doesn't change when B passes or C declines; it changes only when the time runs out.
+- **"Ask the team"** appears **only when nobody in her network can introduce her**. The person then sees "The Women Builders team would like to introduce you to…".
+- **Report** is available from every introduction.
+
+### 6.8 Gatherings
+- **Types:** Dinner (a "table", default 12 seats) and Working session (a "room", default 20 seats), in person or online.
+- **Seat modes:**
+  - **Curated:** "Request a seat", and the team confirms.
+  - **Open:** "Take a seat", first come, first served, with an automatic waitlist.
+- **Seat statuses:** *Requested*, *Confirmed*, *Waitlisted*, *Not this time*, *Cancelled*. Design a calm badge for each.
+- **The venue address or online link is shown only to confirmed guests and hosts.** Everyone else sees the city ("Lagos, Nigeria") or "Online".
+- **Times** show in the gathering's local time zone ("Thu, Nov 12, 2026, 7:00 PM GMT+1"). Online sessions also show "Your time: …".
+- **Cancelling within 24 hours** of the start is recorded as a late cancellation, and the dialog warns about it.
+- **"People you met":** for 30 days after a gathering, attendees see the others with a one-tap **Connect**, pre-filled "We met at <title>". It works even with people who prefer introductions.
+- **Safety:** two people who blocked each other never see each other in "Who's coming". Admins see a conflict flag.
+
+### 6.9 Investors: "currently investing"
+- **The status:** investors answer "Are you still investing?" every 90 days, from a card on Home and by email.
+- **Badges:**
+  - **Currently investing** (green);
+  - **Paused**;
+  - **Status not confirmed**, after 120 days without an answer.
+- **Effect:** unconfirmed and paused investors drop out of the default Capital list.
+- **Last check:** "Last check: Aug 2026" shows when she has filled it in.
+
 ---
 
-## 7. Screens: public and account
+## 7. Screens: public website and account
 
-### 7.1 Landing `/` (screenshot 01)
-- **Content:** name/logo, one-line value proposition, the eligibility statement (*"Women Builders is a community for women founders, operators, investors and builders."*), **Apply to join** (primary) and **Log in**.
-- **Flash messages** after account actions: "Your account has been deleted." / "Your account is deactivated. Log in any time to reactivate it."
-- This is currently minimal. You're welcome to design a proper marketing landing page: how it works in 3 steps, the four roles, trust/curation messaging.
+### 7.1 Homepage `/` (screenshot 01)
+This is the public face of the brand. Sections, in order:
+1. **Hero:** "Where women who build find each other", one sentence on what the network does, **Request an invitation** (primary, scrolls to the form) and **Log in**.
+2. **Who it's for:** four equal cards (Founders, Operators, Investors, Builders), each with "You get" and "You bring".
+3. **What membership gives you:** Warm introductions, The Capital view, Gatherings, Matching on needs and offers.
+4. **How joining works:** Request, then our team reads it, then you hear back within three weeks either way, then join with your invitation. "One reply from a human, either way."
+5. **Live numbers:** members, countries, introductions made, gatherings held.
+   - Each number appears **only once it passes its threshold** (members 50, countries 5, introductions 25, gatherings 3).
+   - Design the section for 1 to 4 numbers. It's hidden entirely when none qualify.
+6. **Upcoming gatherings teaser:** only gatherings the team marks public. Shows type, title, city or "Online", and month; never the venue, exact date or guests. Hidden when empty.
+7. **(Later release) Featured members and quotes:** opt-in only. Not built yet, but leave room.
+8. **Request an invitation:** the form (7.3).
+9. **Footer:** charter, privacy, terms, contact email, log in.
 
-### 7.2 Apply `/register` (screenshot 02)
+**Flash messages:** "Your account has been deleted." / "Your account is deactivated. Log in any time to reactivate it."
+
+**Content rules:** no invented numbers, logos or quotes. No member data appears publicly.
+
+### 7.2 Community charter `/charter`
+- **Structure:** a readable long-form page with an intro and short titled sections of bullet points. Shows "Version 1, updated 2026-10-06".
+- **Copy status:** the text is a **placeholder draft** for the client to finalize; design for roughly the current length.
+- **Interstitial** `/charter/accept`: shown when the charter changes.
+  - Title: "We've updated our community charter".
+  - The full charter, then **I accept the charter**.
+  - A disclosure, "I don't accept. What are my options?", revealing download data, deactivate and delete.
+
+### 7.3 Request an invitation `/request-invite` (screenshot 02)
 - **Fields:**
-  - Full name
-  - Email
-  - Password, with the rule hint: *8+ characters, an uppercase letter, a lowercase letter and a number*
-  - Primary role: a 4-option choice, each with a one-line hint. Consider cards instead of a dropdown.
-  - Headline (≤120 characters, e.g. "Founder of Loop · B2B payments")
-  - "What are you building, and why do you want to join?" (20–2,000 characters, *"Our team reads every application."*)
-- **Invitation variant** (`?invite=…&email=…`):
-  - Title: "Accept your invitation".
-  - Email is prefilled.
-  - Info notice: "You were invited, so your account will be active right away."
-  - Button: "Create account".
-- **Errors:** inline per field. The form never loses what was typed. "An account with this email is already registered." "This invitation link is invalid or has expired." "Please register with the email address the invitation was sent to."
-- **After submit:** normal applications go to `/pending`, invited people go to `/onboarding`.
+  - full name;
+  - email;
+  - primary role (4 options);
+  - LinkedIn profile (optional, "helps us review faster");
+  - city;
+  - country (list);
+  - "What are you building or working on?" (20–1,000 characters);
+  - "Who referred you?" (optional);
+  - a consent checkbox: "I agree that Women Builders may store these details to review my request. See the privacy policy."
+- **Footnote:** "No newsletter, no spam. One reply from a human, either way."
+- **After submit:** the same calm thank-you for everyone. By design it never reveals whether the person is already known, a member or declined: "Thank you. We've received your request. You'll hear back from us within three weeks, either way." The email confirms it.
+- **Errors:** inline per field, plus the rate-limit message.
 
-### 7.3 Log in `/login` (screenshot 03)
-- **Content:** email, password, "Forgot password?", "Apply to join".
-- **Errors** (all generic, by design):
-  - "Email or password is incorrect." (the same message for an unknown email, a wrong password, or a locked account)
+### 7.4 Join `/join?invite=…` (screenshot 03)
+- **Title:** "Welcome to Women Builders" — "You were invited, so your account is active as soon as you finish this page."
+- **Fields:**
+  - email (read-only, from the invitation);
+  - full name (pre-filled from her request);
+  - password, with the rule hint: 8+ characters, an uppercase letter, a lowercase letter and a number;
+  - primary role;
+  - headline (≤120);
+  - city;
+  - country;
+  - **"I've read and accept the community charter"** (link opens the charter).
+- **Button:** "Join Women Builders", then onboarding.
+- **No link or a bad link:** "Women Builders is invitation-only" / "This invitation has expired". Both have a "Request a new invitation" button. Links work once and expire after 14 days. A reminder email with a fresh link goes out after 7 days.
+
+### 7.5 Log in `/login` (screenshot 04)
+- **Content:** email, password, "Forgot password?", "Request an invitation".
+- **Errors** (generic by design):
+  - "Email or password is incorrect."
   - "Too many attempts. Try again in 15 minutes, or reset your password."
-  - "Your application wasn't approved. You can apply again 90 days after the decision."
   - "This account has been deactivated by the Women Builders team. Contact us if you think this is a mistake."
-- **Self-deactivated state:** after a correct password, swap the form for a notice ("You deactivated your account…") with **Reactivate my account** and **Cancel**.
-- **After a password reset:** a success banner, "Your password was changed. Log in with your new password."
+- **Self-deactivated:** after a correct password, swap the form for "You deactivated your account…" with **Reactivate my account** and **Cancel**.
 
-### 7.4 Forgot / reset password
-- **Forgot:** email field. After submit, always: *"If an account exists for x@y.com, we've sent a link to reset your password. It expires in 1 hour."*
-- **Reset:** new password with the rule hint, then back to login with the success banner. Invalid or expired link: "This link is invalid or has expired."
+### 7.6 Forgot / reset password
+- **Forgot:** always answers "If an account exists for x@y.com, we've sent a link… It expires in 1 hour."
+- **Reset:** a new password, then back to login with a success banner.
 
-### 7.5 Confirm email `/verify-email`
-- **States:** "Confirming your email…", then either success ("Your email is confirmed. Our team will review your application.") or an error with a link back to request a new one.
+### 7.7 Privacy and terms `/privacy`, `/terms`
+Simple text pages. They currently show a clearly marked placeholder notice until the client supplies the text. Design a comfortable long-form legal text layout.
 
-### 7.6 Application under review `/pending` (screenshot 04)
-- **Content:** "Your application is under review", personal thank-you, and the email we'll write to.
-- **Email not confirmed:** warning "Please confirm your email address. We can only review your application once it's confirmed." + **Resend confirmation email** (limited to 3 per hour; show the error if hit).
-- **Email confirmed:** success "Email confirmed. Your application is in the review queue."
-- **Always:** Log out.
-
-### 7.7 Onboarding wizard `/onboarding`
-This is the first screen after approval, and it can't be skipped into the app until finished. It has 4 steps with a progress indicator and a live completeness meter (6.3). Each "Save and continue" saves.
-
-1. **The basics:** name, headline, primary role, other roles (multi-select), location, LinkedIn URL, website.
-2. **Your roles:** a section per role held. Details in section 12. Required fields are marked for the *primary* role only.
-3. **Expertise and focus:** expertise tags (up to 20), professional background, current focus.
-4. **Needs and offerings + privacy:** "What you need", "What you can offer" (with the tip *"Be specific: 'intros to seed fintech investors' beats 'help'"*), then the privacy toggles. Buttons: **Finish** and **Skip for now**.
-
-Back is available on steps 2–4. Validation errors appear inline.
+### 7.8 Onboarding wizard `/onboarding`
+Four steps, with a progress indicator and a live completeness meter:
+1. **The basics:** **photo upload**, name, headline, primary role, other roles, **city, country**, LinkedIn, website.
+2. **Your roles:** a section per role held (fields in section 12).
+3. **Expertise and focus:** expertise tags, **Open to** (multi-select chips), background, current focus.
+4. **Needs and offerings + privacy + introductions:**
+   - needs and offerings, with the tip "Be specific: 'intros to seed fintech investors' beats 'help'";
+   - the privacy toggles;
+   - an **Introductions** card with "Let members ask me for introductions" and **"Prefer introductions"**. Investors also see a short explanation suggesting it.
+   - Buttons: **Finish** and **Skip for now**.
 
 ---
 
 ## 8. Screens: member area
 
 ### 8.1 Home `/dashboard` (screenshot 06)
-- **Completeness warning** (only if the gate isn't met): "Your profile is 45% complete (still needed: Company stage). Reach 60% to start sending connection requests. [Finish your profile]"
-- **3 summary tiles:** Connection requests (count), Unread conversations (count), Profile completeness (%). Each links onward.
-- **New messages:** up to 3 unread conversations (avatar, name, last message preview).
-- **Recommended for you:** top 3 recommendation cards + "See all".
-- **Empty states:** no recommendations ("Tell us what you need and offer to get matched").
+In order:
+1. **Prompts** (only when they apply):
+   - profile completeness ("Your profile is 45% complete… Reach 60% to send connection requests");
+   - **"Add your country…"** for older profiles;
+   - for investors, the **"Are you still investing?"** card with **Yes, still investing** / **Paused for now**.
+2. **To do:** a short list of links, shown only when there's something to do:
+   - "3 connection requests waiting";
+   - "1 introduction needs your answer";
+   - "2 gathering seat updates".
+3. **Three summary tiles:** connection requests, unread conversations, profile completeness.
+4. **New messages:** up to 3 unread conversations.
+5. **Your next gatherings** (confirmed or hosting) and **Gatherings near you** (her country or online). Up to 3 each, with title, local time and place.
+6. **Recommended for you:** the top 3 cards + "See all".
 
 ### 8.2 Discover `/search` (screenshot 07)
-- **Filters** (a side panel on desktop; suggest a drawer or sheet on mobile):
-  - keyword search (name, company, keyword)
-  - primary role (multi)
-  - "also holds role" (multi)
-  - expertise tags
-  - location (free text)
-  - **Search** and **Clear**
-- **Results:** a count ("24 results") and a grid of **member cards** (11.2), each showing its top match reason. Pagination: 20 per page, Previous/Next with "Page 2 of 5".
-- **Ranking:** when searching by name, exact and prefix name matches come first.
-- **Empty states:** "No members match your search. Try fewer filters or a different keyword." / "No members yet."
+- **Filters** (a side panel on desktop; suggest a sheet on mobile):
+  - keyword;
+  - primary role;
+  - "also holds role";
+  - expertise;
+  - **country** (list);
+  - **city** (text);
+  - **Open to** (multi);
+  - **Capital:** "Investors currently writing checks" and "Founders raising now or soon".
+- **Results:** a count and a grid of **member cards** (11.3), with photo, the top reason, a "Prefers introductions" tag, and "*N* mutual connections". 20 per page.
+- **Empty states:** "No members match your search. Try fewer filters or a different keyword."
 
-### 8.3 For you `/recommendations` (screenshot 08)
-- **Content:** a heading and subtitle ("Members matched to your roles, needs, offerings and expertise."), then up to 20 recommendation cards. Each card shows up to 3 reasons (6.4), with **View profile** and **Not now** (hides for 30 days).
-- **Few results (fewer than 5):** info notice, "We only found a few strong matches. A more detailed profile helps us find more."
-- **None:** empty state with links to edit the profile or search.
+### 8.3 Capital `/capital` (screenshots 08, 09)
+"A view of the same community, for raising and investing. Every role matters equally here, and Discover shows everyone." It has two tabs.
 
-### 8.4 Member profile `/members/[id]` (screenshots 09, 10)
-- **Header:**
-  - initials avatar, name, headline, role badges (primary emphasized)
-  - location · "Member since September 2026"
-  - LinkedIn / Website links (open in a new tab)
-- **Actions column:** the connection-status actions from 6.1, plus "More options" → Report, Block.
-- **Main column:** Current focus, **Looking for** (needs), **Can help with** (offerings), Background.
-- **Side column:** Expertise tags, then a card per role held:
-  - **Founder:** company, stage, industry, funding
-  - **Operator:** function, seniority, focus areas
-  - **Investor:** stages, check size (e.g. "$250K–$1.5M"), sectors
-  - **Builder:** skills, project types, collaboration interests
-- **Hidden-fields notice** for non-connections (6.2).
-- **Profiles of blocked, pending, deactivated or unknown members** show the 404 page ("We couldn't find that page").
-- **Dialogs** (all native modals with focus trapping):
-  - **Connect:** optional note (≤500 characters, with a live "123/500" counter), Cancel / **Send request**. On success, flash "Connection request sent." If her request crossed with one from the other person, they're connected immediately: "You're now connected with Priya."
-  - **Remove connection:** "You won't be able to message each other. Your conversation history stays visible to both of you. Priya won't be notified." → Remove.
-  - **Block:** three bullet consequences, "You can unblock people in Settings." → Block (danger). Afterwards she's sent to Home.
-  - **Report:** reason (Harassment or unwanted contact / Spam or unsolicited selling / Fake or impersonating profile / Inappropriate content / Something else), optional details (≤2,000). Success: "Thank you. Our team will review your report. Priya won't be told who reported them." + suggest blocking.
+**Investors**
+- **Filters:**
+  - **"I'm raising checks of $___K"**;
+  - stage;
+  - sector;
+  - investor type;
+  - leads or follows;
+  - country;
+  - status (**Currently investing**, the default, or All investors).
+- **Order:** confirmed in the last 90 days first, then most recent "last check", then relevance, then name.
+- **Card:**
+  - photo, name, headline, location;
+  - firm · type · leads/follows;
+  - stages;
+  - check range (if visible);
+  - sectors;
+  - the investing badge;
+  - "Last check: Aug 2026";
+  - the top reason ("Investing at your stage");
+  - **how to reach her** (below).
 
-### 8.5 My profile `/profile`
-This is the same layout as 8.4, seen as yourself: all fields visible and no hidden notice. The action is **Edit profile**, with a completeness warning if under 60%.
+**Founders raising**
+- **Filters:** company stage, industry, country, raise amount range ($K).
+- **Order:** "Raising now" first, then "Raising in 6 months".
+- **Card:**
+  - photo, name, headline;
+  - stage · industry;
+  - funding status badge;
+  - "Raising $1.5M" (if visible);
+  - the top reason;
+  - how to reach her.
 
-### 8.6 Edit profile `/profile/edit` (screenshot 15)
-- **Layout:** one long form with a **sticky completeness meter**. Sections: Basics, About your roles, Expertise and focus, Needs and offerings, Privacy (fields in section 12).
-- **Save:** Save profile, with "Saving…" then "Saved", and inline errors.
-- **Role sections** appear and disappear as roles are toggled.
-- **Tag inputs:** chips with a remove "×". Enter or comma adds a tag, and Backspace removes the last one. Tags are normalized to lowercase-hyphenated ("Machine Learning" → `machine-learning`), so show normalized chips after save.
+**"How to reach her"** (card footer):
 
-### 8.7 Connections `/connections` (screenshot 11)
-- **Header:** "Connections, 12 total", plus a **Requests** button with an incoming-count badge.
-- **Search:** by name or keyword.
-- **Grid:** member cards with "Connected Sep 28, 2026", **Message** and **Profile**.
-- **Empty states:** "No connections yet" (link to recommendations or Discover), and "No connections match".
+| Situation | Action |
+|---|---|
+| Connected | **Message** |
+| Prefers introductions, with mutuals | **Ask for an introduction** |
+| Prefers introductions, no mutuals | "Prefers introductions. No one in your network knows her yet." + "Ask the team" link |
+| Otherwise | **View and connect**, plus "Ask for an introduction" if there are mutuals |
+| Request sent / received | "Request sent" / **Respond to request** |
 
-### 8.8 Requests `/connections/requests` (screenshot 12)
-- **Received (n):** cards with their note (quote style), "Received Sep 28 · expires Oct 28", **Accept** / **Decline**.
-- **Sent (n):** cards with "Sent … · expires …" and **Withdraw**. Silently declined requests appear here as normal pending requests.
-- **Empty states:** "No new requests" / "No pending sent requests".
+### 8.4 Gatherings `/gatherings` (screenshot 10) and detail `/gatherings/[id]` (screenshot 11)
+**List**
+- **Tabs:** Upcoming / My gatherings.
+- **Filters:** type, city, online only.
+- **Order:** her country first, then online, then others.
+- **"People you met" panel** (when there are people from a recent gathering to connect with): photo, name, "At <title>", **Connect**.
+- **Cards:**
+  - type badge, her seat status badge, Cancelled / Past badges;
+  - title;
+  - local time;
+  - place;
+  - seats ("3 of 12 seats left", "Full · waitlist open", or "12 seats · request a seat");
+  - hosts ("Hosted by The Women Builders team, Mei Chen").
 
-### 8.9 Inbox `/messages` (screenshot 13)
-- **List:** conversations sorted by latest activity. Each row: avatar, name (bold if unread), "(read-only)" tag if applicable, time (today → "3:42 PM", else "Sep 28"), last message preview prefixed "You:" if hers, and an unread count badge.
-- **New connections** with no messages yet show "Say hello 👋".
-- **Deleted accounts:** the row stays, named "Deleted account" with the ghost avatar and the "(read-only)" tag.
-- **Empty:** "No conversations yet. You can message anyone you're connected with. See your connections."
+**Detail**
+- **Header:** type badge, seat status badge, "You're hosting" if she's a host.
+- **Facts:**
+  - **When:** local time, duration, and "Your time" for online sessions.
+  - **Where:** the venue or link once confirmed; otherwise the city, with "The address is shared with confirmed guests."
+  - **Seats.**
+  - **Hosts.**
+- **Description.**
+- **Actions:**
+  - **Request a seat** or **Take a seat**. The dialog has an optional note ≤300: "What would you bring, or want from it?" and a charter confidentiality reminder.
+  - **Cancel my seat** / **Withdraw my request**, with a late-cancellation warning within 24 hours.
+  - **Add to calendar** (`.ics`), once confirmed.
+- **Messages after acting:**
+  - "You're in. We've emailed you the details."
+  - "It's full, so you're on the waitlist…"
+  - "Request sent. We'll email you when the team has decided."
+- **States to design:**
+  - "Requests for this gathering have closed";
+  - a cancelled banner with the reason;
+  - declined: "We couldn't fit you at this one. We'd love to see you at the next."
+- **Who's coming** (confirmed guests and hosts only): hosts, then attendees, with photo, name, role · headline.
+- **People you met** (after the gathering): rows with **Connect**.
 
-### 8.10 Conversation `/messages/[memberId]` (screenshot 14)
-- **Header:** back (mobile), avatar, name (links to profile if active), headline.
-- **Messages:** chronological bubbles, sender right and recipient left, with a timestamp and "Read" on your latest read messages. Report is available on messages from the other person (currently on hover or focus; please design a mobile-friendly equivalent, e.g. long-press or a per-message menu).
-- **Optimistic sending:** "Sending…" then sent. On failure: "Failed. Retry".
-- **New incoming messages** appear within ~3 seconds (the app polls). Consider a subtle arrival animation and "new messages" jump affordance when scrolled up.
-- **Composer:** multi-line, Enter sends and Shift+Enter adds a new line, max 5,000 characters, Send disabled when empty. Errors (limits) appear above the composer.
-- **Read-only state:** a notice replaces the composer (6.6). This includes conversations with a **deleted account**: the header shows "Deleted account" (not a link), and every message stays readable. Reporting a message from a deleted account is still possible.
-- **Empty conversation:** "This is the start of your conversation with Priya."
+### 8.5 For you `/recommendations` (screenshot 12)
+- **Cards:** up to 20 recommendation cards, each with up to 3 reasons (6.4), **View profile** and **Not now**.
+- **Few or none:** a nudge or an empty state.
 
-### 8.11 Settings `/settings` (screenshot 16)
-1. **Email notifications:** three toggles, saved instantly with "Saved":
-   - connection requests
-   - accepted requests
-   - new messages ("At most one email per conversation every 30 minutes")
+### 8.6 Member profile `/members/[id]` (screenshots 13, 14)
+**Header**
+- **photo** (large), name, headline, role badges;
+- city, country · "Member since September 2026";
+- LinkedIn / Website links;
+- **"Open to" chips**.
 
-   Note: "Emails go to x@y.com. Account and security emails are always sent."
-2. **Password:** current + new password, with the success message "Password changed. You've been logged out of your other devices."
-3. **Blocked members:** a list with name, "Blocked Sep 28", and Unblock. Empty: "You haven't blocked anyone."
-4. **Your account and data:**
-   - **Download your data** (a JSON file).
-   - **Deactivate account:** dialog with the password, "Log in again any time to reactivate".
-   - **Delete account** (danger): dialog with the consequences, a password field, and "type DELETE to confirm". Button: *Delete forever*. Be very clear about what happens: her name, email, profile, connections and requests are **permanently erased**, but **her conversations are kept**: the people she talked to can still read them, as from "Deleted account", and can't reply. Messages she already sent can't be taken back. (Same model as Telegram.)
+**Actions column**
+- **The actions:** the states from 6.1, plus the introduction actions:
+  - "Ask for an introduction", with "1 of your connections knows Divya";
+  - "Introduction requested" (links to My requests) once she has asked;
+  - "Ask the Women Builders team to introduce you" when nobody can.
+- **More options:** Report, Block.
 
-### 8.12 Unsubscribed `/unsubscribed`
-The result of one-click unsubscribe from an email: "You're unsubscribed. You won't get emails about new messages anymore." + "Manage email settings". Invalid link variant: "This link didn't work."
+**Main column**
+- current focus;
+- **Looking for** (needs);
+- **Can help with** (offerings);
+- background.
 
-### 8.13 Global states
-- **404:** "We couldn't find that page". Used for missing pages *and* unavailable profiles.
-- **Error:** "Something went wrong. Please try again. If it keeps happening, contact us and mention reference 1a2b3c4d." + Try again.
-- **Network error** (any action): "Can't reach the server. Check your connection and try again."
+**Side column**
+- **Expertise.**
+- **A card per role held:**
+  - **Founder:** company, stage, industry, funding status, **raise amount**.
+  - **Operator:** function, seniority, focus areas.
+  - **Investor:** **firm, investor type**, stages, check size, sectors, **leads/follows**, **investing badge**, **last check**.
+  - **Builder:** skills, project types, collaboration interests.
+
+**Dialogs**
+- **Connect:** an optional note ≤500 with a counter. Pre-filled "We met at …" after a shared gathering.
+- **Ask for an introduction:**
+  - radio cards for each possible introducer (photo, name, headline);
+  - "Your note to Mei *" (≤1,000), "Only Mei sees this.";
+  - "A note for Divya (optional)" (≤500), "Forwarded only if Mei makes the introduction.";
+  - the reassurance: "If nobody can make the introduction, you'll see 'No introduction was made' after 14 days. Nobody is told who said no."
+- **Ask the team:** the same dialog with "the team" as the introducer, and how many team asks she has left this month.
+- **Also:** Remove connection, Block, and Report (with the reasons: harassment, spam, fake profile, inappropriate content, **inappropriate photo**, something else; the dialog links to the charter).
+
+### 8.7 My profile `/profile` and Edit profile `/profile/edit` (screenshot 15)
+- **Layout:** one long form with a **sticky completeness meter**.
+- **Photo uploader:**
+  - JPEG, PNG or WebP up to 5 MB;
+  - the server crops it square around the most interesting part, so there's no manual crop step;
+  - Replace / Remove;
+  - a hint that location data is removed from photos.
+- **Sections:** Basics (with city and country), About your roles (with the new investor and founder fields), Expertise and focus (with Open to), Needs and offerings, Privacy.
+- **Tag inputs:** chips; Enter or comma adds, Backspace removes.
+
+### 8.8 Connections `/connections` and Requests `/connections/requests` (screenshots 16, 17)
+Unchanged:
+- **Connections:** search and a grid of cards with **Message**.
+- **Requests:** received cards with the note, Accept / Decline; sent cards with Withdraw.
+
+### 8.9 Introductions `/introductions` (screenshot 18)
+"Warm introductions through people who know you both. Nobody is ever told who said no." Three tabs; pending items come first.
+- **Asked of me** (she's the introducer):
+  - "Adaeze would like to meet Divya";
+  - both people (photo, name, headline);
+  - Adaeze's note to her;
+  - the note for Divya (forwarded if she introduces);
+  - an "Answer by Oct 20" badge;
+  - **Introduce** (dialog with an optional note ≤500), **Not this time**, Report.
+  - Past items: "You introduced them" / "You passed" / "Expired".
+- **For me** (she's being introduced):
+  - "Mei Chen would like to introduce you to Adaeze Nwosu";
+  - the person;
+  - "From Mei" and "From Adaeze" notes;
+  - "Answer by…";
+  - **Accept**, **Not now**, Report.
+  - After accepting: "Open your conversation".
+- **My requests** (she asked):
+  - "To meet Divya via Mei", with the status badge (6.7) and "Asked Oct 6";
+  - **Withdraw request** while waiting;
+  - "Open your conversation" once connected.
+- **Empty states**, one per tab. "My requests" links to Discover and Capital.
+
+### 8.10 Inbox `/messages` and Conversation `/messages/[memberId]` (screenshots 19, 20)
+- **Inbox:** as before, now with photos and the ghost avatar for deleted accounts.
+- **Conversation:**
+  - the **introduction note** card at the top when relevant (6.6);
+  - optimistic sending ("Sending…", "Failed. Retry");
+  - new messages appear within ~3 seconds;
+  - Enter sends, Shift+Enter adds a new line, 5,000 characters max;
+  - read-only states (6.6);
+  - per-message Report (please design a mobile-friendly affordance).
+
+### 8.11 Settings `/settings` (screenshot 21)
+1. **Email notifications** (toggles, saved instantly):
+   - connection requests;
+   - accepted requests;
+   - new messages;
+   - **introductions**;
+   - **gatherings near me**;
+   - **investing check-ins** (investors only).
+
+   Note: "Account and security emails, and emails about your own seats, are always sent."
+2. **Introductions:**
+   - "Let members ask me for introductions" (on by default);
+   - **"Prefer introductions"** (off by default; explains that requests already pending aren't affected).
+3. **Password.**
+4. **Blocked members.**
+5. **Your account and data:**
+   - **Download your data:** JSON, now including introductions and gathering history.
+   - **Deactivate.**
+   - **Delete account** (Telegram style):
+     - her name, email, profile, photo, connections and requests are erased;
+     - **her conversations stay readable for the other person** as "Deleted account";
+     - upcoming seats are released.
+
+### 8.12 Global states
+- **404:** "We couldn't find that page". Also used for unavailable profiles, gatherings she can't see, and blocked members.
+- **Error:** "Something went wrong… mention reference 1a2b3c4d." + Try again.
+- **Network error:** "Can't reach the server. Check your connection and try again."
 
 ---
 
 ## 9. Screens: admin area
 
-Admin screens are desktop-first (still usable on tablet). Layout: a top bar (brand + "Admin", admin name, "Member view" if she also has a profile, Log out) and a side nav with badges (section 5).
+Desktop-first (still usable on tablet). A top bar (brand · Admin, admin name, Member view, Log out) and a side nav with badges.
 
-### 9.1 Dashboard `/admin` (screenshot 20)
-- **Date range picker:** From/To, default the last 90 days, Apply.
-- **4 stat tiles** (clickable):
-  - Active members (+ "6 new in range")
-  - Applications to review (+ "2 awaiting email confirmation")
-  - Open reports
-  - Follow-ups in next 7 days
-- **New members by month:** a bar chart of the last 12 months (by approval date).
-- **Potential members by status:** 11 status badges with counts, each linking to the filtered list.
-- **Outreach conversion table:** for each status, *Entered* (in range), *Became members*, *Conversion %* ("—" when zero entered). The funnel is **non-linear**: people can skip or revisit statuses. Please don't design a classic funnel graphic that implies a fixed order.
-- **Upcoming follow-ups:** up to 10 names with a due date. "Overdue" is shown in red, "Today" emphasized.
-
-### 9.2 Applications `/admin/applications` (screenshot 21)
-- **Cards** in review order (confirmed emails first), each with:
-  - name (links to the account), email, "applied Sep 28"
-  - headline
-  - badges: role, "Email confirmed" or "Email not confirmed", and "Prospect: Contacted" if they were in the outreach CRM
-  - the application statement (quote block)
-  - "Referred by X" if known
-- **Actions:**
-  - **Approve**: confirm dialog + optional internal note. "Their account becomes active and they get a welcome email." Only possible once the email is confirmed; otherwise show "Can be approved once they confirm their email."
-  - **Reject** (danger): confirm dialog + optional internal note. "They receive a neutral email and may apply again after 90 days."
-- **Empty:** "No applications waiting".
-
-### 9.3 Members `/admin/members` (screenshot 22) and account detail
-- **List:**
-  - Search (name, email, company) + status filter (All / Active / Pending / Deactivated / Rejected / Deleted).
-  - Table columns: Name (+ Admin badge, email beneath), Role, Status badge, Joined, Last active, Reports (red "2 open").
-  - 25 per page.
-- **Detail** `/admin/members/[id]`:
-  - **Header:** name, email, status badge ("deactivated by admin" / "by self"), Admin badge, "Email not confirmed".
-  - **Actions** (none on your own account):
-    - Approve (if pending)
-    - **Deactivate** (danger, with a reason): "They are signed out everywhere immediately, hidden from members, and emailed…"
-    - Reactivate
-    - **Make admin / Remove admin access**: confirm dialogs. The last admin can't be removed.
-  - **Profile card:** all fields *including hidden ones*, labeled "(admins see all fields, including hidden ones)", plus the application statement and review note.
-  - **Side cards:**
-    - Activity: applied, approved, last active, connections, messages sent, requests sent, link to the prospect record
-    - Reports about this member
-    - Admin history (audit entries)
-
-### 9.4 Potential members `/admin/prospects` (screenshot 23)
-This is the outreach CRM for people the team wants to recruit.
-- **Toolbar:** "Import CSV", **Add potential member**.
-- **Filter bar:**
-  - search (name, email, company, role, LinkedIn)
-  - status
-  - follow-up date from/to
-  - owner (Anyone / Assigned to me / Unassigned / each admin)
-  - archived (Hide / Include / Only)
-  - Apply / Reset
-- **Table:** Name (+ Archived badge, email or LinkedIn beneath), Company, Role, Status badge, Next follow-up, Owner. Sorted by next follow-up.
-- **Add dialog:**
-  - name (required)
-  - **email and/or LinkedIn URL** (at least one: "We use them to prevent duplicate outreach")
-  - company, role, discovery source, next follow-up, referred by, referrer email, owner
-  - "Why are we storing this person's details?"
-- **Live duplicate warning** while typing: "Already tracked: Rachel Kim (contacted)" / "Already has an account: …". Hard errors:
-  - "X asked not to be contacted. This record can't be added again."
-  - "X is already tracked as a potential member."
-  - "X already has a Women Builders account."
-
-### 9.5 Prospect workspace `/admin/prospects/[id]` (screenshot 24)
-- **Header:** name, "Role at Company", status badge, Archived badge, "Member account: active" link if they joined. **Send invitation** (if they have an email, aren't a member and aren't do-not-contact). Or "Invitation sent Sep 28, expires Oct 12".
-- **Do-not-contact banner** (red): "This person asked not to be contacted. The record is kept permanently so they are never contacted again." Outreach logging and invitations are hidden in this state.
-- **Log outreach form:** date (defaults to today), method (Email / LinkedIn / Phone / Event / Intro / Other), outcome, *Status after this*, next follow-up → Log outreach.
-- **History timeline:** status changes ("Contacted → Interested"), outreach attempts ("Outreach · Email", with the outcome) and notes, each with date and admin name. Below it, **Add a note**.
-- **Details panel** (editable): status, owner, next follow-up, name, email, LinkedIn, company, role, discovery source, referrer, "why we hold this record". Save details. **Archive / Unarchive** (not for do-not-contact).
-- **The 11 outreach statuses** need distinct but calm badge colors, with "Do not contact" clearly red: Identified, Reviewed, Contacted, Follow-up needed, Interested, Invited, Applied, Approved, Not interested, Not a fit, Do not contact.
-
-### 9.6 CSV import `/admin/prospects/import` (screenshot 25)
-- **Instructions:**
-  - Recognized columns: name, email, company, role, linkedInUrl, discoverySource, referrerName, referrerEmail.
-  - Each row needs a name + an email or LinkedIn URL.
-  - Max 2,000 rows / 1 MB.
-  - Duplicates and do-not-contact people are skipped.
-  - You'll see a preview before anything is saved.
-- **Step 1:** choose file → **Preview**.
-- **Step 2: preview.**
-  - Summary notice: "Preview: nothing has been saved yet. **3 to import** · 4 skipped · 2 with errors".
-  - Button: **Import 3 people**.
-  - A per-row table: Row #, Name, Email, Result badge (*Will import* / *Duplicate* / *Do not contact* / *Member* / *Error*), Details ("Appears earlier in this file", "Already tracked", "'x' is not a valid email").
-- **Step 3: done.** "Import complete. 3 imported…", the table with *Imported* badges, and "View potential members".
-- **File errors:** "The file is larger than 1 MB…", "…more than 2,000 rows…", "The first row must be a header with at least a 'name' column…", "The file has no data rows."
-
-### 9.7 Follow-ups `/admin/follow-ups`
-- **Toggle:** *Due now* / *Next 7 days*.
-- **List:** name (link), role · company · owner, status badge, and the date. "Overdue: Sep 25" in red, "Today: Sep 28" emphasized.
-- **Empty:** "All caught up".
-
-### 9.8 Invitations `/admin/invitations`
-- **Intro:** "Invited people skip the approval queue. Links expire after 14 days and work only for the invited email."
-- **Invite by email:** an input + Send invitation, with success or error messages ("This person asked not to be contacted." / "This email already has an account.").
-- **Table:** Email (+ linked prospect), Status (*pending* / *accepted* / *revoked* / *expired*), Sent, Expires, By, and **Revoke** for pending ones.
-
-### 9.9 Reports `/admin/reports` (screenshot 26)
-- **Tabs:** Open / Resolved / Dismissed / All. Open reports are oldest first.
+### 9.1 Dashboard `/admin` (screenshot 30)
+- **Date range:** From/To, default the last 90 days.
+- **Tiles:**
+  - Active members (+ new in range);
+  - **Invitation requests to review** (+ "2 waiting over 3 weeks", in red);
+  - Open reports;
+  - Follow-ups in the next 7 days;
+  - **Active in the last 30 days**;
+  - **Introductions in range** (asked · made · accepted);
+  - **Team introductions** (made · accepted · waiting).
 - **Cards:**
-  - status badge, reason, date
-  - reported member (link, "3 reports total" in red when repeated, status badge if not active; "Name (account deleted)" if they deleted their account)
-  - "Reported by X" (shown as "Deleted account" if the reporter later deleted theirs; the report itself is kept)
-  - details
-  - the reported message quoted, if any
-- **Actions:** **Mark resolved** (note: "Record what action was taken…") / **Dismiss** (note). Resolved cards show "Resolved by X on date: note".
+  - new members by month (bar chart, 12 months);
+  - **upcoming gatherings** (seats confirmed / capacity, and how many to review);
+  - **members by country** (top 10);
+  - potential members by status;
+  - outreach conversion table (non-linear; no funnel graphic);
+  - upcoming follow-ups.
 
-### 9.10 Audit log `/admin/audit`
-- **Table:** When, Admin, Action (monospace code, e.g. `application.approve`, `member.deactivate`, `admin.grant`, `report.resolved`, `invitation.create`, `prospects.import`), Target (link to the member when applicable), Details (JSON).
-- **Pagination:** 50 per page, Newer/Older. You may propose friendlier action labels.
+### 9.2 Invitation requests `/admin/requests` (screenshot 31)
+"Every request gets an answer within 21 days. Oldest first."
+- **Tabs:** Open / Invited / Declined / Spam / All.
+- **Cards:**
+  - name · role;
+  - email · location · LinkedIn link;
+  - a status badge: **"Waiting 3 days"** (yellow) or **"Overdue · 23 days"** (red);
+  - "Asked 1 time before" if she requested before;
+  - her statement (quote);
+  - "Referred by …";
+  - "Requested Sep 13 · Prospect record: Requested" (link);
+  - prospect notes (collapsible).
+- **Actions:**
+  - **Send invitation** (confirm, optional internal note);
+  - **Decline** ("We send a short, kind email… She can ask again after 90 days");
+  - **Spam** (archives silently).
+- **Decided cards:** "Invited by Grace on Oct 6: note".
+
+### 9.3 Members `/admin/members` and account detail (screenshot 32)
+- **List:** search, a status filter (All / Active / Deactivated / Deleted), and a table.
+- **Detail:**
+  - the **photo with "Remove photo"** (the member is emailed that it didn't meet the charter);
+  - all fields, including hidden ones;
+  - activity, reports, admin history;
+  - Deactivate / Reactivate / Make admin.
+
+### 9.4 Potential members, prospect workspace, CSV import, follow-ups (screenshots 33–35)
+Unchanged from the previous handoff, except:
+- the status list now includes **Requested** (she asked for an invitation through the website);
+- "Approved" is shown as **Joined**.
+
+The statuses, in order:
+- Identified
+- Reviewed
+- Contacted
+- Follow-up needed
+- Interested
+- **Requested**
+- Invited
+- **Joined**
+- Not interested
+- Not a fit
+- Do not contact (red)
+
+Records that came from the website show the consent note under "Why we hold this record".
+
+### 9.5 Gatherings `/admin/gatherings` (screenshots 36–38)
+**List**
+- **Tabs:** Upcoming / Past.
+- **Table:** title (+ type, mode, Cancelled badges), when (local time), where, seats confirmed / capacity, and "4 to review" / "2 waitlisted".
+
+**Create / Edit form**
+- **Basics:**
+  - title;
+  - type (choosing a type sets the default seats);
+  - topic and description (≤3,000);
+  - start (local date-time), **time zone** (list), duration.
+- **Where:**
+  - online toggle;
+  - city;
+  - country;
+  - venue address or online link ("Shown only to confirmed guests and hosts").
+- **Seats:** the number of seats, seat mode (Curated / Open, with an explanation), requests close (local date-time).
+- **Who it's for:**
+  - All members;
+  - Selected roles (checkboxes);
+  - Invite-only (a member picker for the invitees).
+- **Hosts:** "Hosted by the Women Builders team" toggle, plus a member picker (type a name, pick, remove chips).
+- **"Show on the public website":** title, type, city and date only.
+- **Saving:**
+  - create: "Create and announce" (emails members in that country, or everyone eligible for online gatherings; or the invitees);
+  - edit: "Save changes" ("If the time or place changed, confirmed guests were emailed").
+
+**Detail: the request queue**
+- **Summary line:** "6 / 12 confirmed" and the live **role mix**: "Founders 3 · Operators 1 · Investors 2 · Builders 0", to help balance the table.
+- **Bulk actions:** select all waiting, then **Confirm selected (n)**.
+- **Rows:**
+  - photo, name, a status badge, primary role;
+  - flags:
+    - **"Blocked pair: Bea"** (red);
+    - **"2 past no-shows"** (red);
+    - "Late cancellation";
+    - "Inactive";
+  - headline · city, country;
+  - her note in quotes.
+- **Row actions:** **Confirm**, **Waitlist**, **Not this time**. Confirming beyond capacity shows "All 12 seats are taken."
+- **After the start:** each confirmed row gets an **Attended / No-show** toggle.
+
+**Also on the detail page**
+- **Message confirmed guests:** subject + message, then "Sent to 6 confirmed guests".
+- **Edit details:** a collapsible form.
+- **Cancel this gathering** (danger, reason required, emailed to everyone with a request).
+
+### 9.6 Invitations `/admin/invitations`
+- **Intro:** "Joining is by invitation only. Links expire after 14 days… one reminder with a fresh link after 7 days."
+- **Invite by email:** an input and a send button.
+- **Table:** Email (+ prospect), Status (*pending / accepted / revoked / expired*), Sent, Expires, **Reminder** (date or —), By, Revoke.
+
+### 9.7 Introduction requests `/admin/introductions` (screenshot 39)
+"Members with no mutual connection can ask the team to introduce them (2 a month)…"
+- **Tabs:** Waiting / Handled.
+- **Cards:**
+  - "Adaeze Nwosu would like to meet Divya Iyer" (both linked);
+  - both headlines;
+  - "Answer by…";
+  - the note to the team;
+  - the note for the person.
+- **Actions:**
+  - **Introduce**: a dialog with an optional note the member sees;
+  - **Pass**: silent; after 14 days the member sees "No introduction was made".
+
+### 9.8 Reports and audit log
+- **Reports:** unchanged. The reasons now include **Inappropriate photo**.
+- **Audit log new actions:**
+  - `request.invite`, `request.decline`, `request.spam`;
+  - `photo.remove`;
+  - `gathering.create`, `gathering.update`, `gathering.cancel`, `gathering.seat_confirmed`, `gathering.attendance`, `gathering.message`;
+  - `introduction.team_introduce`, `introduction.team_pass`.
+
+  Friendlier labels are welcome.
 
 ---
 
 ## 10. Emails
 
-All emails share one simple layout. We currently use a purple wordmark, a heading, paragraphs, one CTA button, and a footer with the app name, URL and (for notification emails) an **Unsubscribe from these emails** link. Please design one responsive template. It must work in Gmail, Outlook and Apple Mail, and in dark mode.
+All emails share one layout:
+- a wordmark;
+- a heading;
+- paragraphs;
+- one CTA button;
+- a footer with the app name, URL and, for notification emails, an **Unsubscribe from these emails** link.
 
-| Email | Trigger | Heading / key content | CTA | Unsubscribe? |
+Please design one responsive template that works in Gmail, Outlook and Apple Mail, in light and dark mode.
+
+| Email | Trigger | Key content | CTA | Unsubscribe? |
 |---|---|---|---|---|
-| Confirm email | Registration | "Welcome, {name}" · confirm to submit application · expires 24h | Confirm email | No |
-| Password reset | Forgot password | "Reset your password" · expires 1h · ignore if not you | Choose a new password | No |
-| Unusual sign-in | 50 failed logins/hour | "We paused sign-ins to your account" (15 min) | Reset password | No |
-| Welcome | Approved / invited | "Welcome to Women Builders, {name}!" · complete your profile | Complete your profile | No |
-| Application update | Rejected | Neutral thanks · can re-apply in 90 days | — | No |
-| Invitation | Admin invites | "You're invited to Women Builders" · from {admin} · expires 14 days | Accept invitation | No |
-| Account deactivated | Admin deactivates | Deactivated by an administrator · reply if a mistake | — | No |
-| Connection request | New request | "{name} wants to connect" + their note in quotes | View request | Yes |
-| Request accepted | Accepted | "You're now connected with {name}" | Send a message | Yes |
-| New message | Message received (max 1 per conversation per 30 min, skipped if already read) | "{name} sent you a message" + preview (≤200 chars) | Reply | Yes |
+| Request received | Invitation request sent | "Thank you, {first name}…" · hear back within three weeks | — | No |
+| Already a member | Request from an existing member's email | "You already have an account" | Log in | No |
+| Request declined | Admin declines | Kind, short; may ask again later | — | No |
+| Invitation | Admin invites | "You're invited to Women Builders" · expires in 14 days | Accept invitation | No |
+| Invitation reminder | 7 days unused | Fresh link, same expiry | Accept invitation | No |
+| Overdue requests digest | Weekly, admins | "{n} requests have waited more than 3 weeks" | Open the Requests queue | No |
+| Welcome | Joined | "Welcome to Women Builders, {name}!" | Complete your profile | No |
+| Charter updated | Charter version changes | What changed, accept on next visit | Read the charter | No |
+| Photo removed | Admin removes a photo | Didn't meet the charter; upload another | Edit your profile | No |
+| Password reset / unusual sign-in / account deactivated | — | As before | — | No |
+| Connection request / accepted / new message | — | As before | — | Yes |
+| Introduction asked | A asks B | "Would you introduce {A} to {C}?" + A's note | Review the request | Yes |
+| You've been introduced | B (or the team) introduces | "{B} would like to introduce you to {A}" | See the introduction | Yes |
+| Introduction accepted | C accepts (to A and to B) | "You're now connected with {C}" / "Your introduction worked" | Send a message / Your introductions | Yes |
+| Still investing? | Every 90 days, investors | "Are you still investing?" | Answer on your Home page | Yes |
+| New gathering near you | Gathering created (same country or online) | Title, when, where | See the gathering | Yes |
+| Gathering invitation | Invite-only gathering | "You're invited to {title}" | See the gathering | No |
+| Seat confirmed / waitlisted / not this time | Seat decisions | Venue included when confirmed | Open the gathering | No |
+| Gathering reminder | 2 days before; morning of | When, where, venue | Open the gathering | No |
+| Gathering changed / cancelled | Admin edits time/place or cancels | New details / the reason | Open / see upcoming | No |
+| Message from the team | Admin messages guests | Admin's subject and text | Open the gathering | No |
+| Seat freed (admins) | A confirmed guest deleted her account within 7 days | — | Open the request queue | No |
 
 ---
 
@@ -544,32 +875,53 @@ All emails share one simple layout. We currently use a purple wordmark, a headin
 
 Please spec each component with its states: default, hover, focus, active, disabled, loading, error.
 
-1. **Buttons:** primary, secondary, danger, ghost/link. Min height 44px. Loading label ("Logging in…").
-2. **Form fields:** text, email, password, number, date, textarea (with an optional counter "123/500"), select, checkbox, toggle, **tag/chip input**, file input. Labels, required marker, hint text, inline error, invalid border.
-3. **Member card** (used in Discover, For you, Connections, Requests, Home):
-   - avatar, name (link), headline (2 lines max), company · location
-   - role badges, up to 6 expertise tags, connection-status badge
-   - a flexible body slot (reasons / note / dates) and a footer action slot
+1. **Buttons:** primary, secondary, danger, ghost/link. Min height 44px. Loading label.
+2. **Form fields:** text, email, password, number, **date-time**, textarea (with counter), select, checkbox, toggle, radio cards, **tag/chip input**, **photo uploader**, **member picker** (search + chips). Each has a label, required marker, hint, inline error and invalid border.
+3. **Member card** (Discover, For you, Capital, Connections, Requests, Home):
+   - photo, name (link), headline (2 lines max), company · location;
+   - role badges, up to 6 expertise tags, status badge, **"Prefers introductions"** tag, **mutual connections**;
+   - a body slot (reasons, investor or founder details, note, dates) and a footer action slot.
 4. **Recommendation reason row:** icon + text per reason type (6.4).
-5. **Avatar:** initials (1–2 letters) at 36 / 40 / 48 / 72px. Plan for photos later. Plus a **"Deleted account" ghost variant** (neutral, no initials).
-6. **Badges:** role (primary vs secondary), connection status, account status, outreach status (11), report status, invitation status, counts (nav).
-7. **Notices/alerts:** info, success, warning, error (inline banners, polite live regions).
-8. **Completeness meter:** % label, progress bar, "ready" vs "not yet" state, list of required and missing fields.
-9. **Dialog/modal:** title, close ×, body, footer actions. Variants: confirm, confirm with note, form (report, connect).
-10. **"More options" menu:** a dropdown or kebab menu for Report/Block (currently a disclosure).
-11. **Empty state:** title + helper text + optional link.
-12. **Pagination:** previous / "Page x of y" / next.
-13. **Navigation:** member top nav + mobile pattern, admin side nav, badges, current page.
-14. **Message bubble:** mine / theirs, timestamp, "Read", sending, failed + retry, per-message menu (Report).
-15. **Composer:** textarea + send button, disabled state, error line, read-only notice replacement.
-16. **Conversation row:** avatar, name, time, preview, unread badge, read-only tag.
-17. **Stat tile:** label, big number, sub-label, clickable.
-18. **Bar chart:** 12 monthly bars with values and month labels (accessible text alternative).
-19. **Data table:** header, rows, row link, badges in cells, horizontal scroll on small screens.
-20. **Timeline:** dated entries with type label and author.
-21. **Filter panel/bar:** member search (sidebar) and admin prospects (horizontal grid).
-22. **Stepper:** onboarding progress (4 steps).
-23. **Toast/flash:** "Saved", "Connection request sent."
+5. **Avatar:** photo, or initials as the fallback, at 32 / 36 / 40 / 48 / 72 / 128px. Plus the **ghost** variant for deleted accounts.
+6. **Badges:**
+   - role (primary vs. secondary);
+   - connection status;
+   - **investing status**;
+   - **funding status**;
+   - **seat status**;
+   - **gathering type**;
+   - **introduction status**;
+   - request status (waiting / overdue);
+   - account status;
+   - outreach status (11);
+   - report status;
+   - invitation status;
+   - nav counts.
+7. **Notices/alerts:** info, success, warning, error.
+8. **Completeness meter.**
+9. **Dialog/modal:** confirm, confirm with note, forms (connect, report, ask for introduction, introduce, request a seat, cancel seat).
+10. **"More options" menu** (Report/Block).
+11. **Empty state.**
+12. **Pagination.**
+13. **Navigation:** member top nav and the mobile pattern (11 destinations), admin side nav, badges.
+14. **Message bubble** and **introduction note card**.
+15. **Composer** and the read-only notice.
+16. **Conversation row.**
+17. **Stat tile.**
+18. **Bar chart** with a text alternative.
+19. **Data table.**
+20. **Timeline** (prospect history).
+21. **Filter panel** (Discover, Capital), **filter bar** (gatherings, admin).
+22. **Stepper** (onboarding).
+23. **Toast/flash.**
+24. **Tabs** (Capital, Introductions, Gatherings, admin queues).
+25. **Gathering card** and **gathering fact list** (when / where / seats / hosts).
+26. **Attendee row**, with a host variant.
+27. **Introduction card:** three variants for the three tabs.
+28. **Seat queue row** (admin): checkbox, flags, actions, attendance toggle.
+29. **Role mix bar** (admin): four counts, non-hierarchical.
+30. **Public homepage blocks:** hero, role cards, benefit list, steps, number strip, gathering teaser card, footer.
+31. **Charter text block.**
 
 ---
 
@@ -579,82 +931,98 @@ Please spec each component with its states: default, hover, focus, active, disab
 | Section | Field | Type | Limit / options | Hideable? |
 |---|---|---|---|---|
 | Basics | Full name | text | 2–100 | No |
+| | **Photo** | image | JPEG/PNG/WebP ≤5 MB, cropped square by the server, stored at 512 and 128 px | No |
 | | Headline | text | ≤120 | No |
-| | Primary role | single choice | Founder, Operator, Investor, Builder | No |
-| | Other roles | multi choice | the other 3 | No |
-| | Location | text | ≤100, "City, country" | **Yes** |
-| | LinkedIn profile | URL | any linkedin.com/in/… | **Yes** |
-| | Website | URL | ≤300 | **Yes** |
-| About | Expertise areas | tags | ≤20 | No |
+| | Primary role / other roles | choice | Founder, Operator, Investor, Builder | No |
+| | **City** | text | ≤100 | **Yes** (as Location) |
+| | **Country** | list | all countries | **Yes** (as Location) |
+| | LinkedIn, Website | URL | | **Yes** |
+| About | Expertise | tags | ≤20 | No |
+| | **Open to** | multi choice | Advising, Investing, Hiring, Being hired, Co-founding, Freelance or project work, Mentoring, Speaking | No |
 | | Professional background | long text | ≤5,000 | **Yes** |
 | | Current focus | long text | ≤1,000 | **Yes** |
-| Needs & offers | What you need | long text | ≤2,000 | **Yes** |
-| | What you can offer | long text | ≤2,000 | **Yes** |
+| Needs & offers | What you need / What you can offer | long text | ≤2,000 each | **Yes** |
 | Founder | Company name (req.) | text | ≤120 | **Yes** |
 | | Company stage (req.) | choice | Idea, Pre-seed, Seed, Series A, Series B, Series C+, Bootstrapped, Public | No |
 | | Industry | text | ≤80 | No |
 | | Funding status | choice | Not raising, Raising now, Raising in 6 months, Recently closed a round | **Yes** |
-| Operator | Function (req.) | choice | Engineering, Product, Design, Marketing, Sales, Operations, Finance, People / HR, Legal, Data, Customer Success, Other | No |
-| | Seniority (req.) | choice | Individual contributor, Manager, Director, VP, C-level, Advisor | No |
-| | Operational focus areas | tags | ≤20 | No |
-| Investor | Investment stages (req.) | multi choice | Pre-seed, Seed, Series A, Series B, Growth | No |
-| | Check size min/max (req.) | numbers | USD thousands; shown as "$25K–$100K", "$1.5M" | **Yes** (together) |
+| | **Raise amount** | number | USD thousands; only when raising | **Yes** |
+| Operator | Function (req.), Seniority (req.), Focus areas | choice / tags | existing lists | No |
+| Investor | **Firm or fund** | text | ≤120, optional | No |
+| | **Investor type** | choice | Angel, VC fund, Family office, Corporate, Syndicate lead, Other | No |
+| | Investment stages (req.) | multi | Pre-seed, Seed, Series A, Series B, Growth | No |
+| | Check size min/max (req.) | numbers | USD thousands ("$25K–$100K", "$1.5M") | **Yes** |
 | | Sectors | tags | ≤20 | No |
-| Builder | Technical skills (req.) | tags | ≤30 | No |
-| | Project types | tags | ≤20 | No |
-| | Collaboration interests | long text | ≤1,000 | No |
-
-"(req.)" = required only when it's the member's **primary** role (it counts towards completeness for any held role).
+| | **Leads rounds** | choice | Leads, Follows, Both | No |
+| | **Currently investing** | Yes / Paused | confirmed every 90 days | No |
+| | **Last check written** | month + year | optional | No |
+| Builder | Technical skills (req.), Project types, Collaboration interests | tags / text | | No |
 
 ### Other limits and timings
 | Thing | Value |
 |---|---|
-| Connection request note | 0–500 characters |
-| Message | 1–5,000 characters |
-| Report details | ≤2,000 characters |
-| Application statement | 20–2,000 characters |
+| Invitation request statement | 20–1,000 characters |
+| Answer to an invitation request | within 21 days (overdue after) |
+| Re-request after a decline | 90 days |
+| Invitation link | 14 days, single use; reminder with a fresh link after 7 days |
+| Connection request note | 0–500 |
 | Connection request expiry | 30 days |
+| Message | 1–5,000 |
+| Introduction notes | to the introducer ≤1,000; to the person ≤500; introducer's note ≤500 |
+| Introduction response windows | 14 days for the introducer, then 14 days for the person |
+| Seat request note | ≤300 |
+| Late cancellation | within 24 hours of the start |
+| Gathering reminders | 2 days before; on the morning of (from 7:00 local time) |
+| "People you met" window | 30 days after the gathering |
+| No-show flag in seat queues | 2 or more past no-shows |
+| "Still investing?" | asked every 90 days; "not confirmed" after 120 |
 | "Not now" on a recommendation | hidden 30 days |
-| Invitation link | 14 days, single use |
-| Email confirmation link | 24 hours |
+| Report details | ≤2,000 |
 | Password reset link | 1 hour |
-| Re-apply after rejection | 90 days |
 | Session length | 30 days |
-| Message delivery while conversation open | ≤ ~3 seconds |
-| Unread badge refresh | 30 seconds |
-| Directory page size | 20 (max 50) |
+| Message delivery while open | ≤ ~3 seconds |
+| Badge refresh | 30 seconds |
+| Directory page size | 20 |
 | Recommendations shown | up to 20 |
+| Public number thresholds | members 50, countries 5, introductions 25, gatherings 3 |
 
 ---
 
 ## 13. Accessibility, responsive and technical constraints
 
 - **WCAG 2.1 AA:**
-  - contrast ≥4.5:1 for text and ≥3:1 for large text and UI components
-  - visible focus rings
-  - never rely on color alone (status badges need text; overdue needs a word, not just red)
-- **Touch targets** of at least 44×44px, with ≥8px between tappable elements.
-- **Keyboard:** everything reachable, logical order, a skip link ("Skip to main content") exists, and modals trap focus and restore it on close.
-- **Screen readers:** meaningful labels on icon buttons ("Remove fintech", "Close"), live regions for save status and new messages, and text alternatives for charts.
-- **Breakpoints:** mobile 320–639 (single column), tablet 640–1023 (2 columns), desktop 1024+ (3-column grids, persistent filter sidebar).
-- **No hover-only features.** Hover can enhance, but every action must be reachable by tap and keyboard (e.g. "Report message").
-- **Fonts:** the app ships a strict Content Security Policy. Fonts must be **self-hosted**: no Google Fonts CDN or third-party scripts. Please pick fonts with a web license we can self-host.
-- **Images:** there are no user-uploaded photos in this release (initials avatars). Decorative illustrations are fine if provided as files (SVG preferred).
-- **Tech:** React / Next.js + Tailwind CSS. Plain CSS effects are all feasible. Please avoid designs that need heavy JS animation libraries.
+  - contrast ≥4.5:1 for text, ≥3:1 for large text and UI;
+  - visible focus;
+  - never color alone ("Overdue" is a word, not just red).
+- **Touch targets** of at least 44×44px.
+- **Keyboard:** everything reachable, with a skip link. Modals trap focus and restore it on close.
+- **Screen readers:** labels on icon buttons, live regions for save status and new messages, text alternatives for charts and the role mix.
+- **Breakpoints:** mobile 320–639, tablet 640–1023, desktop 1024+.
+- **No hover-only features.**
+- **Fonts:** a strict Content Security Policy means fonts must be **self-hosted** (no Google Fonts CDN, no third-party scripts). Please pick fonts with a self-hostable web license.
+- **Images:**
+  - **profile photos are square crops** served at 128 and 512 px, so design circular or rounded-square masks that work with any square image;
+  - illustrations are welcome as SVG files;
+  - homepage photography must be licensed. **Don't use pictures of real members** unless they opted in (a later release).
+- **Times:** gathering times are shown in the gathering's own time zone, with the zone abbreviation, so leave room for "GMT+1".
+- **Tech:** React / Next.js + Tailwind CSS. Avoid designs that need heavy JS animation libraries.
 
 ---
 
 ## 14. Voice and copy
 
-- **Warm, direct, respectful.** Short sentences. Address the member as "you". Use first names for other members ("Priya won't be notified").
+- **Warm, direct, respectful.** Short sentences. Address the member as "you". Use first names for other members.
 - **Never shame or alarm.** Limits and errors explain what happened and what to do next.
-- **Safety copy is reassuring and factual** (see the Block and Report dialogs above).
-- **Microcopy already in the product** (keep it or improve it, but keep the meaning):
-  - "Our team reads every application."
+- **Every "no" is kind and silent** — no copy ever reveals who declined.
+- **Microcopy already in the product** (keep or improve, but keep the meaning):
+  - "One reply from a human, either way."
+  - "Our team reads every request."
   - "Be specific: 'intros to seed fintech investors' beats 'help'."
   - "🔒 Mei shares some details only with connections."
-  - "Priya won't be notified if you decline."
-  - "This is the start of your conversation with Priya."
+  - "Nobody is ever told who said no."
+  - "We couldn't fit you at this one. We'd love to see you at the next."
+  - "What's shared at a gathering stays there, as our charter says."
+  - "Founders in the Capital view see investors who confirmed recently first."
 
 ---
 
@@ -662,14 +1030,15 @@ Please spec each component with its states: default, hover, focus, active, disab
 
 These are ours to decide together; your recommendation is welcome.
 
-1. **Brand:** name treatment, logo, palette (the current purple is a placeholder), photography/illustration style.
-2. **Dark mode:** nice to have. Is it worth doing in v1?
-3. **Mobile navigation:** confirm the pattern (bottom tabs vs. menu) and which 4–5 destinations are primary.
-4. **Role color coding:** should the 4 roles have their own colors? If yes, keep them accessible and non-hierarchical.
-5. **Landing page scope:** a simple login/apply page, or a fuller marketing page?
-6. **Recommendation cards vs. search result cards:** same component or distinct?
-7. **Message report affordance on mobile:** long-press, kebab, or swipe?
+1. **Brand:** name treatment, logo, palette (the purple is a placeholder), photography/illustration style for the homepage.
+2. **Dark mode:** worth doing in v1?
+3. **Mobile navigation:** with 11 member destinations, which 4–5 are tabs?
+4. **Role colors:** if the 4 roles get colors, keep them accessible and strictly non-hierarchical.
+5. **Capital cards vs. Discover cards:** one component with slots, or distinct?
+6. **Gathering imagery:** should gatherings have a cover image or illustration per type?
+7. **Message report affordance on mobile:** long-press, kebab or swipe?
 8. **Admin density:** a compact table mode?
+9. **Public numbers:** how to make 1–4 numbers look intentional rather than sparse.
 
 ---
 
@@ -677,41 +1046,62 @@ These are ours to decide together; your recommendation is welcome.
 
 | Term | Meaning |
 |---|---|
-| Member | An approved, active account with a profile |
-| Applicant | Someone who applied and is waiting for review |
-| Potential member / prospect | A person the team wants to recruit (admin-only CRM record; not an account) |
+| Member | An active account with a profile |
+| Invitation request | A visitor's request to join, answered by the team within 21 days |
+| Invitation | A single-use 14-day link that lets a person join |
+| Charter | The community rules every member accepts |
+| Potential member / prospect | A person the team tracks (admin-only CRM record; not an account) |
 | Connection | Two members who accepted each other; can message |
-| Connection request | An invitation to connect, optional note, expires in 30 days |
-| Primary / secondary role | Main role / additional roles a member holds |
-| Needs / offerings | What a member is looking for / can help with. Drives matching |
-| Completeness | Profile score 0–100%; 60% + required fields unlock sending requests |
+| Warm introduction | A asks B, a mutual connection, to introduce her to C |
+| Ask the team | An introduction made by the Women Builders team when no one in her network can |
+| Prefer introductions | A setting: no direct requests; people reach her through introductions |
+| Capital view | The investors / founders-raising lens on the directory |
+| Currently investing | An investor's yes/paused answer, confirmed every 90 days |
+| Gathering | A dinner ("table") or working session ("room"), in person or online |
+| Curated / Open seats | The team picks guests / first come, first served with a waitlist |
+| People you met | Attendees of the same gathering, connectable directly for 30 days |
+| Open to | What a member is available for (advising, hiring…) |
+| Completeness | Profile score 0–100%; 60% + required fields unlock requests and introductions |
 | Hidden field | A profile detail visible only to connections |
-| Deleted account | An account the person erased. Name, email and profile are gone; their conversations stay for the other person, shown as "Deleted account" and read-only |
+| Deleted account | An erased account; their conversations stay for the other person, read-only |
 | Block | Mutual invisibility + no contact; silent |
 | Report | A confidential safety report reviewed by admins |
-| Do not contact (DNC) | A prospect who asked never to be contacted; kept forever as suppression |
-| Invitation | Admin-sent link that skips the approval queue |
-| Follow-up | A date an admin should next reach out to a prospect |
+| Do not contact (DNC) | A prospect who asked never to be contacted; kept as suppression |
 
 ---
 
-### Screenshot index (`docs/handoff-screens/`), current placeholder UI, for structure only
+### Screenshot index (`docs/handoff-screens/`): current placeholder UI, for structure only
 | File | Screen |
 |---|---|
-| 01-landing | Landing |
-| 02-apply | Apply to join |
-| 03-login | Log in |
-| 04-pending | Application under review |
-| 06-home | Member home |
-| 07-discover | Discover (search + filters) |
-| 08-for-you | Recommendations |
-| 09-member-profile-connected | Profile of a connection |
-| 10-member-profile-not-connected | Profile of a stranger (Connect button; this demo member hides nothing, so the lock notice isn't shown) |
-| 11-connections | Connections |
-| 12-requests | Requests |
-| 13-inbox | Inbox |
-| 14-conversation | Conversation |
-| 15-edit-profile | Edit profile |
-| 16-settings | Settings |
-| 17-mobile-for-you | Mobile, showing the broken placeholder nav |
-| 20–26 | Admin: dashboard, applications, members, prospects, prospect detail, import, reports |
+| 01-homepage | Public homepage |
+| 02-request-invite | Request an invitation |
+| 03-join | Join with an invitation |
+| 04-login | Log in |
+| 05-charter-accept | Charter interstitial |
+| 06-home | Member Home |
+| 07-discover | Discover |
+| 08-capital-investors | Capital: investors |
+| 09-capital-founders | Capital: founders raising |
+| 10-gatherings | Gatherings list |
+| 11-gathering-detail | Gathering detail (confirmed guest) |
+| 12-for-you | Recommendations |
+| 13-member-profile-introduction | Profile of someone who prefers introductions |
+| 14-ask-introduction-dialog | Ask for an introduction dialog |
+| 15-edit-profile | Edit profile (photo, location, investor fields) |
+| 16-connections | Connections |
+| 17-requests | Connection requests |
+| 18-introductions | Introductions (For me) |
+| 19-inbox | Inbox |
+| 20-conversation-introduced | Conversation opening with an introduction note |
+| 21-settings | Settings |
+| 22-mobile-home | Mobile Home (shows the wrapping nav) |
+| 30-admin-dashboard | Admin dashboard |
+| 31-admin-requests | Invitation requests queue |
+| 32-admin-member | Member detail |
+| 33-admin-prospects | Potential members |
+| 34-admin-prospect | Prospect workspace |
+| 35-admin-import | CSV import |
+| 36-admin-gatherings | Gatherings list |
+| 37-admin-gathering-new | Create gathering |
+| 38-admin-gathering-queue | Seat queue |
+| 39-admin-introductions | "Ask the team" queue |
