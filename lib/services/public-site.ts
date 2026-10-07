@@ -9,14 +9,15 @@ import { getSiteSettings, PUBLIC_NUMBER_KEYS, type PublicNumberKey } from './sit
  */
 /** The real counts behind the public numbers. */
 export async function rawPublicNumbers(): Promise<Record<PublicNumberKey, number>> {
-  const [members, countries, introductions, gatherings] = await Promise.all([
+  const [members, countries, introductions, gatherings, wins] = await Promise.all([
     prisma.profile.count({ where: { user: { accountStatus: 'ACTIVE' } } }),
     // Hidden locations count in the total but are never shown individually.
     prisma.profile.findMany({ where: { user: { accountStatus: 'ACTIVE' }, country: { not: null } }, distinct: ['country'], select: { country: true } }),
     prisma.introduction.count({ where: { status: 'ACCEPTED' } }),
     prisma.gathering.count({ where: { status: 'SCHEDULED', startsAt: { lt: new Date() }, seats: { some: { attendance: 'ATTENDED' } } } }),
+    prisma.win.count(),
   ]);
-  return { members, countries: countries.length, introductions, gatherings, wins: 0 };
+  return { members, countries: countries.length, introductions, gatherings, wins };
 }
 
 const LABELS: Record<PublicNumberKey, string> = {

@@ -297,6 +297,25 @@ export const templates = {
       cta: { label: 'Your introductions', url: `${appUrl()}/introductions` },
       unsubscribeUrl,
     }),
+  winConfirm: (authorName: string, what: string, unsubscribeUrl: string) =>
+    layout({
+      subject: `${authorName} shared a win with you`,
+      heading: `${authorName} says: ${what}`,
+      paragraphs: ['Is that right? Confirming marks the win as verified. If it isn\'t right, decline and nobody is told.'],
+      cta: { label: 'Confirm or decline', url: `${appUrl()}/wins` },
+      unsubscribeUrl,
+    }),
+  winPrompt: (question: string, unsubscribeUrl: string) =>
+    layout({
+      subject: question,
+      heading: question,
+      paragraphs: [
+        'An investment, a hire, an advisor, a customer: if something came of it, share it. You choose whether it stays anonymous, is seen by members, or may be quoted.',
+        'Wins are how we show the network works.',
+      ],
+      cta: { label: 'Share a win', url: `${appUrl()}/wins/new` },
+      unsubscribeUrl,
+    }),
   investingCheckin: (name: string, unsubscribeUrl: string) =>
     layout({
       subject: 'Are you still investing?',

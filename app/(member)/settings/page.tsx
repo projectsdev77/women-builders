@@ -34,6 +34,8 @@ export default async function SettingsPage() {
             investingCheckins: prefs.investingCheckins,
             introductions: prefs.introductions,
             gatheringsNearMe: prefs.gatheringsNearMe,
+            winConfirmations: prefs.winConfirmations,
+            winPrompts: prefs.winPrompts,
           }}
           isInvestor={user.profile?.primaryRole === 'INVESTOR' || !!user.profile?.secondaryRoles.includes('INVESTOR')}
         />

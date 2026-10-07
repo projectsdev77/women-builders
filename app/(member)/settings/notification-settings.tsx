@@ -10,6 +10,8 @@ type Prefs = {
   investingCheckins: boolean;
   introductions: boolean;
   gatheringsNearMe: boolean;
+  winConfirmations: boolean;
+  winPrompts: boolean;
 };
 const LABELS: Array<[keyof Prefs, string, string]> = [
   ['connectionRequest', 'Connection requests', 'When someone asks to connect with you'],
@@ -17,6 +19,8 @@ const LABELS: Array<[keyof Prefs, string, string]> = [
   ['newMessage', 'New messages', 'At most one email per conversation every 30 minutes'],
   ['introductions', 'Introductions', 'When someone asks you for an introduction, introduces you, or accepts'],
   ['gatheringsNearMe', 'Gatherings near me', 'New gatherings in your country, and online ones. Emails about your own seats always send.'],
+  ['winConfirmations', 'Win confirmations', 'When a member names you in a win and asks you to confirm it'],
+  ['winPrompts', 'Win prompts', '"Did anything come of it?" after an introduction or a gathering'],
   ['investingCheckins', 'Investing check-ins', 'Every 90 days we ask investors "Are you still investing?"'],
 ];
 

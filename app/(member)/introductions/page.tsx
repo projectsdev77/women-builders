@@ -99,7 +99,12 @@ export default async function IntroductionsPage({ searchParams }: { searchParams
                     <Quote who={`From ${i.introducer?.name}`} text={'introducerNote' in i ? i.introducerNote : null} />
                     <Quote who={`From ${i.requester.name.split(' ')[0]}`} text={i.noteToTarget} />
                     {i.actionable && <IntroButtons id={i.id} role="target" requesterName={i.requester.name} targetName={i.target.name} reportMember={{ id: i.requester.id!, name: i.requester.name }} />}
-                    {i.status === 'accepted' && <Link href={`/messages/${i.requester.id}`} className="text-sm underline">Open your conversation</Link>}
+                    {i.status === 'accepted' && (
+                      <div className="flex gap-4 text-sm">
+                        <Link href={`/messages/${i.requester.id}`} className="underline">Open your conversation</Link>
+                        <Link href={`/wins/new?introduction=${i.id}&with=${i.requester.id}`} className="underline">Share a win</Link>
+                      </div>
+                    )}
                   </>
                 )}
                 {tab === 'mine' && (() => {
@@ -114,7 +119,12 @@ export default async function IntroductionsPage({ searchParams }: { searchParams
                       <PersonLine p={i.target} />
                       <p className="text-xs text-gray-500">Asked {day(i.createdAt)}</p>
                       {(i.status === 'waiting_introducer' || i.status === 'waiting_target') && <IntroButtons id={i.id} role="requester" requesterName={i.requester.name} targetName={i.target.name} />}
-                      {i.status === 'connected' && <Link href={`/messages/${i.target.id}`} className="text-sm underline">Open your conversation</Link>}
+                      {i.status === 'connected' && (
+                        <div className="flex gap-4 text-sm">
+                          <Link href={`/messages/${i.target.id}`} className="underline">Open your conversation</Link>
+                          <Link href={`/wins/new?introduction=${i.id}&with=${i.target.id}`} className="underline">Share a win</Link>
+                        </div>
+                      )}
                     </>
                   );
                 })()}

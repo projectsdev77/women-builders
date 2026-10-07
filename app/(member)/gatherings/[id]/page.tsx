@@ -75,6 +75,9 @@ export default async function GatheringPage({ params }: { params: { id: string }
         )}
         <div className="flex flex-wrap items-start gap-3">
           <SeatActions id={g.id} mode={g.seatMode} canRequest={g.canRequest} canCancel={g.canCancel} startsAt={g.startsAt} seatStatus={g.mySeat?.status ?? null} />
+          {g.ended && g.insider && g.status === 'SCHEDULED' && (
+            <Link href={`/wins/new?gathering=${g.id}`} className="inline-flex min-h-[44px] items-center rounded-md border border-gray-300 bg-white px-4 text-sm">Share a win from this gathering</Link>
+          )}
           {g.calendarUrl && !g.ended && (
             <a href={g.calendarUrl} className="inline-flex min-h-[44px] items-center rounded-md border border-gray-300 bg-white px-4 text-sm">Add to calendar</a>
           )}

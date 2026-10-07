@@ -4,6 +4,7 @@ import { pageAdmin } from '@/lib/auth/guards';
 import { dashboardMetrics, defaultRange } from '@/lib/services/admin/dashboard';
 import { addDays, formatDateOnly, parseDateOnly } from '@/lib/services/admin/dates';
 import { Badge, Button, Card, Input } from '@/components/ui';
+import { WIN_TYPE_LABELS } from '@/lib/services/wins';
 import { STATUS_LABELS, STATUS_TONE, fmtDay } from '@/components/admin/labels';
 
 export const metadata: Metadata = { title: 'Admin dashboard' };
@@ -81,6 +82,24 @@ export default async function AdminDashboard({ searchParams }: { searchParams: {
                 </li>
               ))}
             </ul>
+          )}
+        </Card>
+
+        <Card className="space-y-3">
+          <h2 className="font-semibold">Wins in range</h2>
+          {m.wins.total === 0 ? <p className="text-sm text-gray-600">No wins shared in this period yet.</p> : (
+            <>
+              <p className="text-sm">
+                <strong>{m.wins.total}</strong> wins · {m.wins.fromIntroductions} from introductions · {m.wins.fromGatherings} from gatherings
+                {m.wins.investmentTotalK > 0 && <> · investments ${(m.wins.investmentTotalK / 1000).toLocaleString('en-US', { maximumFractionDigits: 1 })}M (private, from amounts members entered)</>}
+              </p>
+              <ul className="grid grid-cols-2 gap-1 text-sm">
+                {Object.entries(m.wins.byType).filter(([, n]) => n > 0).map(([t, n]) => (
+                  <li key={t} className="flex justify-between"><span>{WIN_TYPE_LABELS[t as keyof typeof WIN_TYPE_LABELS]}</span><span className="font-medium">{n}</span></li>
+                ))}
+              </ul>
+              <p className="text-xs text-gray-600">By month: {Object.entries(m.wins.byMonth).sort().map(([mo, n]) => `${mo} ${n}`).join(' · ')}</p>
+            </>
           )}
         </Card>
 

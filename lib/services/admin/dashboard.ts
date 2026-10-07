@@ -5,6 +5,7 @@ import { addDays, formatDateOnly, todayInAppTz } from './dates';
 import { openRequestCounts } from '../invite-requests';
 import { introductionCounts } from '../introductions';
 import { listAdminGatherings } from './gatherings';
+import { winTotals } from '../wins';
 import { countryName } from '@/lib/countries';
 
 export interface DateRange {
@@ -22,7 +23,7 @@ export function defaultRange(): DateRange {
  * the range and how many of those later reached APPROVED (non-linear funnel, G16).
  */
 export async function dashboardMetrics(range: DateRange) {
-  const [activeMembers, requests, openReports, byStatusRaw, changes, approvals, followUps, introductions, gatherings, byCountry, active30] = await Promise.all([
+  const [activeMembers, requests, openReports, byStatusRaw, changes, approvals, followUps, introductions, gatherings, byCountry, active30, wins] = await Promise.all([
     prisma.user.count({ where: { accountStatus: 'ACTIVE', profile: { isNot: null } } }),
     openRequestCounts(),
     prisma.report.count({ where: { status: 'OPEN' } }),
@@ -46,6 +47,7 @@ export async function dashboardMetrics(range: DateRange) {
       take: 10,
     }),
     prisma.user.count({ where: { accountStatus: 'ACTIVE', profile: { isNot: null }, lastActiveAt: { gt: new Date(Date.now() - 30 * 86_400_000) } } }),
+    winTotals(range.from, range.to),
   ]);
 
   const potentialMembersByStatus = Object.fromEntries(OUTREACH_STATUSES.map((s) => [s, 0])) as Record<OutreachStatus, number>;
@@ -100,6 +102,7 @@ export async function dashboardMetrics(range: DateRange) {
     /** Made = forwarded, accepted = connected; team introductions are counted separately (R3 F12). */
     introductions,
     activeLast30Days: active30,
+    wins,
     membersByCountry: byCountry.map((c) => ({ country: countryName(c.country) ?? c.country!, count: c._count._all })),
     upcomingGatherings: gatherings.filter((g) => g.status === 'SCHEDULED').slice(0, 5),
     potentialMembersByStatus,

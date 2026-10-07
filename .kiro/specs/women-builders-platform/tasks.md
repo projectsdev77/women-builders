@@ -183,5 +183,24 @@ Not taken (see spec section 12): paid membership, Deal Flow, The Season program 
     - Waitlisted requests get their own tab and a waitlist email, have no 21-day clock, and can't be voted on.
     - Reopening starts their clock.
   - **`/admin/settings`:** applications, required votes, public number thresholds and show/hide (showing the current values). Every change is audited.
-- [ ] Step 8 (R2): Wins (feature 22)
+- [x] Step 8 (R2): Wins (feature 22)
+  - **Share a win** at `/wins/new`, reachable from:
+    - Home;
+    - accepted introductions;
+    - past gatherings;
+    - a connection's profile ("Share a win with …").
+  - **The form:**
+    - type, the people involved, someone outside the network, how it happened, month, story ≤500;
+    - an optional amount for investments, always private and used only in team totals;
+    - visibility: anonymous (default) / members / quotable.
+    - Limit: 20 per month.
+  - **Confirmation:**
+    - named members are asked to confirm; confirmation marks the win verified;
+    - declining removes her silently;
+    - pending participants aren't shown to others;
+    - a confirmed investment updates the investor's "last check written".
+  - **Where it shows:** shared wins on profiles and in "Recent wins" on Home (3), never a feed. Anonymous wins count only in totals. `/wins` lists her wins and those awaiting her confirmation (also a Home to-do).
+  - **Prompts:** daily, once per item. 60 days after an accepted introduction (to the requester) and 14 days after a gathering (to attendees). Preferences for win confirmations and prompts.
+  - **Admin:** wins by type and month, from introductions and from gatherings, private investment total. The public "Wins shared" number uses the wins threshold.
+  - **Deletion** keeps the count but drops the story text. The data export includes wins.
 - [ ] Step 9 (R2): Showcase and quotes (feature 23)

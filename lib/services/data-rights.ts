@@ -3,6 +3,7 @@ import { AppError, Errors } from '@/lib/errors';
 import { verifyPassword } from '@/lib/auth/password';
 import { removeProfilePhoto } from './photos';
 import { closeIntroductionsFor } from './introductions';
+import { anonymiseWinsFor } from './wins';
 import { promoteFromWaitlist, summary } from './gatherings';
 import { enqueueEmail } from '@/lib/email/outbox';
 import { templates } from '@/lib/email/templates';
@@ -31,6 +32,8 @@ export async function exportMemberData(userId: string) {
       reportsMade: { select: { reportedUserName: true, reason: true, details: true, status: true, createdAt: true } },
       dismissals: { select: { dismissedUserId: true, dismissedAt: true } },
       seatRequests: { select: { gatheringId: true, note: true, status: true, attendance: true, createdAt: true } },
+      winsLogged: { select: { type: true, month: true, amountK: true, story: true, visibility: true, createdAt: true } },
+      winsWith: { select: { winId: true, status: true } },
       introsRequested: { select: { targetId: true, introducerId: true, viaTeam: true, noteToIntroducer: true, noteToTarget: true, status: true, createdAt: true } },
     },
   });
@@ -77,7 +80,10 @@ export async function deleteAccount(userId: string, password: string) {
   }
   // Photo files live outside the database, so remove them first (R3 F19).
   await removeProfilePhoto(userId);
-  await prisma.$transaction((tx) => closeIntroductionsFor(tx, userId));
+  await prisma.$transaction(async (tx) => {
+    await closeIntroductionsFor(tx, userId);
+    await anonymiseWinsFor(tx, userId);
+  });
   const soonSeats = await prisma.seatRequest.findMany({
     where: { userId, status: 'CONFIRMED', gathering: { status: 'SCHEDULED', startsAt: { gt: new Date(), lt: new Date(Date.now() + 7 * 86_400_000) } } },
     include: { gathering: true },

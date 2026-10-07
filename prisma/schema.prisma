@@ -128,6 +128,9 @@ model User {
   introsAskedOfMe         Introduction[]             @relation("IntroIntroducer")
   introsForMe             Introduction[]             @relation("IntroTarget")
   requestVotes            RequestVote[]
+  winsLogged              Win[]                      @relation("WinAuthor")
+  winsWith                WinParticipant[]
+  winPrompts              WinPrompt[]
   gatheringsHosted        GatheringHost[]
   gatheringInvites        GatheringInvite[]
   seatRequests            SeatRequest[]
@@ -343,6 +346,8 @@ model NotificationPreference {
   investingCheckins  Boolean  @default(true)
   introductions      Boolean  @default(true)
   gatheringsNearMe   Boolean  @default(true)
+  winConfirmations   Boolean  @default(true)
+  winPrompts         Boolean  @default(true)
   updatedAt          DateTime @updatedAt
 }
 
@@ -548,6 +553,7 @@ model Introduction {
   /// The admin who handled a team introduction.
   handledById       String?
   createdAt         DateTime           @default(now())
+  wins              Win[]
 
   @@index([requesterId, status])
   @@index([introducerId, status])
@@ -623,6 +629,7 @@ model Gathering {
   hosts             GatheringHost[]
   invites           GatheringInvite[]
   seats             SeatRequest[]
+  wins              Win[]
 
   @@index([status, startsAt])
 }
@@ -691,4 +698,91 @@ model SiteSetting {
   value       Json
   updatedAt   DateTime @updatedAt
   updatedById String?
+}
+
+// ---------------------------------------------------------------- R3 F15 (R2): wins
+
+enum WinType {
+  INVESTMENT
+  HIRE
+  ADVISOR
+  CUSTOMER
+  COFOUNDER
+  SPEAKING
+  OTHER
+}
+
+enum WinSource {
+  INTRODUCTION
+  CONNECTION
+  GATHERING
+  OTHER
+}
+
+enum WinVisibility {
+  ANONYMOUS // counted in totals only (default)
+  MEMBERS   // members can see it
+  QUOTABLE  // may be quoted on the public site
+}
+
+enum WinParticipantStatus {
+  PENDING
+  CONFIRMED
+  DECLINED
+}
+
+/// Something the network produced: an investment, a hire, an advisor…
+model Win {
+  id             String           @id @default(cuid())
+  authorId       String
+  author         User             @relation("WinAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  type           WinType
+  source         WinSource        @default(OTHER)
+  introductionId String?
+  introduction   Introduction?    @relation(fields: [introductionId], references: [id], onDelete: SetNull)
+  gatheringId    String?
+  gathering      Gathering?       @relation(fields: [gatheringId], references: [id], onDelete: SetNull)
+  /// Someone outside the network was involved.
+  outsideNetwork Boolean          @default(false)
+  month          String // YYYY-MM
+  /// USD thousands, investments only. Always private: team totals only.
+  amountK        Int?
+  story          String?          @db.Text
+  visibility     WinVisibility    @default(ANONYMOUS)
+  verifiedAt     DateTime?
+  createdAt      DateTime         @default(now())
+  participants   WinParticipant[]
+
+  @@index([authorId, createdAt])
+  @@index([createdAt])
+}
+
+/// A member named in a win, asked to confirm it.
+model WinParticipant {
+  winId       String
+  win         Win                  @relation(fields: [winId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status      WinParticipantStatus @default(PENDING)
+  respondedAt DateTime?
+
+  @@id([winId, userId])
+  @@index([userId, status])
+}
+
+enum WinPromptKind {
+  INTRODUCTION
+  GATHERING
+}
+
+/// "Did anything come of it?" prompts: at most one per member per item.
+model WinPrompt {
+  id     String        @id @default(cuid())
+  userId String
+  user   User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  kind   WinPromptKind
+  refId  String
+  sentAt DateTime      @default(now())
+
+  @@unique([userId, kind, refId])
 }
