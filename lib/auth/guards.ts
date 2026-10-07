@@ -29,6 +29,13 @@ export async function apiAdmin(): Promise<SessionUser> {
   return user;
 }
 
+/** Admins and member reviewers: the invitation requests queue only (R3 F21). */
+export async function apiStaff(): Promise<SessionUser> {
+  const user = await apiActiveUser();
+  if (!user.isAdmin && !user.isReviewer) throw Errors.forbidden('Admin or reviewer access required.');
+  return user;
+}
+
 // ---- Page guards: redirect ----
 
 /** Where a logged-in user belongs, based on status and onboarding. */
@@ -58,6 +65,13 @@ export async function pageActiveMember(opts: { allowOnboarding?: boolean } = {})
 export async function pageAdmin(): Promise<SessionUser> {
   const user = await pageUser();
   if (user.accountStatus !== 'ACTIVE' || !user.isAdmin) redirect(homeFor(user));
+  requireCurrentCharter(user);
+  return user;
+}
+
+export async function pageStaff(): Promise<SessionUser> {
+  const user = await pageUser();
+  if (user.accountStatus !== 'ACTIVE' || (!user.isAdmin && !user.isReviewer)) redirect(homeFor(user));
   requireCurrentCharter(user);
   return user;
 }

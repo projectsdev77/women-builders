@@ -116,6 +116,17 @@ export async function setAdmin(actorId: string, userId: string, isAdmin: boolean
   });
 }
 
+/** Member reviewers vote on invitation requests and see nothing else in the admin area (R3 F21). */
+export async function setReviewer(actorId: string, userId: string, isReviewer: boolean) {
+  await prisma.$transaction(async (tx) => {
+    const user = await tx.user.findFirst({ where: { id: userId, profile: { isNot: null } } });
+    if (!user) throw Errors.notFound('Member');
+    if (isReviewer && user.accountStatus !== 'ACTIVE') throw Errors.validation('Only active members can be reviewers.');
+    await tx.user.update({ where: { id: userId }, data: { isReviewer } });
+    await audit(tx, { actorId, action: isReviewer ? 'reviewer.grant' : 'reviewer.revoke', targetType: 'user', targetId: userId });
+  });
+}
+
 export async function listAdmins() {
   return prisma.user.findMany({
     where: { isAdmin: true, accountStatus: 'ACTIVE' },

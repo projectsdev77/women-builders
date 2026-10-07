@@ -12,6 +12,7 @@ import { lock } from './locks';
 import { changeProspectStatus } from './prospect-status';
 import { ROLE_LABELS } from './profile-fields';
 import { issueInvitation } from './admin/invitations';
+import { getSiteSettings } from './site-settings';
 
 export const REQUEST_ANSWER_DAYS = 21; // "you'll hear back within three weeks" (R3 F3/F21)
 export const REREQUEST_AFTER_DAYS = 90;
@@ -88,6 +89,8 @@ export async function submitInviteRequest(input: InviteRequestInput, ip: string)
   await prisma.publicSubmission.create({ data: { kind: 'invite_request', ipHash, email: input.email } });
   if (forEmail >= LIMITS.perEmailPerDay) return 'ignored';
 
+  const settings = await getSiteSettings();
+  const waitlisted = !settings.applicationsOpen;
   return prisma.$transaction(async (tx) => {
     await lock(tx, `invite-request:${input.email}`);
 
@@ -177,59 +180,87 @@ export async function submitInviteRequest(input: InviteRequestInput, ip: string)
         referrer: input.referrer,
         consentAt: now,
         slaStartsAt: now,
+        waitlisted,
       },
     });
-    await enqueueEmail(tx, { to: input.email, kind: 'request_received', content: templates.requestReceived(input.name.split(' ')[0]!) });
+    await enqueueEmail(tx, { to: input.email, kind: 'request_received', content: templates.requestReceived(input.name.split(' ')[0]!, waitlisted ? { nextReview: settings.nextReview } : null) });
     return outcome;
   });
 }
 
 // ---------------------------------------------------------------- admin queue (R3 F21)
 
-export function isOverdue(r: { status: InviteRequestStatus; slaStartsAt: Date }, now = new Date()) {
-  return r.status === 'OPEN' && now.getTime() - r.slaStartsAt.getTime() > REQUEST_ANSWER_DAYS * 86_400_000;
+export function isOverdue(r: { status: InviteRequestStatus; slaStartsAt: Date; waitlisted?: boolean }, now = new Date()) {
+  return r.status === 'OPEN' && !r.waitlisted && now.getTime() - r.slaStartsAt.getTime() > REQUEST_ANSWER_DAYS * 86_400_000;
 }
 
-export async function listInviteRequests(status: InviteRequestStatus | 'ALL' = 'OPEN') {
-  const where: Prisma.InvitationRequestWhereInput = status === 'ALL' ? {} : { status };
-  const rows = await prisma.invitationRequest.findMany({
-    where,
-    include: {
-      potentialMember: {
-        include: {
-          notes: { orderBy: { createdAt: 'desc' }, take: 5 },
-          attempts: { orderBy: { attemptDate: 'desc' }, take: 3 },
-          requests: { select: { id: true, createdAt: true, status: true } },
+export type RequestTab = InviteRequestStatus | 'ALL' | 'WAITLIST';
+export interface QueueViewer {
+  id: string;
+  isAdmin: boolean;
+}
+
+/**
+ * The requests queue (R3 F21). Admins see who voted what; member reviewers see the tally
+ * and their own vote only.
+ */
+export async function listInviteRequests(status: RequestTab = 'OPEN', viewer?: QueueViewer) {
+  const where: Prisma.InvitationRequestWhereInput =
+    status === 'ALL' ? {} : status === 'WAITLIST' ? { status: 'OPEN', waitlisted: true } : status === 'OPEN' ? { status: 'OPEN', waitlisted: false } : { status };
+  const [rows, settings] = await Promise.all([
+    prisma.invitationRequest.findMany({
+      where,
+      include: {
+        potentialMember: {
+          include: {
+            notes: { orderBy: { createdAt: 'desc' }, take: 5 },
+            attempts: { orderBy: { attemptDate: 'desc' }, take: 3 },
+            requests: { select: { id: true, createdAt: true, status: true } },
+          },
         },
+        votes: { include: { voter: { select: { id: true, name: true } } }, orderBy: { updatedAt: 'asc' } },
       },
-    },
-    orderBy: { slaStartsAt: status === 'OPEN' ? 'asc' : 'desc' },
-    take: 200,
-  });
+      orderBy: { slaStartsAt: status === 'OPEN' || status === 'WAITLIST' ? 'asc' : 'desc' },
+      take: 200,
+    }),
+    getSiteSettings(),
+  ]);
   const decidedBy = await prisma.user.findMany({
     where: { id: { in: rows.map((r) => r.decidedById).filter((x): x is string => !!x) } },
     select: { id: true, name: true },
   });
   const names = new Map(decidedBy.map((u) => [u.id, u.name]));
   const now = new Date();
-  return rows.map((r) => ({
-    ...r,
-    overdue: isOverdue(r, now),
-    daysWaiting: Math.floor((now.getTime() - r.slaStartsAt.getTime()) / 86_400_000),
-    decidedByName: r.decidedById ? names.get(r.decidedById) ?? 'Former admin' : null,
-    previousRequests: r.potentialMember.requests.filter((x) => x.id !== r.id).length,
-  }));
+  const seeAll = !viewer || viewer.isAdmin;
+  return rows.map(({ votes, ...r }) => {
+    const approvals = votes.filter((v) => v.choice === 'APPROVE').length;
+    const declines = votes.length - approvals;
+    const mine = viewer ? votes.find((v) => v.voterId === viewer.id) : undefined;
+    return {
+      ...r,
+      overdue: isOverdue(r, now),
+      daysWaiting: Math.floor((now.getTime() - r.slaStartsAt.getTime()) / 86_400_000),
+      decidedByName: r.decidedById ? names.get(r.decidedById) ?? 'Former admin' : null,
+      previousRequests: r.potentialMember.requests.filter((x) => x.id !== r.id).length,
+      tally: { approvals, declines, required: settings.requiredApprovals },
+      /** Split votes, neither side at the threshold (R3 F21). */
+      needsDecision: r.status === 'OPEN' && approvals > 0 && declines > 0,
+      myVote: mine ? { choice: mine.choice, note: mine.note } : null,
+      votes: seeAll ? votes.map((v) => ({ voter: v.voter.name, choice: v.choice, note: v.note, at: v.updatedAt.toISOString() })) : [],
+    };
+  });
 }
 
 export async function openRequestCounts() {
   const now = new Date();
-  const [open, overdue] = await Promise.all([
-    prisma.invitationRequest.count({ where: { status: 'OPEN' } }),
+  const [open, overdue, waitlist] = await Promise.all([
+    prisma.invitationRequest.count({ where: { status: 'OPEN', waitlisted: false } }),
     prisma.invitationRequest.count({
-      where: { status: 'OPEN', slaStartsAt: { lt: new Date(now.getTime() - REQUEST_ANSWER_DAYS * 86_400_000) } },
+      where: { status: 'OPEN', waitlisted: false, slaStartsAt: { lt: new Date(now.getTime() - REQUEST_ANSWER_DAYS * 86_400_000) } },
     }),
+    prisma.invitationRequest.count({ where: { status: 'OPEN', waitlisted: true } }),
   ]);
-  return { open, overdue };
+  return { open, overdue, waitlist };
 }
 
 async function loadOpen(tx: Prisma.TransactionClient, id: string) {
@@ -238,8 +269,12 @@ async function loadOpen(tx: Prisma.TransactionClient, id: string) {
   return r;
 }
 
-export async function inviteFromRequest(actorId: string, id: string, note?: string | null) {
-  return prisma.$transaction(async (tx) => {
+export function inviteFromRequest(actorId: string, id: string, note?: string | null) {
+  return prisma.$transaction((tx) => inviteInTx(tx, actorId, id, note));
+}
+
+async function inviteInTx(tx: Prisma.TransactionClient, actorId: string, id: string, note?: string | null) {
+  {
     const r = await loadOpen(tx, id);
     const invitation = await issueInvitation(tx, actorId, { email: r.email, potentialMemberId: r.potentialMemberId });
     await tx.invitationRequest.update({
@@ -248,11 +283,15 @@ export async function inviteFromRequest(actorId: string, id: string, note?: stri
     });
     await audit(tx, { actorId, action: 'request.invite', targetType: 'invitation_request', targetId: id });
     return invitation;
-  });
+  }
 }
 
 export async function declineRequest(actorId: string, id: string, note?: string | null) {
-  await prisma.$transaction(async (tx) => {
+  await prisma.$transaction((tx) => declineInTx(tx, actorId, id, note));
+}
+
+async function declineInTx(tx: Prisma.TransactionClient, actorId: string, id: string, note?: string | null) {
+  {
     const r = await loadOpen(tx, id);
     await tx.invitationRequest.update({
       where: { id },
@@ -261,6 +300,49 @@ export async function declineRequest(actorId: string, id: string, note?: string 
     await changeProspectStatus(tx, r.potentialMemberId, 'NOT_A_FIT', actorId);
     await enqueueEmail(tx, { to: r.email, kind: 'request_declined', content: templates.requestDeclined(r.name.split(' ')[0]!) });
     await audit(tx, { actorId, action: 'request.decline', targetType: 'invitation_request', targetId: id });
+  }
+}
+
+// ---------------------------------------------------------------- votes (R3 F21, R2)
+
+export const voteSchema = z.object({
+  choice: z.enum(['APPROVE', 'DECLINE']),
+  note: z.string().trim().max(2000).optional().transform((v) => v || null),
+});
+
+export type VoteOutcome = 'recorded' | 'invited' | 'declined';
+
+/**
+ * Admins and member reviewers vote; a vote can change until the request is decided. When a
+ * side reaches the required number, the invitation or the decline email goes out automatically.
+ */
+export async function castVote(voter: { id: string; isAdmin: boolean; isReviewer: boolean }, requestId: string, choice: 'APPROVE' | 'DECLINE', note: string | null): Promise<VoteOutcome> {
+  if (!voter.isAdmin && !voter.isReviewer) throw Errors.forbidden('Only admins and member reviewers can vote.');
+  return prisma.$transaction(async (tx) => {
+    await lock(tx, `request:${requestId}`);
+    const r = await loadOpen(tx, requestId);
+    if (r.waitlisted) throw Errors.conflict('This request is on the waitlist. Voting opens when applications reopen.');
+    await tx.requestVote.upsert({
+      where: { requestId_voterId: { requestId, voterId: voter.id } },
+      create: { requestId, voterId: voter.id, choice, note },
+      update: { choice, note },
+    });
+    await audit(tx, { actorId: voter.id, action: 'request.vote', targetType: 'invitation_request', targetId: requestId, details: { choice } });
+    const [{ requiredApprovals }, votes] = await Promise.all([
+      getSiteSettings(tx),
+      tx.requestVote.findMany({ where: { requestId }, select: { choice: true } }),
+    ]);
+    const approvals = votes.filter((v) => v.choice === 'APPROVE').length;
+    const declines = votes.length - approvals;
+    if (approvals >= requiredApprovals) {
+      await inviteInTx(tx, voter.id, requestId, `Approved by ${approvals} votes.`);
+      return 'invited';
+    }
+    if (declines >= requiredApprovals) {
+      await declineInTx(tx, voter.id, requestId, `Declined by ${declines} votes.`);
+      return 'declined';
+    }
+    return 'recorded';
   });
 }
 

@@ -173,6 +173,15 @@ Not taken (see spec section 12): paid membership, Deal Flow, The Season program 
   - **Deletion:** frees seats within 7 days, promotes the waitlist, emails admins.
   - **Demo seed:** names and companies that matched the client's mock (Amara Okafor/Ledgerly, Priya Raman/Northlight Ventures) were renamed (Adaeze Nwosu/Paystride, Divya Iyer/Harbor Lane Capital).
   - **Designer handoff rewritten for R3** (`docs/designer-handoff.md`), with 32 new placeholder screenshots in `docs/handoff-screens/`.
-- [ ] Step 7 (R2): Review rules and site settings (feature 21)
+- [x] Step 7 (R2): Review rules and site settings (feature 21)
+  - **Votes:** admins and member reviewers vote Approve or Decline, with a private note, and can change it until the request is decided.
+    - At the required number (Site settings, 1–3, default 2) the invitation or decline email goes out automatically.
+    - Split votes show "Needs decision". Any admin can still decide directly.
+  - **Member reviewers** (set on the member's admin page) see only the Requests queue: the tally and their own vote, not who voted what. They can't invite, decline or open any other admin page, and prospect records show as text.
+  - **Applications open / waitlist:**
+    - While closed, the public form and homepage say "Join the waitlist", with the "next review" line.
+    - Waitlisted requests get their own tab and a waitlist email, have no 21-day clock, and can't be voted on.
+    - Reopening starts their clock.
+  - **`/admin/settings`:** applications, required votes, public number thresholds and show/hide (showing the current values). Every change is audited.
 - [ ] Step 8 (R2): Wins (feature 22)
 - [ ] Step 9 (R2): Showcase and quotes (feature 23)

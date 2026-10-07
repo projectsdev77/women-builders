@@ -98,6 +98,7 @@ model User {
   charterNoticeVersion Int? // last charter version we emailed about
   allowIntroRequests   Boolean  @default(true) // "Let members ask me for introductions" (R3 F12)
   preferIntroductions  Boolean  @default(false) // no direct connection requests (R3 F11)
+  isReviewer           Boolean  @default(false) // member reviewer: votes on invitation requests (R3 F21, R2)
   lastActiveAt         DateTime       @default(now())
   createdAt            DateTime       @default(now())
   updatedAt            DateTime       @updatedAt
@@ -126,6 +127,7 @@ model User {
   introsRequested         Introduction[]             @relation("IntroRequester")
   introsAskedOfMe         Introduction[]             @relation("IntroIntroducer")
   introsForMe             Introduction[]             @relation("IntroTarget")
+  requestVotes            RequestVote[]
   gatheringsHosted        GatheringHost[]
   gatheringInvites        GatheringInvite[]
   seatRequests            SeatRequest[]
@@ -477,7 +479,10 @@ model InvitationRequest {
   decidedAt         DateTime?
   decidedById       String?
   decisionNote      String?             @db.Text
+  /// Submitted while applications were closed; the 21-day clock starts when they reopen (R2).
+  waitlisted        Boolean             @default(false)
   createdAt         DateTime            @default(now())
+  votes             RequestVote[]
 
   @@index([status, slaStartsAt])
   @@index([potentialMemberId])
@@ -656,4 +661,34 @@ model SeatRequest {
 
   @@unique([gatheringId, userId])
   @@index([userId, status])
+}
+
+// ---------------------------------------------------------------- R3 F21/F26 (R2): votes and site settings
+
+enum VoteChoice {
+  APPROVE
+  DECLINE
+}
+
+/// One vote per admin or member reviewer per request; editable until the request is decided.
+model RequestVote {
+  id        String            @id @default(cuid())
+  requestId String
+  request   InvitationRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  voterId   String
+  voter     User              @relation(fields: [voterId], references: [id], onDelete: Cascade)
+  choice    VoteChoice
+  note      String?           @db.Text
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+
+  @@unique([requestId, voterId])
+}
+
+/// Admin-editable site settings (R3 F26). One row per key; values are JSON.
+model SiteSetting {
+  key         String   @id
+  value       Json
+  updatedAt   DateTime @updatedAt
+  updatedById String?
 }

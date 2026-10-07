@@ -1,13 +1,14 @@
 import { prisma } from '@/lib/db';
-import { PUBLIC_NUMBER_THRESHOLDS } from '@/lib/config';
 import { countryName } from '@/lib/countries';
 import { GATHERING_TYPE_LABELS } from './gatherings';
+import { getSiteSettings, PUBLIC_NUMBER_KEYS, type PublicNumberKey } from './site-settings';
 
 /**
  * Live numbers for the public homepage (R3 F1). Every number comes from real data, and a
  * number is shown only once it passes its threshold.
  */
-export async function publicNumbers() {
+/** The real counts behind the public numbers. */
+export async function rawPublicNumbers(): Promise<Record<PublicNumberKey, number>> {
   const [members, countries, introductions, gatherings] = await Promise.all([
     prisma.profile.count({ where: { user: { accountStatus: 'ACTIVE' } } }),
     // Hidden locations count in the total but are never shown individually.
@@ -15,11 +16,22 @@ export async function publicNumbers() {
     prisma.introduction.count({ where: { status: 'ACCEPTED' } }),
     prisma.gathering.count({ where: { status: 'SCHEDULED', startsAt: { lt: new Date() }, seats: { some: { attendance: 'ATTENDED' } } } }),
   ]);
-  const raw = { members, countries: countries.length, introductions, gatherings };
-  const labels = { members: 'Members', countries: 'Countries', introductions: 'Introductions made', gatherings: 'Gatherings held' } as const;
-  return (Object.keys(raw) as Array<keyof typeof raw>)
-    .filter((k) => raw[k] >= PUBLIC_NUMBER_THRESHOLDS[k])
-    .map((k) => ({ key: k, value: raw[k], label: labels[k] }));
+  return { members, countries: countries.length, introductions, gatherings, wins: 0 };
+}
+
+const LABELS: Record<PublicNumberKey, string> = {
+  members: 'Members',
+  countries: 'Countries',
+  introductions: 'Introductions made',
+  gatherings: 'Gatherings held',
+  wins: 'Wins shared',
+};
+
+/** Live numbers for the homepage (R3 F1): shown only above their threshold and when not hidden (F26). */
+export async function publicNumbers() {
+  const [raw, settings] = await Promise.all([rawPublicNumbers(), getSiteSettings()]);
+  const { thresholds, hidden } = settings.publicNumbers;
+  return PUBLIC_NUMBER_KEYS.filter((k) => !hidden.includes(k) && raw[k] >= thresholds[k] && raw[k] > 0).map((k) => ({ key: k, value: raw[k], label: LABELS[k] }));
 }
 
 /** Upcoming gatherings an admin chose to show publicly: type, title, city (or online) and month only. */

@@ -172,14 +172,16 @@ export const templates = {
       ],
       cta: { label: 'Accept invitation', url },
     }),
-  requestReceived: (name: string) =>
+  requestReceived: (name: string, waitlist: { nextReview: string | null } | null = null) =>
     layout({
-      subject: `We've received your request to join ${APP_NAME}`,
+      subject: waitlist ? `You're on the ${APP_NAME} waitlist` : `We've received your request to join ${APP_NAME}`,
       heading: `Thank you, ${name}`,
-      paragraphs: [
-        'We have your request for an invitation. Our team reads every request personally.',
-        "You'll hear back from us within three weeks, either way.",
-      ],
+      paragraphs: waitlist
+        ? [
+            "You're on the waitlist. We review requests in rounds, and every request gets a reply from a person.",
+            waitlist.nextReview ? `${waitlist.nextReview}. You'll hear back within three weeks of that, either way.` : "You'll hear back within three weeks of our next review, either way.",
+          ]
+        : ['We have your request for an invitation. Our team reads every request personally.', "You'll hear back from us within three weeks, either way."],
     }),
   alreadyMember: () =>
     layout({

@@ -5,6 +5,7 @@ import { APP_NAME, appUrl } from '@/lib/config';
 import { getSessionUser } from '@/lib/auth/session';
 import { homeFor } from '@/lib/auth/guards';
 import { publicGatherings, publicNumbers } from '@/lib/services/public-site';
+import { getSiteSettings } from '@/lib/services/site-settings';
 import { RequestInviteForm } from '@/components/public/request-invite-form';
 import { PublicFooter, PublicHeader } from '@/components/public/site-chrome';
 
@@ -36,7 +37,8 @@ const STEPS = ['Request an invitation', 'Our team reads it', 'You hear back with
 export default async function HomePage({ searchParams }: { searchParams: { deleted?: string; deactivated?: string } }) {
   const user = await getSessionUser();
   if (user && user.accountStatus === 'ACTIVE' && !searchParams.deleted) redirect(homeFor(user));
-  const [numbers, gatherings] = await Promise.all([publicNumbers(), publicGatherings()]);
+  const [numbers, gatherings, settings] = await Promise.all([publicNumbers(), publicGatherings(), getSiteSettings()]);
+  const waitlist = settings.applicationsOpen ? null : { nextReview: settings.nextReview };
 
   return (
     <>
@@ -142,9 +144,13 @@ export default async function HomePage({ searchParams }: { searchParams: { delet
 
         <section id="request" aria-labelledby="request-heading" className="bg-white py-16">
           <div className="mx-auto max-w-3xl px-4">
-            <h2 id="request-heading" className="text-2xl font-semibold">Request an invitation</h2>
-            <p className="mt-2 text-gray-600">Tell us a little about you. Our team reads every request and answers within three weeks.</p>
-            <div className="mt-6"><RequestInviteForm compact /></div>
+            <h2 id="request-heading" className="text-2xl font-semibold">{waitlist ? 'Join the waitlist' : 'Request an invitation'}</h2>
+            <p className="mt-2 text-gray-600">
+              {waitlist
+                ? `We review requests in rounds.${waitlist.nextReview ? ` ${waitlist.nextReview}.` : ''} Every request gets an answer after the next review.`
+                : 'Tell us a little about you. Our team reads every request and answers within three weeks.'}
+            </p>
+            <div className="mt-6"><RequestInviteForm compact waitlist={waitlist} /></div>
           </div>
         </section>
       </main>

@@ -17,7 +17,14 @@ const ROLES = [
 const EMPTY = { name: '', email: '', linkedInUrl: '', primaryRole: '', city: '', country: '', statement: '', referrer: '', website: '' };
 
 /** The public front door (R3 F3). Used on /request-invite and on the homepage. */
-export function RequestInviteForm({ compact = false }: { compact?: boolean }) {
+export function RequestInviteForm({
+  compact = false,
+  waitlist = null,
+}: {
+  compact?: boolean;
+  /** Applications are closed: the form becomes "Join the waitlist" (R3 F21, R2). */
+  waitlist?: { nextReview: string | null } | null;
+}) {
   const [form, setForm] = useState(EMPTY);
   const [consent, setConsent] = useState(false);
   const [error, setError] = useState<ApiError | null>(null);
@@ -30,7 +37,11 @@ export function RequestInviteForm({ compact = false }: { compact?: boolean }) {
   if (sent) {
     return (
       <Notice tone="success">
-        Thank you. We&apos;ve received your request. Our team reads every request, and you&apos;ll hear back within three weeks, either way.
+        {waitlist ? (
+          <>Thank you. You&apos;re on the waitlist. {waitlist.nextReview ? `${waitlist.nextReview}. ` : ''}You&apos;ll hear back within three weeks of our next review, either way.</>
+        ) : (
+          <>Thank you. We&apos;ve received your request. Our team reads every request, and you&apos;ll hear back within three weeks, either way.</>
+        )}
       </Notice>
     );
   }
@@ -97,7 +108,7 @@ export function RequestInviteForm({ compact = false }: { compact?: boolean }) {
         </label>
         {fe.consent && <p id="ri-consent-error" className="text-xs text-red-600">{firstError(fe, 'consent')}</p>}
       </div>
-      <Button type="submit" disabled={busy} className="w-full sm:w-auto">{busy ? 'Sending…' : 'Request an invitation'}</Button>
+      <Button type="submit" disabled={busy} className="w-full sm:w-auto">{busy ? 'Sending…' : waitlist ? 'Join the waitlist' : 'Request an invitation'}</Button>
       <p className="text-xs text-gray-500">No newsletter, no spam. One reply from a human, either way.</p>
     </form>
   );

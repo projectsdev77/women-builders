@@ -5,7 +5,7 @@ export default async function MemberLayout({ children }: { children: React.React
   const user = await pageActiveMember();
   return (
     <>
-      <MemberNav name={user.name} isAdmin={user.isAdmin} />
+      <MemberNav name={user.name} isAdmin={user.isAdmin} isReviewer={user.isReviewer} />
       <main id="main" className="mx-auto max-w-6xl px-4 py-6">
         {children}
       </main>

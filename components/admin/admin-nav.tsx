@@ -14,14 +14,16 @@ const ITEMS = [
   { href: '/admin/invitations', label: 'Invitations' },
   { href: '/admin/introductions', label: 'Introduction requests', badge: 'introductions' as const },
   { href: '/admin/reports', label: 'Reports', badge: 'reports' as const },
+  { href: '/admin/settings', label: 'Site settings' },
   { href: '/admin/audit', label: 'Audit log' },
 ];
 
-export function AdminNav({ counts }: { counts: { requests: number; requestsOverdue: number; followUps: number; reports: number; introductions: number } }) {
+export function AdminNav({ counts, reviewerOnly = false }: {
+  reviewerOnly?: boolean; counts: { requests: number; requestsOverdue: number; followUps: number; reports: number; introductions: number } }) {
   const pathname = usePathname();
   return (
     <nav aria-label="Admin" className="flex gap-1 overflow-x-auto lg:flex-col">
-      {ITEMS.map((item) => {
+      {ITEMS.filter((i) => !reviewerOnly || i.href === '/admin/requests').map((item) => {
         const active = item.exact ? pathname === item.href : pathname.startsWith(item.href);
         const count = item.badge ? counts[item.badge] : 0;
         return (

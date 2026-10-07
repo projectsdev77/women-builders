@@ -13,6 +13,8 @@ export interface SessionUser {
   email: string;
   name: string;
   isAdmin: boolean;
+  /** Member reviewer: may vote in the invitation requests queue (R3 F21). */
+  isReviewer: boolean;
   accountStatus: AccountStatus;
   deactivatedBy: DeactivatedBy | null;
   emailVerifiedAt: Date | null;
@@ -76,6 +78,7 @@ export async function findSessionUser(token: string): Promise<SessionUser | null
     email: u.email,
     name: u.name,
     isAdmin: u.isAdmin,
+    isReviewer: u.isReviewer,
     accountStatus: u.accountStatus,
     deactivatedBy: u.deactivatedBy,
     emailVerifiedAt: u.emailVerifiedAt,

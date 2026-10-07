@@ -51,7 +51,7 @@ describe('invitation requests (R3 F3, F21)', () => {
     expect(pm.requests).toHaveLength(1);
     expect(pm.requests[0]).toMatchObject({ status: 'OPEN', country: 'GB', primaryRole: 'BUILDER' });
     expect(await prisma.emailOutbox.count({ where: { kind: 'request_received' } })).toBe(1);
-    expect(await openRequestCounts()).toEqual({ open: 1, overdue: 0 });
+    expect(await openRequestCounts()).toEqual({ open: 1, overdue: 0, waitlist: 0 });
   });
 
   it('attaches to a prospect the team already knows, matched by LinkedIn', async () => {
@@ -129,7 +129,7 @@ describe('invitation requests (R3 F3, F21)', () => {
     await submitInviteRequest(request(), '1.1.1.1');
     expect(await sendOverdueRequestsDigest()).toBe(0);
     await prisma.invitationRequest.updateMany({ data: { slaStartsAt: new Date(Date.now() - 22 * 86_400_000) } });
-    expect(await openRequestCounts()).toEqual({ open: 1, overdue: 1 });
+    expect(await openRequestCounts()).toEqual({ open: 1, overdue: 1, waitlist: 0 });
     expect((await listInviteRequests('OPEN'))[0]).toMatchObject({ overdue: true, daysWaiting: 22 });
     expect(await sendOverdueRequestsDigest()).toBe(1);
     expect(await prisma.emailOutbox.count({ where: { kind: 'overdue_requests_digest' } })).toBe(1);
@@ -299,7 +299,7 @@ describe('reports and dashboard (Req 20, 21.5)', () => {
     await updateProspect(a.id, p2.id, { outreachStatus: 'NOT_INTERESTED' });
     const m = await dashboardMetrics(defaultRange());
     expect(m.activeMembers).toBe(1); // admin has no profile
-    expect(m.requests).toEqual({ open: 1, overdue: 0 });
+    expect(m.requests).toEqual({ open: 1, overdue: 0, waitlist: 0 });
     const contacted = m.conversion.find((c) => c.status === 'CONTACTED')!;
     expect(contacted).toMatchObject({ entered: 2, reachedApproved: 1, rate: 50 });
     expect(m.potentialMembersByStatus.NOT_INTERESTED).toBe(1);

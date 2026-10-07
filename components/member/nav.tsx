@@ -40,7 +40,7 @@ function useCounts() {
   return count;
 }
 
-export function MemberNav({ name, isAdmin }: { name: string; isAdmin: boolean }) {
+export function MemberNav({ name, isAdmin, isReviewer = false }: { name: string; isAdmin: boolean; isReviewer?: boolean }) {
   const pathname = usePathname();
   const router = useRouter();
   const { unread, introductions } = useCounts();
@@ -51,7 +51,7 @@ export function MemberNav({ name, isAdmin }: { name: string; isAdmin: boolean })
     router.refresh();
   }
 
-  const items = isAdmin ? [...ITEMS, { href: '/admin', label: 'Admin' }] : ITEMS;
+  const items = isAdmin ? [...ITEMS, { href: '/admin', label: 'Admin' }] : isReviewer ? [...ITEMS, { href: '/admin/requests', label: 'Review requests' }] : ITEMS;
   return (
     <header className="border-b border-gray-200 bg-white">
       <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3">

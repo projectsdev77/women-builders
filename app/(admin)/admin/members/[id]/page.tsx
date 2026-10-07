@@ -42,6 +42,7 @@ export default async function AdminMemberPage({ params }: { params: { id: string
           <div className="mt-1 flex flex-wrap gap-1">
             <Badge tone={ACCOUNT_TONE[user.accountStatus]}>{user.accountStatus.toLowerCase()}{user.deactivatedBy ? ` by ${user.deactivatedBy.toLowerCase()}` : ''}</Badge>
             {user.isAdmin && <Badge tone="brand">Admin</Badge>}
+            {user.isReviewer && <Badge tone="brand">Member reviewer</Badge>}
             {!user.emailVerifiedAt && <Badge tone="yellow">Email not confirmed</Badge>}
           </div>
         </div>
@@ -62,6 +63,14 @@ export default async function AdminMemberPage({ params }: { params: { id: string
                 method="PUT"
                 body={{ isAdmin: !user.isAdmin }}
                 confirm={{ title: user.isAdmin ? 'Remove admin access?' : 'Grant admin access?', description: user.isAdmin ? 'They lose access to the admin area immediately.' : 'They can manage members, invitation requests, outreach and reports.' }}
+              />
+            )}
+            {user.accountStatus === 'ACTIVE' && !user.isAdmin && user.profile && (
+              <ActionButton
+                label={user.isReviewer ? 'Remove reviewer' : 'Make member reviewer'}
+                path={`/api/admin/members/${user.id}/reviewer`}
+                body={{ isReviewer: !user.isReviewer }}
+                confirm={{ title: user.isReviewer ? 'Remove reviewer access?' : 'Make a member reviewer?', description: user.isReviewer ? 'They can no longer see or vote on invitation requests.' : 'They can read invitation requests and vote Approve or Decline. They cannot invite, decline or see any other admin page.' }}
               />
             )}
           </div>
