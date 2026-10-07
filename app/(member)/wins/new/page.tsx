@@ -1,9 +1,9 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
 import { pageActiveMember } from '@/lib/auth/guards';
 import { prisma } from '@/lib/db';
 import { winSources } from '@/lib/services/wins';
 import { Card } from '@/components/ui';
+import { BackLink } from '@/components/ui/back-link';
 import { WinForm } from './win-form';
 
 export const metadata: Metadata = { title: 'Share a win' };
@@ -21,10 +21,10 @@ export default async function NewWinPage({ searchParams }: { searchParams: { wit
   const gathering = sources.gatherings.find((g) => g.id === searchParams.gathering);
   return (
     <div className="mx-auto max-w-2xl space-y-4">
-      <Link href="/wins" className="text-sm text-brand-700 underline">← Wins</Link>
+      <BackLink fallback="/wins" />
       <h1>Share a win</h1>
-      <p className="text-sm text-gray-600">Something came of it? Tell us. It celebrates the people involved and shows the network works.</p>
-      <Card className="p-6">
+      <p className="text-[16px] text-ink-muted">Something came of it? Tell us. It celebrates the people involved and shows the network works.</p>
+      <Card className="p-6 sm:p-8">
         <WinForm
           thisMonth={new Date().toISOString().slice(0, 7)}
           initialWith={withUser && withUser.id !== user.id ? [withUser] : []}

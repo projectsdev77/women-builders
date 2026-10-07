@@ -450,6 +450,16 @@ export async function introductionsAwaiting(userId: string) {
   });
 }
 
+/** Pending counts for the tab badges: "Asked of me" and "For me". */
+export async function introductionTabCounts(userId: string) {
+  const now = new Date();
+  const [asked, forMe] = await Promise.all([
+    prisma.introduction.count({ where: { introducerId: userId, status: 'ASKED', introducerDueAt: { gt: now } } }),
+    prisma.introduction.count({ where: { targetId: userId, status: 'FORWARDED', targetDueAt: { gt: now } } }),
+  ]);
+  return { asked, 'for-me': forMe, mine: 0 };
+}
+
 /** The note a conversation opens with when the pair met through an introduction. */
 export async function introductionForPair(a: string, b: string) {
   const intro = await prisma.introduction.findFirst({

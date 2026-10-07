@@ -8,7 +8,7 @@ import { api } from '@/lib/client/api';
 export function MetConnect({ memberId, title, status }: { memberId: string; title: string; status: string }) {
   const [state, setState] = useState<string | null>(status === 'connected' ? 'Connected' : status === 'pending_sent' ? 'Request sent' : null);
   const [busy, setBusy] = useState(false);
-  if (state) return <span className="text-sm text-gray-600">{state}</span>;
+  if (state) return <span className="text-[14px] font-semibold text-ink-subtle">{state}</span>;
   return (
     <Button
       variant="secondary"

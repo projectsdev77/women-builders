@@ -1,3 +1,4 @@
+import type { RoleType } from '@prisma/client';
 import { prisma } from '@/lib/db';
 import { AppError, Errors } from '@/lib/errors';
 import { DURATIONS_MS, LIMITS } from '@/lib/config';
@@ -29,7 +30,7 @@ async function loadConversation(db: Tx | typeof prisma, actorId: string, otherId
   if (await isBlockedEitherWay(db, actorId, otherId)) throw Errors.notFound('Conversation');
   const [connection, other] = await Promise.all([
     db.connection.findUnique({ where: { userAId_userBId: pair(actorId, otherId) } }),
-    db.user.findUnique({ where: { id: otherId }, select: { id: true, name: true, accountStatus: true, profile: { select: { headline: true, photoKey: true, photoVersion: true } } } }),
+    db.user.findUnique({ where: { id: otherId }, select: { id: true, name: true, accountStatus: true, profile: { select: { headline: true, photoKey: true, photoVersion: true, primaryRole: true } } } }),
   ]);
   if (!connection || !other) throw Errors.notFound('Conversation');
   const state: ConversationState = connection.removedAt
@@ -119,6 +120,7 @@ export async function getConversation(actorId: string, otherId: string, opts: { 
       id: conv.other.id,
       name: conv.other.name,
       headline: conv.other.profile?.headline ?? null,
+      role: conv.other.profile?.primaryRole ?? null,
       active: conv.other.accountStatus === 'ACTIVE',
       deleted: conv.other.accountStatus === 'DELETED',
       photoUrl: conv.other.profile ? photoUrl(conv.other.id, conv.other.profile) : null,
@@ -141,7 +143,7 @@ export async function markConversationRead(actorId: string, otherId: string) {
 }
 
 export interface ConversationSummary {
-  member: { id: string; name: string; headline: string | null; active: boolean; deleted: boolean; photoUrl: string | null };
+  member: { id: string; name: string; headline: string | null; role: RoleType | null; active: boolean; deleted: boolean; photoUrl: string | null };
   lastMessage: MessageItem | null;
   unreadCount: number;
   readOnly: boolean;
@@ -157,8 +159,8 @@ export async function listConversations(actorId: string): Promise<ConversationSu
   const connections = await prisma.connection.findMany({
     where: { OR: [{ userAId: actorId }, { userBId: actorId }] },
     include: {
-      userA: { select: { id: true, name: true, accountStatus: true, profile: { select: { headline: true, photoKey: true, photoVersion: true } } } },
-      userB: { select: { id: true, name: true, accountStatus: true, profile: { select: { headline: true, photoKey: true, photoVersion: true } } } },
+      userA: { select: { id: true, name: true, accountStatus: true, profile: { select: { headline: true, photoKey: true, photoVersion: true, primaryRole: true } } } },
+      userB: { select: { id: true, name: true, accountStatus: true, profile: { select: { headline: true, photoKey: true, photoVersion: true, primaryRole: true } } } },
       messages: { orderBy: { createdAt: 'desc' }, take: 1 },
     },
   });
@@ -181,6 +183,7 @@ export async function listConversations(actorId: string): Promise<ConversationSu
         id: other.id,
         name: other.name,
         headline: other.profile?.headline ?? null,
+        role: other.profile?.primaryRole ?? null,
         active: other.accountStatus === 'ACTIVE',
         deleted: other.accountStatus === 'DELETED',
         photoUrl: other.profile ? photoUrl(other.id, other.profile) : null,

@@ -66,17 +66,17 @@ export function IntroButtons({
         </Button>
       )}
       {reportMember && (
-        <Button variant="ghost" onClick={() => setDialog('report')}>Report</Button>
+        <button type="button" className="min-h-[44px] px-2 text-[14px] font-semibold text-ink-subtle underline underline-offset-4" onClick={() => setDialog('report')}>Report</button>
       )}
 
       <Dialog open={dialog === 'introduce'} onClose={() => setDialog(null)} title={`Introduce ${requesterName} to ${targetName}`}>
         {error && <Notice tone="error">{error}</Notice>}
-        <p className="text-sm text-gray-700">
+        <p className="text-[15px] text-ink-muted">
           {targetName.split(' ')[0]} will see your note and {requesterName.split(' ')[0]}&apos;s note, and decides within 14 days.
         </p>
-        <label htmlFor={`note-${id}`} className="block text-sm font-medium">Your note to {targetName.split(' ')[0]} (optional)</label>
+        <label htmlFor={`note-${id}`} className="block text-[15px] font-semibold">Your note to {targetName.split(' ')[0]} (optional)</label>
         <Textarea id={`note-${id}`} rows={4} maxLength={500} value={note} onChange={(e) => setNote(e.target.value)} placeholder="Why you think they should meet" />
-        <p className="text-right text-xs text-gray-500">{note.length}/500</p>
+        <p className="text-right font-mono text-[12px] text-ink-subtle">{note.length}/500</p>
         <div className="flex justify-end gap-2">
           <Button variant="secondary" onClick={() => setDialog(null)}>Cancel</Button>
           <Button disabled={busy} onClick={() => call(`/api/introductions/${id}/introduce`, 'POST', { note: note || undefined }, `Introduced. ${targetName.split(' ')[0]} has 14 days to respond.`)}>

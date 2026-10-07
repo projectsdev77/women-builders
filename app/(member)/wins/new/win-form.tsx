@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Button, Field, Input, Notice, Select, Textarea } from '@/components/ui';
+import { Button, Field, Input, Notice, Select, Textarea, cx } from '@/components/ui';
+import { CheckRow } from '@/components/ui/choice';
 import { api, firstError, type ApiError } from '@/lib/client/api';
 
 type Picked = { id: string; name: string };
@@ -80,39 +81,41 @@ export function WinForm({
     <form className="space-y-5" noValidate onSubmit={(e) => { e.preventDefault(); void submit(); }}>
       {error && !Object.keys(fe).length && <Notice tone="error">{error.message}</Notice>}
       <fieldset>
-        <legend className="text-sm font-medium">What happened?</legend>
+        <legend className="text-[15px] font-semibold">What happened?</legend>
         <div className="mt-2 flex flex-wrap gap-2">
           {TYPES.map(([v, label]) => (
-            <label key={v} className={`inline-flex min-h-[44px] cursor-pointer items-center rounded-full border px-4 text-sm ${type === v ? 'border-brand-600 bg-brand-50 text-brand-700' : 'border-gray-300'}`}>
-              <input type="radio" name="type" value={v} className="sr-only" checked={type === v} onChange={() => setType(v)} />
-              {label}
+            <label key={v} className="cursor-pointer">
+              <input type="radio" name="type" value={v} className="peer sr-only" checked={type === v} onChange={() => setType(v)} />
+              <span className="inline-flex min-h-[44px] items-center rounded-full border-[1.5px] border-line bg-white px-4 text-[14px] font-bold transition-colors hover:bg-wash peer-checked:border-forest peer-checked:bg-butter peer-focus-visible:shadow-focus-field">
+                {label}
+              </span>
             </label>
           ))}
         </div>
       </fieldset>
 
       <div className="space-y-2">
-        <label htmlFor="win-with" className="block text-sm font-medium">With whom (optional)</label>
+        <label htmlFor="win-with" className="block text-[15px] font-semibold">With whom (optional)</label>
         {people.length > 0 && (
           <ul className="flex flex-wrap gap-2">
             {people.map((p) => (
-              <li key={p.id} className="inline-flex items-center gap-1 rounded-full bg-brand-50 px-3 py-1 text-sm">
+              <li key={p.id} className="inline-flex items-center gap-1 rounded-full bg-builder-tint px-3 py-1 text-[14px] font-semibold">
                 {p.name}
-                <button type="button" aria-label={`Remove ${p.name}`} className="px-1 text-gray-600" onClick={() => setPeople(people.filter((x) => x.id !== p.id))}>×</button>
+                <button type="button" aria-label={`Remove ${p.name}`} className="px-1 text-ink-muted" onClick={() => setPeople(people.filter((x) => x.id !== p.id))}>×</button>
               </li>
             ))}
           </ul>
         )}
         <Input id="win-with" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Type a member's name…" autoComplete="off" />
         {results.length > 0 && (
-          <ul className="rounded-md border border-gray-200 bg-white">
+          <ul className="overflow-hidden rounded-field border border-line bg-white shadow-lift">
             {results.map((m) => (
-              <li key={m.id}><button type="button" className="block min-h-[44px] w-full px-3 text-left text-sm hover:bg-gray-50" onClick={() => { setPeople([...people, m]); setQ(''); }}>{m.name}</button></li>
+              <li key={m.id}><button type="button" className="block min-h-[44px] w-full px-4 text-left text-[15px] hover:bg-cream" onClick={() => { setPeople([...people, m]); setQ(''); }}>{m.name}</button></li>
             ))}
           </ul>
         )}
-        <p className="text-xs text-gray-600">Everyone you name is asked to confirm. Confirmed wins are marked verified.</p>
-        <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={outside} onChange={(e) => setOutside(e.target.checked)} /> Someone outside the network was involved</label>
+        <p className="text-[13px] text-ink-subtle">Everyone you name is asked to confirm. Confirmed wins are marked verified.</p>
+        <CheckRow checked={outside} onChange={setOutside}>Someone outside the network was involved</CheckRow>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
@@ -154,23 +157,28 @@ export function WinForm({
       <Field id="win-story" label="The story (optional)" error={firstError(fe, 'story')}>
         <Textarea id="win-story" rows={3} maxLength={500} value={story} onChange={(e) => setStory(e.target.value)} placeholder="What happened, in a sentence or two" />
       </Field>
-      <p className="-mt-3 text-right text-xs text-gray-500">{story.length}/500</p>
+      <p className="-mt-3 text-right font-mono text-[12px] text-ink-subtle">{story.length}/500</p>
 
-      <fieldset className="space-y-1">
-        <legend className="text-sm font-medium">Who can see it?</legend>
+      <fieldset className="space-y-2">
+        <legend className="text-[15px] font-semibold">Who can see it?</legend>
         {([
           ['ANONYMOUS', 'Count it anonymously', 'Only adds to the totals. Nobody sees the details.'],
           ['MEMBERS', 'Members can see it', 'Shown on your profile and in "Recent wins" for members.'],
           ['QUOTABLE', 'May be quoted on the public site', 'Members can see it, and the team may quote it publicly.'],
         ] as const).map(([v, label, hint]) => (
-          <label key={v} className="flex min-h-[44px] items-start gap-2 text-sm">
-            <input type="radio" name="visibility" className="mt-1" checked={visibility === v} onChange={() => setVisibility(v)} />
-            <span><span className="block font-medium">{label}</span><span className="block text-xs text-gray-600">{hint}</span></span>
+          <label key={v} className="block cursor-pointer">
+            <input type="radio" name="visibility" className="peer sr-only" checked={visibility === v} onChange={() => setVisibility(v)} />
+            <span className="flex items-start gap-3 rounded-field border-[1.5px] border-line bg-white p-4 transition-colors peer-checked:border-forest peer-checked:bg-cream peer-focus-visible:shadow-focus-field">
+              <span aria-hidden className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-[1.5px] border-forest bg-white">
+                {visibility === v && <span className="h-2.5 w-2.5 rounded-full bg-forest" />}
+              </span>
+              <span><span className="block text-[15px] font-bold">{label}</span><span className="block text-[13px] text-ink-muted">{hint}</span></span>
+            </span>
           </label>
         ))}
       </fieldset>
 
-      <Button type="submit" disabled={busy}>{busy ? 'Sharing…' : 'Share the win'}</Button>
+      <Button type="submit" size="lg" disabled={busy}>{busy ? 'Sharing…' : 'Share the win'}</Button>
     </form>
   );
 }

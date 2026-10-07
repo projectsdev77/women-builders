@@ -12,5 +12,5 @@ export function YourTime({ startsAt, timeZone }: { startsAt: string; timeZone: s
       new Intl.DateTimeFormat('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZoneName: 'short' }).format(new Date(startsAt)),
     );
   }, [startsAt, timeZone]);
-  return text ? <span className="block text-sm text-gray-600">Your time: {text}</span> : null;
+  return text ? <span className="block text-[14px] font-normal text-ink-subtle">Your time: {text}</span> : null;
 }

@@ -3,8 +3,9 @@ import Link from 'next/link';
 import { pageActiveMember } from '@/lib/auth/guards';
 import { gatheringListSchema, listGatherings, peopleYouMet } from '@/lib/services/gatherings';
 import { formatInZone } from '@/lib/time';
-import { Avatar, Badge, Button, Card, EmptyState, Input, Select } from '@/components/ui';
-import { SEAT_LABEL, TYPE_LABEL } from '@/components/gatherings/labels';
+import { Avatar, Button, EmptyState, Input, PageHeader, Select, SegmentedTabs } from '@/components/ui';
+import { FilterChip } from '@/components/ui/choice';
+import { DateStamp, SeatPill, TypePill, stripes } from '@/components/gatherings/cover';
 import { MetConnect } from '@/components/gatherings/met-connect';
 
 export const metadata: Metadata = { title: 'Gatherings' };
@@ -17,44 +18,43 @@ export default async function GatheringsPage({ searchParams }: { searchParams: R
   const toConnect = met.filter((p) => p.connectionStatus !== 'connected');
 
   return (
-    <div className="space-y-4">
-      <div>
-        <h1>Gatherings</h1>
-        <p className="text-sm text-gray-600">Small dinners and working sessions, in person and online. Seats are limited so everyone gets to talk.</p>
-      </div>
-      <nav aria-label="Gatherings" className="flex gap-4 border-b border-gray-200">
-        {(['upcoming', 'mine'] as const).map((v) => (
-          <Link key={v} href={`/gatherings?view=${v}`} aria-current={q.view === v ? 'page' : undefined}
-            className={q.view === v ? 'border-b-2 border-brand-600 pb-2 font-semibold' : 'pb-2 text-gray-600'}>
-            {v === 'upcoming' ? 'Upcoming' : 'My gatherings'}
-          </Link>
-        ))}
-      </nav>
+    <div className="space-y-7">
+      <PageHeader title="Gatherings" lede="Small dinners and working sessions, in person and online. Seats are limited so everyone gets to talk." />
+      <SegmentedTabs
+        label="Gatherings"
+        tabs={[
+          { href: '/gatherings?view=upcoming', label: 'Upcoming', active: q.view === 'upcoming' },
+          { href: '/gatherings?view=mine', label: 'My gatherings', active: q.view === 'mine' },
+        ]}
+      />
 
       {toConnect.length > 0 && (
-        <Card className="space-y-3">
-          <h2 className="font-semibold">People you met</h2>
-          <ul className="grid gap-3 sm:grid-cols-2">
+        <section aria-labelledby="met" className="space-y-4 rounded-[28px] bg-operator p-6">
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <h2 id="met" className="text-[28px]">People you met</h2>
+            <p className="text-[14px] font-semibold">At {toConnect[0]!.metAt.title} · connect for 30 days</p>
+          </div>
+          <ul className="space-y-2.5">
             {toConnect.slice(0, 6).map((p) => (
-              <li key={p.id} className="flex items-center gap-3">
-                <Avatar name={p.name} size={40} photoUrl={p.photoUrl} />
+              <li key={p.id} className="flex items-center gap-3.5 rounded-[18px] bg-white p-3.5">
+                <Avatar name={p.name} size={44} photoUrl={p.photoUrl} role={p.primaryRole} />
                 <div className="min-w-0 flex-1">
-                  <Link href={`/members/${p.id}`} className="font-medium hover:underline">{p.name}</Link>
-                  <p className="truncate text-xs text-gray-600">At {p.metAt.title}</p>
+                  <Link href={`/members/${p.id}`} className="font-bold hover:underline">{p.name}</Link>
+                  {p.headline && <p className="truncate text-[14px] text-ink-subtle">{p.headline}</p>}
                 </div>
                 <MetConnect memberId={p.id} title={p.metAt.title} status={p.connectionStatus} />
               </li>
             ))}
           </ul>
-        </Card>
+        </section>
       )}
 
       {q.view === 'upcoming' && (
-        <form method="get" action="/gatherings" className="flex flex-wrap items-end gap-3 rounded-lg border border-gray-200 bg-white p-3">
+        <form method="get" action="/gatherings" className="flex flex-wrap items-end gap-3">
           <input type="hidden" name="view" value="upcoming" />
           <div>
-            <label htmlFor="type" className="block text-sm font-medium">Type</label>
-            <Select id="type" name="type" defaultValue={q.type ?? ''}>
+            <label htmlFor="type" className="mb-1.5 block text-[14px] font-bold">Type</label>
+            <Select id="type" name="type" defaultValue={q.type ?? ''} className="!min-h-[44px] rounded-full">
               <option value="">Any</option>
               <option value="DINNER">Dinners</option>
               <option value="WORKING_SESSION">Working sessions</option>
@@ -62,12 +62,10 @@ export default async function GatheringsPage({ searchParams }: { searchParams: R
             </Select>
           </div>
           <div>
-            <label htmlFor="city" className="block text-sm font-medium">City</label>
-            <Input id="city" name="city" defaultValue={q.city} placeholder="e.g. Lagos" />
+            <label htmlFor="city" className="mb-1.5 block text-[14px] font-bold">City</label>
+            <Input id="city" name="city" defaultValue={q.city} placeholder="e.g. Lagos" className="!min-h-[44px] rounded-full" />
           </div>
-          <label className="flex min-h-[44px] items-center gap-2 text-sm">
-            <input type="checkbox" name="online" value="1" defaultChecked={!!q.online} /> Online only
-          </label>
+          <FilterChip name="online" value="1" defaultChecked={!!q.online}>Online only</FilterChip>
           <Button type="submit" variant="secondary">Filter</Button>
         </form>
       )}
@@ -77,27 +75,30 @@ export default async function GatheringsPage({ searchParams }: { searchParams: R
           {q.view === 'mine' ? <Link href="/gatherings" className="underline">See upcoming gatherings</Link> : 'New gatherings are announced by email when they are near you.'}
         </EmptyState>
       ) : (
-        <ul className="grid gap-4 sm:grid-cols-2">
+        <ul className="grid gap-5 [grid-template-columns:repeat(auto-fill,minmax(min(100%,320px),1fr))]">
           {items.map((g) => (
             <li key={g.id}>
-              <Link href={`/gatherings/${g.id}`} className="block h-full">
-                <Card className="h-full space-y-2 hover:bg-gray-50">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <Badge tone="brand">{TYPE_LABEL[g.type]}</Badge>
-                    {g.status === 'CANCELLED' && <Badge tone="red">Cancelled</Badge>}
-                    {g.mySeat && <Badge tone={SEAT_LABEL[g.mySeat][1]}>{SEAT_LABEL[g.mySeat][0]}</Badge>}
-                    {g.past && <Badge>Past</Badge>}
+              <Link href={`/gatherings/${g.id}`} className="flex h-full flex-col overflow-hidden rounded-[28px] bg-white transition-shadow hover:shadow-lift">
+                <div className="relative h-[132px] p-4" style={{ background: stripes(g.type) }}>
+                  <div className="flex flex-wrap gap-1.5">
+                    <TypePill type={g.type} />
+                    {g.status === 'CANCELLED' && <span className="rounded-full bg-danger-bg px-3 py-1 text-[12.5px] font-bold text-danger">Cancelled</span>}
+                    {g.past && <span className="rounded-full bg-cream px-3 py-1 text-[12.5px] font-bold">Past</span>}
+                    {g.mySeat && <SeatPill status={g.mySeat} />}
                   </div>
-                  <h2 className="text-lg font-semibold">{g.title}</h2>
-                  <p className="text-sm text-gray-700">{formatInZone(g.startsAt, g.timeZone)}</p>
-                  <p className="text-sm text-gray-700">{g.location}</p>
+                  <span className="absolute -bottom-6 right-5"><DateStamp startsAt={g.startsAt} timeZone={g.timeZone} size={72} /></span>
+                </div>
+                <div className="flex flex-1 flex-col gap-1.5 p-5 pt-6">
+                  <h2 className="text-[24px] leading-tight">{g.title}</h2>
+                  <p className="text-[15px]">{formatInZone(g.startsAt, g.timeZone)}</p>
+                  <p className="text-[15px] text-ink-muted">{g.location}</p>
                   {!g.past && g.status === 'SCHEDULED' && (
-                    <p className="text-xs text-gray-600">
+                    <p className={`text-[14px] font-semibold ${g.seatMode === 'OPEN' && g.seatsLeft === 0 ? 'text-warning' : 'text-ink-muted'}`}>
                       {g.seatMode === 'OPEN' ? (g.seatsLeft > 0 ? `${g.seatsLeft} of ${g.capacity} seats left` : 'Full · waitlist open') : `${g.capacity} seats · request a seat`}
                     </p>
                   )}
-                  <p className="text-xs text-gray-500">Hosted by {g.hosts.map((h) => h.name).join(', ')}</p>
-                </Card>
+                  <p className="mt-auto pt-2 text-[13px] text-ink-subtle">Hosted by {g.hosts.map((h) => h.name).join(', ')}</p>
+                </div>
               </Link>
             </li>
           ))}
