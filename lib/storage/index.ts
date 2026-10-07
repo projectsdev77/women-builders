@@ -1,6 +1,7 @@
 /**
- * Minimal object storage (R3 F6). Development and tests use the local disk; production uses any
- * S3-compatible service (Amazon S3, Cloudflare R2, MinIO…) configured through environment variables:
+ * Minimal object storage (R3 F6). Development and tests use the local disk. On Vercel, use a private
+ * Vercel Blob store (STORAGE_DRIVER=blob with BLOB_READ_WRITE_TOKEN, which Vercel adds when a store is
+ * connected to the project). Any S3-compatible service also works:
  *   STORAGE_DRIVER=s3, S3_BUCKET, S3_REGION, S3_ENDPOINT (optional), S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY
  * Objects are never public: the app reads them and serves them through access-checked routes.
  */
@@ -80,10 +81,32 @@ class S3Storage implements Storage {
   }
 }
 
+/** Private Vercel Blob store: nothing is public; the app streams objects through its access-checked routes. */
+class BlobStorage implements Storage {
+  private sdk = import('@vercel/blob');
+  async put(key: string, body: Buffer, contentType: string) {
+    const { put } = await this.sdk;
+    await put(safeKey(key), body, { access: 'private', contentType, addRandomSuffix: false, allowOverwrite: true });
+  }
+  async get(key: string) {
+    const { get } = await this.sdk;
+    const res = await get(safeKey(key), { access: 'private', useCache: false });
+    if (!res || res.statusCode !== 200) return null;
+    return Buffer.from(await new Response(res.stream).arrayBuffer());
+  }
+  async delete(key: string) {
+    const { del } = await this.sdk;
+    await del(safeKey(key));
+  }
+}
+
 let instance: Storage | undefined;
 export function storage(): Storage {
   if (instance) return instance;
-  if (process.env.STORAGE_DRIVER === 's3') {
+  const driver = process.env.STORAGE_DRIVER || (process.env.BLOB_READ_WRITE_TOKEN ? 'blob' : 'local');
+  if (driver === 'blob') {
+    instance = new BlobStorage();
+  } else if (driver === 's3') {
     const bucket = process.env.S3_BUCKET;
     if (!bucket) throw new Error('S3_BUCKET is not set');
     instance = new S3Storage(bucket);

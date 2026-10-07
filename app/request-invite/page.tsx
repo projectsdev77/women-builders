@@ -13,7 +13,7 @@ export default async function RequestInvitePage() {
     <>
       <PublicHeader waitlist={!!waitlist} />
       <main id="main" className="mx-auto max-w-[1240px] px-[clamp(20px,4vw,48px)] py-[clamp(32px,5vw,64px)]">
-        <RequestPanel waitlist={waitlist} />
+        <RequestPanel waitlist={waitlist} standalone />
       </main>
       <PublicFooter />
     </>

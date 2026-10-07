@@ -1,13 +1,14 @@
 import { RequestInviteForm } from './request-invite-form';
 
 /** The "Request an invitation" panel: sticky title on the left, form on the right (designer: white panel, radius 40). */
-export function RequestPanel({ waitlist }: { waitlist: { nextReview: string | null } | null }) {
+export function RequestPanel({ waitlist, standalone = false }: { waitlist: { nextReview: string | null } | null; standalone?: boolean }) {
+  const Heading = standalone ? 'h1' : 'h2';
   return (
     <div className="relative grid items-start gap-[clamp(32px,5vw,64px)] overflow-hidden rounded-[40px] bg-white p-[clamp(24px,5vw,64px)] lg:grid-cols-2">
       <div className="flex flex-col gap-5 lg:sticky lg:top-24">
-        <h2 id="request-heading" className="text-[clamp(40px,5vw,64px)] leading-none tracking-[-0.02em]">
+        <Heading id="request-heading" className="text-[clamp(40px,5vw,64px)] leading-none tracking-[-0.02em]">
           {waitlist ? 'Join the waitlist.' : 'Request an invitation.'}
-        </h2>
+        </Heading>
         <p className="text-[17px] leading-relaxed text-ink-muted">
           {waitlist
             ? 'Tell us a little about you. Every request gets an answer after our next review.'

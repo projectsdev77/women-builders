@@ -10,7 +10,7 @@ export const POST = route(async (req) => {
   const form = await req.formData().catch(() => null);
   const file = form?.get('photo');
   if (!(file instanceof File)) throw new AppError('VALIDATION_ERROR', 'Choose a photo to upload.', 400);
-  if (file.size > PHOTO_MAX_BYTES) throw new AppError('FILE_TOO_LARGE', 'Photos can be at most 5 MB.', 413);
+  if (file.size > PHOTO_MAX_BYTES) throw new AppError('FILE_TOO_LARGE', 'Photos can be at most 4 MB.', 413);
   const profile = await setProfilePhoto(user.id, Buffer.from(await file.arrayBuffer()));
   return { photoUrl: photoUrl(user.id, profile, 512), completenessScore: profile.completenessScore };
 });

@@ -634,7 +634,7 @@ The To do list also includes "1 win names you: confirm it".
 ### 8.7 My profile `/profile` and Edit profile `/profile/edit` (screenshot 15)
 - **Layout:** one long form with a **sticky completeness meter**.
 - **Photo uploader:**
-  - JPEG, PNG or WebP up to 5 MB;
+  - JPEG, PNG or WebP up to 4 MB;
   - the server crops it square around the most interesting part, so there's no manual crop step;
   - Replace / Remove;
   - a hint that location data is removed from photos.
@@ -1012,7 +1012,7 @@ Please spec each component with its states: default, hover, focus, active, disab
 | Section | Field | Type | Limit / options | Hideable? |
 |---|---|---|---|---|
 | Basics | Full name | text | 2–100 | No |
-| | **Photo** | image | JPEG/PNG/WebP ≤5 MB, cropped square by the server, stored at 512 and 128 px | No |
+| | **Photo** | image | JPEG/PNG/WebP ≤4 MB, cropped square by the server, stored at 512 and 128 px | No |
 | | Headline | text | ≤120 | No |
 | | Primary role / other roles | choice | Founder, Operator, Investor, Builder | No |
 | | **City** | text | ≤100 | **Yes** (as Location) |

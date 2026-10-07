@@ -33,11 +33,11 @@ describe('photos (R3 F6)', () => {
     }
   });
 
-  it('rejects non-images, tiny images and files over 5 MB', async () => {
+  it('rejects non-images, tiny images and files over 4 MB', async () => {
     await expect(processPhoto(Buffer.from('not an image'))).rejects.toMatchObject({ code: 'INVALID_IMAGE' });
     const tiny = await sharp({ create: { width: 50, height: 50, channels: 3, background: '#000' } }).png().toBuffer();
     await expect(processPhoto(tiny)).rejects.toMatchObject({ code: 'IMAGE_TOO_SMALL' });
-    await expect(processPhoto(Buffer.alloc(5 * 1024 * 1024 + 1))).rejects.toMatchObject({ code: 'FILE_TOO_LARGE' });
+    await expect(processPhoto(Buffer.alloc(4 * 1024 * 1024 + 1))).rejects.toMatchObject({ code: 'FILE_TOO_LARGE' });
   });
 
   it('stores, serves only to allowed viewers, counts for completeness, and deletes files', async () => {

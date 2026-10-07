@@ -21,7 +21,7 @@ export function PhotoUploader({
   const [error, setError] = useState<string | null>(null);
 
   async function upload(file: File) {
-    if (file.size > 5 * 1024 * 1024) return setError('Photos can be at most 5 MB.');
+    if (file.size > 4 * 1024 * 1024) return setError('Photos can be at most 4 MB.');
     setBusy(true);
     setError(null);
     const fd = new FormData();
@@ -55,7 +55,7 @@ export function PhotoUploader({
             </Button>
           )}
         </div>
-        <p className="text-xs text-gray-500">JPEG, PNG or WebP, up to 5 MB. Only members can see it. We remove location data from photos.</p>
+        <p className="text-xs text-gray-500">JPEG, PNG or WebP, up to 4 MB. Only members can see it. We remove location data from photos.</p>
         {error && <p role="alert" className="text-xs text-red-700">{error}</p>}
         <input
           ref={input}

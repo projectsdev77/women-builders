@@ -8,7 +8,8 @@ import { PHOTO_SIZES, type PhotoSize } from './photo-url';
 
 export { PHOTO_SIZES, type PhotoSize };
 
-export const PHOTO_MAX_BYTES = 5 * 1024 * 1024;
+// 4 MB keeps uploads under Vercel's 4.5 MB request-body limit.
+export const PHOTO_MAX_BYTES = 4 * 1024 * 1024;
 const ALLOWED_FORMATS = new Set(['jpeg', 'png', 'webp']);
 
 export function photoObjectKey(prefix: string, size: PhotoSize) {
@@ -22,7 +23,7 @@ export function photoObjectKey(prefix: string, size: PhotoSize) {
  * location and camera data.
  */
 export async function processPhoto(input: Buffer): Promise<Record<PhotoSize, Buffer>> {
-  if (input.length > PHOTO_MAX_BYTES) throw new AppError('FILE_TOO_LARGE', 'Photos can be at most 5 MB.', 413);
+  if (input.length > PHOTO_MAX_BYTES) throw new AppError('FILE_TOO_LARGE', 'Photos can be at most 4 MB.', 413);
   let meta: sharp.Metadata;
   try {
     meta = await sharp(input, { limitInputPixels: 40_000_000 }).metadata();
