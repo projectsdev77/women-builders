@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Button, Notice, Textarea } from '@/components/ui';
+import { Button, Notice, Textarea, buttonClass } from '@/components/ui';
 import { Dialog } from '@/components/ui/dialog';
 import { api } from '@/lib/client/api';
 import { ReportDialog } from './report-dialog';
@@ -57,7 +57,7 @@ export function MemberActions({
   }
 
   return (
-    <div className="flex w-full flex-col gap-2 sm:w-64">
+    <div className="flex w-full flex-col gap-2.5">
       {flash && <Notice tone="success">{flash}</Notice>}
       {error && !dialog && <Notice tone="error">{error}</Notice>}
 
@@ -67,36 +67,34 @@ export function MemberActions({
             (canRequest ? (
               <Button onClick={() => setDialog('connect')}>Connect</Button>
             ) : (
-              <Button disabled aria-describedby="connect-help">Connect</Button>
+              <Button variant="muted" disabled aria-describedby="connect-help">Connect</Button>
             ))}
-          {intro.preferIntroductions && !intro.metAt && <p className="text-sm text-gray-700">{first} prefers introductions.</p>}
-          {intro.metAt && <p className="text-xs text-gray-600">You met at {intro.metAt}.</p>}
+          {intro.preferIntroductions && !intro.metAt && <p className="text-[15px] font-semibold">{first} prefers introductions.</p>}
+          {intro.metAt && <p className="text-[13px] text-ink-muted">You met at {intro.metAt}.</p>}
           {intro.hasOpenRequest ? (
-            <Link href="/introductions?tab=mine" className="inline-flex min-h-[44px] items-center justify-center rounded-md border border-gray-300 bg-white px-4 text-sm">
-              Introduction requested
-            </Link>
+            <Link href="/introductions?tab=mine" className={buttonClass('muted', 'md', 'w-full')}>↝ Introduction requested</Link>
           ) : intro.introducers.length > 0 ? (
             <>
-              <Button variant={intro.preferIntroductions ? 'primary' : 'secondary'} disabled={!intro.canAsk} onClick={() => setDialog('intro')}>
+              <Button variant={intro.preferIntroductions ? 'primary' : 'secondary'} disabled={!intro.canAsk} onClick={() => setDialog('intro')} className="w-full">
                 Ask for an introduction
               </Button>
-              <p className="text-xs text-gray-600">
+              <p className="text-[13px] text-ink-muted">
                 {intro.introducers.length} of your connections {intro.introducers.length === 1 ? 'knows' : 'know'} {first}
               </p>
             </>
           ) : (
             <>
-              {intro.preferIntroductions && <p className="text-xs text-gray-600">No one in your network knows {first} yet.</p>}
+              {intro.preferIntroductions && <p className="text-[13px] text-ink-muted">No one in your network knows {first} yet.</p>}
               {intro.teamAvailable && intro.teamRemainingThisMonth > 0 && (
-                <Button variant={intro.preferIntroductions ? 'primary' : 'ghost'} disabled={!intro.canAsk} onClick={() => setDialog('team')}>
+                <Button variant="secondary" disabled={!intro.canAsk} onClick={() => setDialog('team')} className="w-full whitespace-normal text-center">
                   Ask the Women Builders team to introduce you
                 </Button>
               )}
             </>
           )}
           {!canRequest && (
-            <p id="connect-help" className="text-xs text-gray-600">
-              <Link href="/profile/edit" className="underline">Complete your profile</Link> to connect or ask for introductions.
+            <p id="connect-help" className="text-[13px] text-ink-muted">
+              <Link href="/profile/edit" className="font-bold underline">Complete your profile</Link> to connect or ask for introductions.
             </p>
           )}
         </>
@@ -104,50 +102,48 @@ export function MemberActions({
 
       {status === 'pending_sent' && (
         <>
-          <Button disabled variant="secondary">Request pending</Button>
+          <Button disabled variant="muted">◷ Request pending</Button>
           {requestId && (
-            <Button variant="ghost" disabled={busy} onClick={async () => { if (await call(`/api/connections/requests/${requestId}`, 'DELETE')) router.refresh(); }}>
+            <button type="button" disabled={busy} className="min-h-[44px] text-[14px] font-bold underline underline-offset-4" onClick={async () => { if (await call(`/api/connections/requests/${requestId}`, 'DELETE')) router.refresh(); }}>
               Withdraw request
-            </Button>
+            </button>
           )}
         </>
       )}
 
       {status === 'pending_received' && requestId && (
         <>
-          {requestMessage && <blockquote className="rounded-md bg-gray-50 p-3 text-sm italic text-gray-700">“{requestMessage}”</blockquote>}
+          {requestMessage && <blockquote className="rounded-2xl bg-white/70 p-3 font-display text-[17px] leading-snug">“{requestMessage}”</blockquote>}
           <Button disabled={busy} onClick={async () => { if (await call(`/api/connections/requests/${requestId}/accept`)) router.refresh(); }}>
             Accept
           </Button>
           <Button variant="secondary" disabled={busy} onClick={async () => { if (await call(`/api/connections/requests/${requestId}/decline`)) router.refresh(); }}>
             Decline
           </Button>
-          <p className="text-xs text-gray-500">{first} won&apos;t be notified if you decline.</p>
+          <p className="text-[13px] text-ink-muted">{first} won&apos;t be notified if you decline.</p>
         </>
       )}
 
       {status === 'connected' && (
         <>
-          <Link href={`/messages/${memberId}`} className="inline-flex min-h-[44px] items-center justify-center whitespace-nowrap rounded-full bg-forest px-5 text-[15px] font-bold text-cream shadow-press-sm hover:bg-[#2E5A40]">
-            Message
-          </Link>
-          <Button variant="ghost" onClick={() => setDialog('remove')}>Remove connection</Button>
+          <Link href={`/messages/${memberId}`} className={buttonClass('primary', 'md', 'w-full')}>Message</Link>
+          <button type="button" className="min-h-[44px] text-[14px] font-bold underline underline-offset-4" onClick={() => setDialog('remove')}>Remove connection</button>
         </>
       )}
 
-      <details className="text-sm">
-        <summary className="inline-flex min-h-[44px] cursor-pointer items-center text-gray-600">More options</summary>
-        <div className="mt-1 flex flex-col gap-1">
-          <Button variant="ghost" className="justify-start" onClick={() => setDialog('report')}>Report {first}</Button>
-          <Button variant="ghost" className="justify-start text-red-700" onClick={() => setDialog('block')}>Block {first}</Button>
+      <details className="group">
+        <summary className="flex min-h-[44px] cursor-pointer list-none items-center justify-center rounded-full text-[14px] font-bold hover:bg-white/60">More options ⋯</summary>
+        <div className="mt-1 flex flex-col gap-1 rounded-2xl bg-white p-2">
+          <button type="button" className="min-h-[44px] rounded-xl px-3 text-left text-[14px] font-semibold hover:bg-wash" onClick={() => setDialog('report')}>Report {first}</button>
+          <button type="button" className="min-h-[44px] rounded-xl px-3 text-left text-[14px] font-semibold text-danger hover:bg-danger-bg" onClick={() => setDialog('block')}>Block {first}</button>
         </div>
       </details>
 
       <Dialog open={dialog === 'connect'} onClose={() => setDialog(null)} title={`Connect with ${first}`}>
         {error && <Notice tone="error">{error}</Notice>}
-        <label htmlFor="note" className="block text-sm font-medium">Add a note (optional)</label>
+        <label htmlFor="note" className="block text-[15px] font-semibold">Add a note (optional)</label>
         <Textarea id="note" rows={4} maxLength={500} value={note} onChange={(e) => setNote(e.target.value)} placeholder={`Say why you'd like to connect with ${first}…`} />
-        <p className="text-right text-xs text-gray-500" aria-live="polite">{note.length}/500</p>
+        <p className="text-right font-mono text-[12px] text-ink-subtle" aria-live="polite">{note.length}/500</p>
         <div className="flex justify-end gap-2">
           <Button variant="secondary" onClick={() => setDialog(null)}>Cancel</Button>
           <Button disabled={busy} onClick={sendRequest}>Send request</Button>

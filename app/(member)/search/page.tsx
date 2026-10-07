@@ -1,15 +1,15 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { Search } from 'lucide-react';
 import { pageActiveMember } from '@/lib/auth/guards';
 import { searchMembers, searchQuerySchema } from '@/lib/services/discovery';
 import { MemberCard } from '@/components/member/member-card';
-import { Button, EmptyState, Input, Select } from '@/components/ui';
-import { OPTIONS, ROLE_LABELS } from '@/lib/services/profile-fields';
+import { Button, EmptyState, Input, PageHeader, Select, buttonClass } from '@/components/ui';
+import { FilterChip, ROLE_OPTIONS } from '@/components/ui/choice';
+import { OPTIONS } from '@/lib/services/profile-fields';
 import { countryOptions } from '@/lib/countries';
 
-export const metadata: Metadata = { title: 'Discover members' };
-
-const ROLES = ['FOUNDER', 'OPERATOR', 'INVESTOR', 'BUILDER'] as const;
+export const metadata: Metadata = { title: 'Discover' };
 
 export default async function SearchPage({ searchParams }: { searchParams: Record<string, string | string[]> }) {
   const user = await pageActiveMember();
@@ -27,104 +27,98 @@ export default async function SearchPage({ searchParams }: { searchParams: Recor
     return `/search?${sp.toString()}`;
   };
   const hasFilters = !!(query.q || query.primaryRole.length || query.expertise.length || query.country || query.city || query.openTo.length || query.investing || query.raising || query.secondaryRole.length);
+  const moreActive = !!(query.country || query.city || query.expertise.length || query.secondaryRole.length);
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
-      <aside>
-        <form method="get" action="/search" className="space-y-4 rounded-lg border border-gray-200 bg-white p-4" role="search">
-          <div>
-            <label htmlFor="q" className="block text-sm font-medium">Search</label>
-            <Input id="q" name="q" defaultValue={query.q} placeholder="Name, company, keyword…" />
+    <div className="space-y-6">
+      <PageHeader title="Discover" lede="Search the directory by what people do, where they are and what they are open to." />
+      <form method="get" action="/search" role="search" className="space-y-4">
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="relative min-w-[240px] flex-1">
+            <Search aria-hidden size={18} strokeWidth={1.75} className="absolute left-4 top-1/2 -translate-y-1/2 text-ink-subtle" />
+            <label htmlFor="q" className="sr-only">Search</label>
+            <Input id="q" name="q" defaultValue={query.q} placeholder="Name, company, keyword…" className="rounded-full pl-11" />
           </div>
-          <fieldset>
-            <legend className="text-sm font-medium">Primary role</legend>
-            {ROLES.map((r) => (
-              <label key={r} className="flex min-h-[36px] items-center gap-2 text-sm">
-                <input type="checkbox" name="primaryRole" value={r} defaultChecked={query.primaryRole.includes(r)} />
-                {ROLE_LABELS[r]}
-              </label>
+          <fieldset className="flex flex-wrap gap-2">
+            <legend className="sr-only">Primary role</legend>
+            {ROLE_OPTIONS.map(([r, label]) => (
+              <FilterChip key={r} name="primaryRole" value={r} role={r} defaultChecked={query.primaryRole.includes(r)}>{label}</FilterChip>
             ))}
           </fieldset>
-          <fieldset>
-            <legend className="text-sm font-medium">Also holds role</legend>
-            {ROLES.map((r) => (
-              <label key={r} className="flex min-h-[36px] items-center gap-2 text-sm">
-                <input type="checkbox" name="secondaryRole" value={r} defaultChecked={query.secondaryRole.includes(r)} />
-                {ROLE_LABELS[r]}
-              </label>
-            ))}
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <fieldset className="flex flex-wrap gap-2">
+            <legend className="sr-only">Open to</legend>
+            <span className="mr-1 self-center text-[14px] font-bold">Open to</span>
+            {OPTIONS.openTo.map((o) => <FilterChip key={o} name="openTo" value={o} defaultChecked={query.openTo.includes(o)}>{o}</FilterChip>)}
           </fieldset>
-          <div>
-            <label htmlFor="expertise" className="block text-sm font-medium">Expertise</label>
-            <Input id="expertise" name="expertise" defaultValue={query.expertise.join(', ')} placeholder="e.g. fintech" />
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="mr-1 text-[14px] font-bold">Capital</span>
+          <FilterChip name="investing" value="1" defaultChecked={!!query.investing}>$ Investors writing checks</FilterChip>
+          <FilterChip name="raising" value="1" defaultChecked={!!query.raising}>Founders raising</FilterChip>
+        </div>
+        <details open={moreActive} className="rounded-card bg-white p-4">
+          <summary className="flex min-h-[44px] cursor-pointer items-center text-[15px] font-bold">More filters</summary>
+          <div className="mt-3 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div>
+              <label htmlFor="country" className="mb-1.5 block text-[15px] font-semibold">Country</label>
+              <Select id="country" name="country" defaultValue={query.country}>
+                <option value="">Any country</option>
+                {countryOptions().map((c) => <option key={c.code} value={c.code}>{c.name}</option>)}
+              </Select>
+            </div>
+            <div>
+              <label htmlFor="city" className="mb-1.5 block text-[15px] font-semibold">City</label>
+              <Input id="city" name="city" defaultValue={query.city} placeholder="e.g. Lagos" />
+            </div>
+            <div>
+              <label htmlFor="expertise" className="mb-1.5 block text-[15px] font-semibold">Expertise</label>
+              <Input id="expertise" name="expertise" defaultValue={query.expertise.join(', ')} placeholder="e.g. fintech" />
+            </div>
+            <fieldset>
+              <legend className="mb-1.5 text-[15px] font-semibold">Also holds role</legend>
+              <div className="flex flex-wrap gap-2">
+                {ROLE_OPTIONS.map(([r, label]) => <FilterChip key={r} name="secondaryRole" value={r} defaultChecked={query.secondaryRole.includes(r)}>{label}</FilterChip>)}
+              </div>
+            </fieldset>
           </div>
-          <div>
-            <label htmlFor="country" className="block text-sm font-medium">Country</label>
-            <Select id="country" name="country" defaultValue={query.country}>
-              <option value="">Any country</option>
-              {countryOptions().map((c) => <option key={c.code} value={c.code}>{c.name}</option>)}
-            </Select>
-          </div>
-          <div>
-            <label htmlFor="city" className="block text-sm font-medium">City</label>
-            <Input id="city" name="city" defaultValue={query.city} placeholder="e.g. Lagos" />
-          </div>
-          <fieldset>
-            <legend className="text-sm font-medium">Open to</legend>
-            {OPTIONS.openTo.map((o) => (
-              <label key={o} className="flex min-h-[36px] items-center gap-2 text-sm">
-                <input type="checkbox" name="openTo" value={o} defaultChecked={query.openTo.includes(o)} />
-                {o}
-              </label>
-            ))}
-          </fieldset>
-          <fieldset>
-            <legend className="text-sm font-medium">Capital</legend>
-            <label className="flex min-h-[36px] items-center gap-2 text-sm">
-              <input type="checkbox" name="investing" value="1" defaultChecked={!!query.investing} />
-              Investors currently writing checks
-            </label>
-            <label className="flex min-h-[36px] items-center gap-2 text-sm">
-              <input type="checkbox" name="raising" value="1" defaultChecked={!!query.raising} />
-              Founders raising now or soon
-            </label>
-          </fieldset>
-          <div className="flex gap-2">
-            <Button type="submit" className="flex-1">Search</Button>
-            {hasFilters && (
-              <Link href="/search" className="inline-flex min-h-[44px] items-center px-3 text-sm text-gray-700 underline">Clear</Link>
-            )}
-          </div>
-        </form>
-      </aside>
-      <section aria-labelledby="results-heading" className="space-y-4">
-        <h1 id="results-heading" className="text-2xl font-semibold">
-          Discover members
-          <span className="ml-2 text-base font-normal text-gray-500">
+        </details>
+        <div className="flex flex-wrap items-center gap-3">
+          <Button type="submit">Search</Button>
+          {hasFilters && <Link href="/search" className="min-h-[44px] content-center text-[15px] font-bold underline underline-offset-4">Clear all filters</Link>}
+          <p className="ml-auto font-mono text-[12px] uppercase tracking-[.1em] text-ink-subtle">
             {pagination.total} {pagination.total === 1 ? 'result' : 'results'}
-          </span>
-        </h1>
-        {results.length === 0 ? (
-          <EmptyState title={hasFilters ? 'No members match your search' : 'No members yet'}>
-            {hasFilters ? 'Try fewer filters or a different keyword.' : 'Check back soon as the community grows.'}
-          </EmptyState>
-        ) : (
-          <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-            {results.map((r) => (
-              <li key={r.member.id}>
-                <MemberCard member={r.member}>{r.reasons[0]?.description}</MemberCard>
-              </li>
-            ))}
-          </ul>
-        )}
-        {pagination.totalPages > 1 && (
-          <nav aria-label="Pagination" className="flex items-center justify-between">
-            {pagination.page > 1 ? <Link className="underline" href={pageHref(pagination.page - 1)}>← Previous</Link> : <span />}
-            <span className="text-sm text-gray-600">Page {pagination.page} of {pagination.totalPages}</span>
-            {pagination.page < pagination.totalPages ? <Link className="underline" href={pageHref(pagination.page + 1)}>Next →</Link> : <span />}
-          </nav>
-        )}
-      </section>
+          </p>
+        </div>
+      </form>
+
+      {results.length === 0 ? (
+        <EmptyState title={hasFilters ? 'No members match your search' : 'No members yet'}>
+          {hasFilters ? (
+            <>Try fewer filters or a different keyword. <Link href="/search" className={buttonClass('secondary', 'sm', 'mt-3')}>Clear all filters</Link></>
+          ) : 'Check back soon as the community grows.'}
+        </EmptyState>
+      ) : (
+        <ul className="grid gap-4 [grid-template-columns:repeat(auto-fill,minmax(min(100%,280px),1fr))]">
+          {results.map((r) => (
+            <li key={r.member.id}>
+              <MemberCard
+                member={r.member}
+                reasons={r.reasons}
+                footer={<Link href={`/members/${r.member.id}`} className={buttonClass('primary', 'md', 'flex-1')}>View profile</Link>}
+              />
+            </li>
+          ))}
+        </ul>
+      )}
+      {pagination.totalPages > 1 && (
+        <nav aria-label="Pagination" className="flex items-center justify-between">
+          {pagination.page > 1 ? <Link className={buttonClass('secondary')} href={pageHref(pagination.page - 1)}>← Previous</Link> : <span />}
+          <span className="font-mono text-[12px] text-ink-subtle">Page {pagination.page} of {pagination.totalPages}</span>
+          {pagination.page < pagination.totalPages ? <Link className={buttonClass('secondary')} href={pageHref(pagination.page + 1)}>Next →</Link> : <span />}
+        </nav>
+      )}
     </div>
   );
 }

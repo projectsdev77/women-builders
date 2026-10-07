@@ -12,6 +12,7 @@ import { introductionOptions } from '@/lib/services/introductions';
 import { memberWins } from '@/lib/services/wins';
 import { WinCard } from '@/components/wins/win-card';
 import Link from 'next/link';
+import { BackLink } from '@/components/ui/back-link';
 
 export const metadata: Metadata = { title: 'Member' };
 
@@ -30,6 +31,7 @@ export default async function MemberPage({ params }: { params: { id: string } })
   ]);
   return (
     <div className="space-y-6">
+    <BackLink />
     <MemberProfile
       member={member}
       actions={
@@ -47,12 +49,12 @@ export default async function MemberPage({ params }: { params: { id: string } })
       {(wins.length > 0 || member.connectionStatus === 'connected') && (
         <section aria-labelledby="wins" className="space-y-3">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <h2 id="wins" className="text-lg font-semibold">Wins</h2>
+            <h2 id="wins" className="font-display text-[28px]">Wins</h2>
             {member.connectionStatus === 'connected' && (
-              <Link href={`/wins/new?with=${member.id}`} className="text-sm font-medium text-brand-700 underline">Share a win with {member.name.split(' ')[0]}</Link>
+              <Link href={`/wins/new?with=${member.id}`} className="text-[15px] font-bold underline underline-offset-4">Share a win with {member.name.split(' ')[0]}</Link>
             )}
           </div>
-          {wins.length === 0 ? <p className="text-sm text-gray-600">No shared wins yet.</p> : (
+          {wins.length === 0 ? <p className="text-[15px] text-ink-subtle">No shared wins yet.</p> : (
             <ul className="grid gap-3 md:grid-cols-2">{wins.map((w) => <li key={w.id}><WinCard win={w} /></li>)}</ul>
           )}
         </section>

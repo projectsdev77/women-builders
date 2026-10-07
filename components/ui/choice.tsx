@@ -1,4 +1,3 @@
-'use client';
 
 import type { ReactNode } from 'react';
 import type { RoleType } from '@prisma/client';
@@ -77,6 +76,40 @@ export function CheckRow({
         {checked ? '✓' : ''}
       </span>
       <span>{children}</span>
+    </label>
+  );
+}
+
+/**
+ * A filter chip for GET forms (a native checkbox underneath, so no JavaScript is needed).
+ * Role chips use their role colour when on; "soft" chips go forest.
+ */
+export function FilterChip({
+  name,
+  value,
+  defaultChecked,
+  children,
+  role,
+}: {
+  name: string;
+  value: string;
+  defaultChecked?: boolean;
+  children: ReactNode;
+  role?: RoleType;
+}) {
+  const on = role ? ROLE_COLOR[role].peerCheckedClass : 'peer-checked:bg-forest peer-checked:text-cream';
+  return (
+    <label className="cursor-pointer">
+      <input type="checkbox" name={name} value={value} defaultChecked={defaultChecked} className="peer sr-only" />
+      <span
+        className={cx(
+          'inline-flex min-h-[40px] items-center gap-1 whitespace-nowrap rounded-full border-[1.5px] border-line bg-white px-4 text-[14px] font-bold transition-colors hover:bg-wash peer-checked:border-forest peer-focus-visible:shadow-focus-field',
+          on,
+          'peer-checked:before:content-["✓_"]',
+        )}
+      >
+        {children}
+      </span>
     </label>
   );
 }

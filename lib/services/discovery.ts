@@ -311,3 +311,8 @@ export async function dismissRecommendation(viewerId: string, memberId: string) 
     update: { dismissedAt: now, showAgainAfter },
   });
 }
+
+/** Undo a "Not now" (the toast's Undo button). */
+export async function undoDismissRecommendation(viewerId: string, memberId: string) {
+  await prisma.dismissedRecommendation.deleteMany({ where: { userId: viewerId, dismissedUserId: memberId } });
+}

@@ -1,11 +1,12 @@
 import { pageActiveMember } from '@/lib/auth/guards';
 import { MemberNav } from '@/components/member/nav';
 import { photoUrl } from '@/lib/services/photo-url';
+import { ToastProvider } from '@/components/ui/toast';
 
 export default async function MemberLayout({ children }: { children: React.ReactNode }) {
   const user = await pageActiveMember();
   return (
-    <>
+    <ToastProvider>
       <MemberNav
         name={user.name}
         isAdmin={user.isAdmin}
@@ -18,6 +19,6 @@ export default async function MemberLayout({ children }: { children: React.React
           {children}
         </main>
       </div>
-    </>
+    </ToastProvider>
   );
 }

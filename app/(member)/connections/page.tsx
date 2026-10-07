@@ -4,7 +4,7 @@ import { pageActiveMember } from '@/lib/auth/guards';
 import { listConnections } from '@/lib/services/connections';
 import { prisma } from '@/lib/db';
 import { MemberCard } from '@/components/member/member-card';
-import { Button, EmptyState, Input } from '@/components/ui';
+import { Button, CountBadge, EmptyState, Input, PageHeader, buttonClass } from '@/components/ui';
 
 export const metadata: Metadata = { title: 'Connections' };
 
@@ -16,19 +16,15 @@ export default async function ConnectionsPage({ searchParams }: { searchParams: 
     prisma.connectionRequest.count({ where: { receiverId: user.id, status: 'PENDING', expiresAt: { gt: new Date() } } }),
   ]);
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1>Connections</h1>
-          <p className="text-gray-600">{connections.length} {q ? 'matching' : 'total'}</p>
-        </div>
-        <Link href="/connections/requests" className="inline-flex min-h-[44px] items-center rounded-md border border-gray-300 bg-white px-4 text-sm font-medium">
-          Requests{incoming > 0 && <span className="ml-2 rounded-full bg-brand-600 px-2 text-xs text-white">{incoming}</span>}
+    <div className="space-y-7">
+      <PageHeader title="Connections" lede={`${connections.length} ${q ? 'matching' : 'total'}`}>
+        <Link href="/connections/requests" className={buttonClass('secondary')}>
+          Requests <CountBadge count={incoming} label="waiting" />
         </Link>
-      </div>
-      <form method="get" className="flex max-w-md gap-2" role="search">
+      </PageHeader>
+      <form method="get" className="flex max-w-lg gap-2" role="search">
         <label htmlFor="q" className="sr-only">Search connections</label>
-        <Input id="q" name="q" defaultValue={q} placeholder="Search by name or keyword" />
+        <Input id="q" name="q" defaultValue={q} placeholder="Search by name or keyword" className="rounded-full" />
         <Button type="submit" variant="secondary">Search</Button>
       </form>
       {connections.length === 0 ? (
@@ -36,19 +32,19 @@ export default async function ConnectionsPage({ searchParams }: { searchParams: 
           {q ? 'Try another name or keyword.' : <>Find people in <Link className="underline" href="/recommendations">your recommendations</Link> or <Link className="underline" href="/search">Discover</Link>.</>}
         </EmptyState>
       ) : (
-        <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <ul className="grid gap-4 [grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr))]">
           {connections.map((c) => (
             <li key={c.member.id}>
               <MemberCard
                 member={c.member}
                 footer={
                   <>
-                    <Link href={`/messages/${c.member.id}`} className="inline-flex min-h-[44px] items-center justify-center whitespace-nowrap rounded-full bg-forest px-5 text-[15px] font-bold text-cream shadow-press-sm hover:bg-[#2E5A40] flex-1">Message</Link>
-                    <Link href={`/members/${c.member.id}`} className="inline-flex min-h-[44px] items-center justify-center rounded-md border border-gray-300 px-3 text-sm">Profile</Link>
+                    <Link href={`/messages/${c.member.id}`} className={buttonClass('primary', 'md', 'flex-1')}>Message</Link>
+                    <Link href={`/members/${c.member.id}`} className={buttonClass('secondary')}>Profile</Link>
                   </>
                 }
               >
-                <span className="text-xs text-gray-500">Connected {new Date(c.connectedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                <span className="text-[13px] text-ink-subtle">Connected {new Date(c.connectedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
               </MemberCard>
             </li>
           ))}
