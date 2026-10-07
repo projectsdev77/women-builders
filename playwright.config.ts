@@ -13,17 +13,19 @@ loadEnv({ path: '.env' });
 const baseURL = process.env.E2E_BASE_URL ?? 'http://localhost:3000';
 const chromium = process.env.PLAYWRIGHT_CHROMIUM_PATH ?? (existsSync('/opt/pw-browsers/chromium') ? '/opt/pw-browsers/chromium' : undefined);
 const launchOptions = chromium ? { executablePath: chromium } : {};
+// A deployed site is slower and less steady than localhost: allow more time and one retry.
+const remote = !/^https?:\/\/(localhost|127\.0\.0\.1)/.test(baseURL);
 
 export default defineConfig({
   testDir: './e2e',
-  timeout: 60_000,
-  expect: { timeout: 10_000 },
+  timeout: remote ? 120_000 : 60_000,
+  expect: { timeout: remote ? 20_000 : 10_000 },
   fullyParallel: false,
   workers: 1,
-  retries: process.env.CI ? 1 : 0,
+  retries: process.env.CI || remote ? 1 : 0,
   reporter: [['list'], ['html', { open: 'never', outputFolder: 'e2e-report' }]],
   outputDir: 'e2e-results',
-  use: { baseURL, trace: 'retain-on-failure', screenshot: 'only-on-failure', launchOptions },
+  use: { baseURL, navigationTimeout: remote ? 60_000 : 30_000, actionTimeout: remote ? 30_000 : 0, trace: 'retain-on-failure', screenshot: 'only-on-failure', launchOptions },
   projects: [
     { name: 'desktop', use: { ...devices['Desktop Chrome'], viewport: { width: 1280, height: 900 }, launchOptions } },
     { name: 'mobile', use: { ...devices['Pixel 7'], launchOptions } },

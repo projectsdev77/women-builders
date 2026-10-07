@@ -31,7 +31,7 @@ The work is on branch `claude/spec-review-gaps-9fg743` of `projectsdev77/women-b
 
 **Then Vercel**
 1. Vercel dashboard → **Add New… → Project** → import the GitHub repo. Framework: Next.js (auto-detected). Leave the build command alone: the repo's `vercel-build` script generates the Prisma client, **applies database migrations using `DIRECT_URL`**, then builds.
-2. **Settings → Functions → Function Region**: pick the region closest to your Supabase project.
+2. **Settings → Functions → Function Region**: pick the region closest to your Supabase project (for `eu-west-1` choose **Dublin, `dub1`**). **Do this before testing**: with the functions in the US and the database in Ireland, every page is several times slower.
 
 ## 3. Photo storage (Vercel Blob)
 
