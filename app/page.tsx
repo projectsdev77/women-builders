@@ -59,7 +59,7 @@ export default async function HomePage({ searchParams }: { searchParams: { delet
             {APP_NAME} connects women founders, operators, investors and builders through warm introductions, small gatherings and matches based on what you need and what you can offer.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
-            <Link href="#request" className="inline-flex min-h-[44px] items-center rounded-md bg-brand-600 px-5 font-medium text-white">Request an invitation</Link>
+            <Link href="#request" className="inline-flex min-h-[44px] items-center justify-center whitespace-nowrap rounded-full bg-forest px-5 text-[15px] font-bold text-cream shadow-press-sm hover:bg-[#2E5A40]">Request an invitation</Link>
             <Link href="/login" className="inline-flex min-h-[44px] items-center rounded-md border border-gray-300 bg-white px-5 font-medium">Log in</Link>
           </div>
         </section>

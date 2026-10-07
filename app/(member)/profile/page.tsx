@@ -22,7 +22,7 @@ export default async function MyProfilePage() {
       <MemberProfile
         member={me}
         actions={
-          <Link href="/profile/edit" className="inline-flex min-h-[44px] items-center rounded-md bg-brand-600 px-4 text-sm font-medium text-white">
+          <Link href="/profile/edit" className="inline-flex min-h-[44px] items-center justify-center whitespace-nowrap rounded-full bg-forest px-5 text-[15px] font-bold text-cream shadow-press-sm hover:bg-[#2E5A40]">
             Edit profile
           </Link>
         }

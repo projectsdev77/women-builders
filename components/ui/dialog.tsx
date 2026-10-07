@@ -26,12 +26,12 @@ export function Dialog({
       ref={ref}
       onClose={onClose}
       aria-labelledby="dialog-title"
-      className="w-[calc(100%-2rem)] max-w-lg rounded-lg p-0 shadow-xl backdrop:bg-black/40"
+      className="w-[calc(100%-2rem)] max-w-[560px] rounded-[28px] bg-cream p-0 text-forest shadow-dialog backdrop:bg-forest-deep/45"
     >
       <div className="space-y-4 p-6">
         <div className="flex items-start justify-between gap-4">
-          <h2 id="dialog-title" className="text-lg font-semibold">{title}</h2>
-          <button type="button" onClick={onClose} aria-label="Close" className="min-h-[44px] min-w-[44px] rounded-md text-xl text-gray-500 hover:bg-gray-100">
+          <h2 id="dialog-title" className="text-[28px] leading-tight">{title}</h2>
+          <button type="button" onClick={onClose} aria-label="Close" className="min-h-[44px] min-w-[44px] rounded-full text-2xl text-ink-subtle hover:bg-wash">
             ×
           </button>
         </div>

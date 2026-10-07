@@ -20,7 +20,7 @@ export default async function JoinPage({ searchParams }: { searchParams: { invit
       <Card className="space-y-4 p-6">
         <h1 className="text-2xl font-semibold">Women Builders is invitation-only</h1>
         <p className="text-gray-700">To join, ask for an invitation. Our team reads every request, and you&apos;ll hear back within three weeks.</p>
-        <Link href="/request-invite" className="inline-flex min-h-[44px] items-center rounded-md bg-brand-600 px-4 text-sm font-medium text-white">
+        <Link href="/request-invite" className="inline-flex min-h-[44px] items-center justify-center whitespace-nowrap rounded-full bg-forest px-5 text-[15px] font-bold text-cream shadow-press-sm hover:bg-[#2E5A40]">
           Request an invitation
         </Link>
       </Card>
@@ -33,7 +33,7 @@ export default async function JoinPage({ searchParams }: { searchParams: { invit
         <p className="text-gray-700">
           Invitation links work once and expire after 14 days. If you still want to join, ask for a new one and we&apos;ll match it to your earlier request.
         </p>
-        <Link href="/request-invite" className="inline-flex min-h-[44px] items-center rounded-md bg-brand-600 px-4 text-sm font-medium text-white">
+        <Link href="/request-invite" className="inline-flex min-h-[44px] items-center justify-center whitespace-nowrap rounded-full bg-forest px-5 text-[15px] font-bold text-cream shadow-press-sm hover:bg-[#2E5A40]">
           Request a new invitation
         </Link>
       </Card>

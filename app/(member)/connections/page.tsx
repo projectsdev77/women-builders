@@ -43,7 +43,7 @@ export default async function ConnectionsPage({ searchParams }: { searchParams: 
                 member={c.member}
                 footer={
                   <>
-                    <Link href={`/messages/${c.member.id}`} className="inline-flex min-h-[44px] flex-1 items-center justify-center rounded-md bg-brand-600 px-3 text-sm font-medium text-white">Message</Link>
+                    <Link href={`/messages/${c.member.id}`} className="inline-flex min-h-[44px] items-center justify-center whitespace-nowrap rounded-full bg-forest px-5 text-[15px] font-bold text-cream shadow-press-sm hover:bg-[#2E5A40] flex-1">Message</Link>
                     <Link href={`/members/${c.member.id}`} className="inline-flex min-h-[44px] items-center justify-center rounded-md border border-gray-300 px-3 text-sm">Profile</Link>
                   </>
                 }

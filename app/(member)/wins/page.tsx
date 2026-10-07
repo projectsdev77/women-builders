@@ -21,7 +21,7 @@ export default async function WinsPage() {
           <h1 className="text-2xl font-semibold">Wins</h1>
           <p className="text-sm text-gray-600">What came of the network: investments, hires, advisors, customers. You choose who sees each one.</p>
         </div>
-        <Link href="/wins/new" className="inline-flex min-h-[44px] items-center rounded-md bg-brand-600 px-4 text-sm font-medium text-white">Share a win</Link>
+        <Link href="/wins/new" className="inline-flex min-h-[44px] items-center justify-center whitespace-nowrap rounded-full bg-forest px-5 text-[15px] font-bold text-cream shadow-press-sm hover:bg-[#2E5A40]">Share a win</Link>
       </div>
 
       {toConfirm.length > 0 && (

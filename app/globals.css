@@ -2,15 +2,45 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Placeholder styling. Final visual design comes from the designer handoff. */
 :root {
   color-scheme: light;
 }
 
 body {
-  @apply bg-gray-50 text-gray-900 antialiased;
+  @apply bg-cream font-sans text-forest antialiased;
+}
+
+/* Young Serif has one weight: stop browsers faking a bold. */
+h1, h2, h3 {
+  font-family: theme('fontFamily.display');
+  font-weight: 400;
 }
 
 :focus-visible {
-  @apply outline outline-2 outline-offset-2 outline-brand-600;
+  outline: none;
+  box-shadow: theme('boxShadow.focus');
+  border-radius: 12px;
+}
+
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  border-color: theme('colors.forest.DEFAULT');
+  box-shadow: theme('boxShadow.focus-field');
+  border-radius: 14px;
+}
+
+::placeholder {
+  color: #7d8f82;
+}
+
+dialog::backdrop {
+  background: rgba(14, 36, 24, 0.45);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-spin-slow,
+  .animate-marquee {
+    animation: none !important;
+  }
 }

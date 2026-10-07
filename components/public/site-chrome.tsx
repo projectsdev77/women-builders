@@ -9,7 +9,7 @@ export function PublicHeader() {
         <nav aria-label="Site" className="flex items-center gap-2 text-sm">
           <Link href="/charter" className="hidden min-h-[44px] items-center px-2 text-gray-700 sm:inline-flex">Charter</Link>
           <Link href="/login" className="inline-flex min-h-[44px] items-center px-2 text-gray-700">Log in</Link>
-          <Link href="/request-invite" className="inline-flex min-h-[44px] items-center rounded-md bg-brand-600 px-3 font-medium text-white">Request an invitation</Link>
+          <Link href="/request-invite" className="inline-flex min-h-[44px] items-center justify-center whitespace-nowrap rounded-full bg-forest px-5 text-[15px] font-bold text-cream shadow-press-sm hover:bg-[#2E5A40]">Request an invitation</Link>
         </nav>
       </div>
     </header>

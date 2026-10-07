@@ -37,7 +37,7 @@ export default async function RecommendationsPage() {
                   member={r.member}
                   footer={
                     <>
-                      <Link href={`/members/${r.member.id}`} className="inline-flex min-h-[44px] flex-1 items-center justify-center rounded-md bg-brand-600 px-3 text-sm font-medium text-white">
+                      <Link href={`/members/${r.member.id}`} className="inline-flex min-h-[44px] items-center justify-center whitespace-nowrap rounded-full bg-forest px-5 text-[15px] font-bold text-cream shadow-press-sm hover:bg-[#2E5A40] flex-1">
                         View profile
                       </Link>
                       <DismissButton memberId={r.member.id} name={r.member.name} />
