@@ -4,12 +4,14 @@ Everything the code needs is already in the repo. This page lists **only what yo
 
 ## 0. Decisions before you start
 
-| Decision | Recommendation |
-|---|---|
-| **Vercel plan** | **Pro.** `vercel.json` has a cron that runs every minute (it sends queued emails). Vercel's free Hobby plan only allows daily crons, and a deploy with a faster cron is rejected. |
-| **Database** | Neon Postgres, added from the Vercel Marketplace (step 2). Any Postgres 15+ works. |
-| **First URL** | Use the free `https://<project>.vercel.app` address while testing. Add your own domain later (step 9). |
-| **Email while testing** | Leave `RESEND_API_KEY` **empty** at first. Emails are then written to the database outbox and the logs instead of being sent, so the automated tests can run against the site without emailing anyone. Switch real email on in step 8. |
+| Decision | For testing now | For the client's real launch |
+|---|---|---|
+| **Vercel plan** | **Free (Hobby) works.** Hobby only allows crons that run **once a day**, and a deploy with a faster cron is rejected, so `vercel.json` in the repo is already set to daily schedules. Hobby is for non-commercial use, which is fine for testing. | **Pro.** Copy `docs/vercel.pro.json` over `vercel.json` to get the real schedules (outbox every minute, gathering reminders hourly). |
+| **Database** | **Supabase** (free project), as in the original spec. Any Postgres 15+ works. | A paid Supabase project (free ones pause after about a week of inactivity). |
+| **Photos** | Vercel Blob (free allowance is plenty). | Same. |
+| **Email while testing** | Leave `RESEND_API_KEY` **empty** at first. Emails are then written to the database outbox and the logs instead of being sent, so the automated tests can run against the site without emailing anyone. Switch real email on in step 8. | Resend with a verified domain. |
+
+**Because of the daily cron limit, queued emails would only go out once a day on the free plan.** Fix that for free with step 7a (a free external timer that calls the outbox every minute).
 
 ## 1. Put the code where Vercel can see it
 
@@ -20,10 +22,16 @@ The work is on branch `claude/spec-review-gaps-9fg743` of `projectsdev77/women-b
 
 ## 2. Create the project and the database
 
-1. Vercel dashboard → **Add New… → Project** → import the GitHub repo. Framework: Next.js (auto-detected). Leave the build command alone: the repo's `vercel-build` script generates the Prisma client, **applies database migrations**, then builds.
-2. Before the first deploy, open the project → **Storage → Create Database → Neon (Postgres)** → connect it to the project. Vercel adds `DATABASE_URL` (pooled) and `DATABASE_URL_UNPOOLED` for you. The build uses the unpooled one for migrations.
-3. Edit the `DATABASE_URL` value in **Settings → Environment Variables** and add `&pgbouncer=true&connect_timeout=15` to the end of it (Neon's pooled connection needs this for Prisma).
-4. **Settings → Functions → Function Region**: pick the region closest to your Neon database (for example both in `iad1`).
+**Supabase first**
+1. supabase.com → **New project** (pick a region near your Vercel functions, set a database password; avoid `@ : / ? #` in it, or URL-encode them).
+2. Project → **Connect** (top bar) → copy two connection strings, replacing `[YOUR-PASSWORD]`:
+   - **Transaction pooler** (port **6543**, host `aws-…pooler.supabase.com`) → this is `DATABASE_URL`. Add `?pgbouncer=true&connect_timeout=15` to the end.
+   - **Session pooler** (port **5432**, same `pooler.supabase.com` host) → this is `DIRECT_URL`. The app uses it to run migrations during the build, and you use it for the seed and the test run. (Do not use the `db.<ref>.supabase.co` direct host: it is IPv6 only and Vercel's build cannot reach it.)
+3. **Project Settings → Data API → turn it off.** The app talks to Postgres directly, so nothing needs Supabase's public REST API, and tables created by the app would otherwise be reachable through it.
+
+**Then Vercel**
+1. Vercel dashboard → **Add New… → Project** → import the GitHub repo. Framework: Next.js (auto-detected). Leave the build command alone: the repo's `vercel-build` script generates the Prisma client, **applies database migrations using `DIRECT_URL`**, then builds.
+2. **Settings → Functions → Function Region**: pick the region closest to your Supabase project.
 
 ## 3. Photo storage (Vercel Blob)
 
@@ -37,6 +45,8 @@ Photos are limited to **4 MB** because Vercel rejects request bodies over 4.5 MB
 
 | Name | Value |
 |---|---|
+| `DATABASE_URL` | The Supabase **transaction pooler** string from step 2 |
+| `DIRECT_URL` | The Supabase **session pooler** string from step 2 |
 | `APP_URL` | The exact public origin with no trailing slash, e.g. `https://women-builders.vercel.app`. Used in email links **and for the origin check that blocks cross-site requests**. If it is wrong, every form fails. |
 | `APP_SECRET` | A random string: `openssl rand -base64 32` |
 | `CRON_SECRET` | Another random string. Vercel sends it automatically as `Authorization: Bearer …` on each cron call. |
@@ -52,10 +62,10 @@ Click **Deploy** (or push). In the build log you should see `prisma migrate depl
 
 ## 6. Create the admin (and demo members for testing)
 
-Run once from your laptop with the repo checked out and `npm install` done. Use the **unpooled** connection string from the Neon integration:
+Run once from your laptop with the repo checked out and `npm install` done. Use the **session pooler** string (`DIRECT_URL`):
 
 ```bash
-DATABASE_URL="<DATABASE_URL_UNPOOLED value>" \
+DATABASE_URL="<your DIRECT_URL value>" \
 ADMIN_EMAIL="you@yourdomain.com" \
 ADMIN_INITIAL_PASSWORD="<a strong password>" \
 SEED_DEMO=1 \
@@ -63,17 +73,17 @@ npx tsx prisma/seed.ts
 ```
 
 - `SEED_DEMO=1` also creates demo members (`adaeze@demo.womenbuilders.test`, password `DemoPass123`) that the automated tests and your manual testing use.
-- **Before real members arrive, use a fresh empty database** (a new Neon branch or database, run the seed again with `SEED_DEMO=0`) so no demo accounts with a known password exist.
+- **Before real members arrive, use a fresh empty database** (a new Supabase project, run the seed again with `SEED_DEMO=0`) so no demo accounts with a known password exist.
 
 ## 7. Check the deploy, then run the automated tests against it
 
 1. **Settings → Cron Jobs** should list 6 jobs. Click **Run** on `/api/cron/outbox`; it should return success.
-2. From your laptop:
+2. From your laptop (step 7a below makes emails flow while you test):
 
 ```bash
 npm install
 E2E_BASE_URL="https://<your-project>.vercel.app" \
-DATABASE_URL="<DATABASE_URL_UNPOOLED value>" \
+DATABASE_URL="<your DIRECT_URL value>" \
 CRON_SECRET="<same as in Vercel>" \
 E2E_ADMIN_EMAIL="you@yourdomain.com" \
 E2E_ADMIN_PASSWORD="<the admin password from step 6>" \
@@ -81,6 +91,17 @@ npm run e2e
 ```
 
 The suite runs on desktop and phone sizes (about 3 minutes). `DATABASE_URL` is used only to read invitation emails from the outbox so the test can follow the invite link. A report is written to `e2e-report/` (`npx playwright show-report e2e-report`).
+
+### 7a. Free outbox timer (only needed on the free plan)
+
+Vercel's free plan runs the outbox job once a day. Use a free external scheduler to call it every minute instead:
+
+1. Create a free account at **cron-job.org** → **Create cronjob**.
+2. URL: `https://<your-project>.vercel.app/api/cron/outbox` · Schedule: every 1 minute.
+3. **Advanced → Headers**: add `Authorization` = `Bearer <your CRON_SECRET>`.
+4. Optionally add a second job for `/api/cron/hourly` every hour.
+
+When the client moves to Pro, delete these jobs and use `docs/vercel.pro.json`.
 
 ## 8. Turn on real email (Resend)
 
@@ -99,5 +120,6 @@ Vercel → **Settings → Domains → Add** → create the DNS record it asks fo
 
 - Replace the placeholder text in `app/privacy/page.tsx`, `app/terms/page.tsx` and `content/charter.ts` with your approved legal and charter text. Bump `CHARTER_VERSION` if the charter's meaning changes (members re-accept it).
 - Use a fresh database (step 6 note), a strong admin password, and delete any test accounts.
-- Neon: confirm point-in-time restore is available on your plan.
+- Supabase: confirm backups / point-in-time restore on the client's plan, and that the project is on a paid tier so it does not pause.
+- Vercel: move to Pro and use `docs/vercel.pro.json` (see step 0); remove the cron-job.org timers.
 - Vercel: **Settings → Deployment Protection**: keep production public; protect previews if you use them.

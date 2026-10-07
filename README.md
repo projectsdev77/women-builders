@@ -60,7 +60,8 @@ Seed users accept the current community charter. Members whose charter version i
 
 | Name | Purpose |
 |---|---|
-| `DATABASE_URL` | Postgres connection string |
+| `DATABASE_URL` | Postgres connection string (on Supabase: the transaction pooler, with `?pgbouncer=true`) |
+| `DIRECT_URL` | Optional. Non-pooled/session connection used only to run migrations in `vercel-build` (falls back to `DATABASE_URL`) |
 | `APP_URL` | Public origin (e.g. `https://womenbuilders.com`). Used in email links and for the exact-origin CSRF check on API mutations |
 | `APP_TIMEZONE` | Timezone for "today" in admin follow-up queues (default `America/New_York`) |
 | `APP_SECRET` | Signs one-click unsubscribe links |
@@ -80,11 +81,13 @@ Seed users accept the current community charter. Members whose charter version i
 | `/api/cron/hourly` | hourly | Gathering reminders (2 days before, and from 7:00 local time on the day) |
 | `/api/cron/requests-digest` | Mondays 09:00 | Email admins when invitation requests are past the 21-day promise |
 
+`vercel.json` ships with once-a-day schedules so it deploys on Vercel's free Hobby plan. `docs/vercel.pro.json` has the schedules in the table above (needs Pro). On the free plan, call `/api/cron/outbox` every minute from a free external scheduler (see `docs/deploy-vercel.md`, step 7a).
+
 Every cron request must include `Authorization: Bearer $CRON_SECRET`. Per-minute crons need a Vercel Pro plan. On other hosts, call the routes from any scheduler.
 
 ## Deploying and testing
 
-- `docs/deploy-vercel.md`: the manual set-up (Vercel, Neon, Blob, Resend, domain) in order.
+- `docs/deploy-vercel.md`: the manual set-up (Vercel, Supabase, Blob, Resend, domain) in order.
 - `npm run e2e`: Playwright end-to-end suite (desktop and phone sizes). Start the app first (`npm run build && npm run start`) or set `E2E_BASE_URL` to a deployed site. Reads invitation emails from the outbox through `DATABASE_URL`.
 - `docs/manual-testing.md`: the few checks that need a person (real inbox, real phone, design review, accessibility, legal text).
 

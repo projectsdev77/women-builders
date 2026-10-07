@@ -55,7 +55,7 @@ Open each screen next to the designer's screenshots (`designer-guide/…/screens
 | # | Do | Expect |
 |---|---|---|
 | E1 | Vercel → **Settings → Cron Jobs** after a day. | Each job shows recent successful runs. |
-| E2 | Send a message and check how long the email takes to arrive. | Within about 2 minutes (the outbox runs every minute). |
+| E2 | Send a message and check how long the email takes to arrive. | Within about 2 minutes (needs the every-minute outbox timer: cron-job.org on the free plan, Vercel Cron on Pro). |
 | E3 | Vercel → **Logs**, filter by errors, after you have clicked around. | No red errors from normal use. |
 | E4 | Leave a logged-in tab open for a while, then use it. | You stay signed in during normal use; after a long idle you are sent to login without errors. |
 | E5 | Open the site from another country or network (a friend, or mobile data). | Loads fast, photos appear. |
