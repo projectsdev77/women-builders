@@ -40,7 +40,7 @@ export function AuthShell({
         </div>
         <span aria-hidden className="hidden lg:block" />
       </aside>
-      <main id="main" className="flex justify-center px-[clamp(20px,4vw,48px)] py-[clamp(32px,6vw,72px)]">
+      <main id="main" className="flex justify-center lg:items-center px-[clamp(20px,4vw,48px)] py-[clamp(32px,6vw,72px)]">
         <div className="w-full max-w-[520px] space-y-6">{children}</div>
       </main>
     </div>
