@@ -48,7 +48,9 @@ const STEPS = [
   ['Join with your invitation', 'Your link opens a short Join page.', '#C9D9A8'],
 ] as const;
 
-const NUMBER_COLORS = ['#F4B8C8', '#D9CCF5', '#F2D774', '#C9D9A8', '#F4B8C8'];
+// Four role colours, then forest with cream figures for a fifth number (the designer drew up to four).
+const NUMBER_COLORS = ['#F4B8C8', '#D9CCF5', '#F2D774', '#C9D9A8', '#1F3D2B'];
+const NUMBER_TEXT = ['#1F3D2B', '#1F3D2B', '#1F3D2B', '#1F3D2B', '#FBF4EC'];
 const TILTS = ['-6deg', '4deg', '-3deg', '5deg', '-4deg'];
 const MARQUEE = [['Warm introductions', '#F4B8C8'], ['Small dinners', '#D9CCF5'], ['Needs, matched to offers', '#F2D774'], ['Private by default', '#C9D9A8']] as const;
 
@@ -221,11 +223,12 @@ export default async function HomePage({ searchParams }: { searchParams: { delet
                 <span>{numbers[0]!.label.toLowerCase()}.</span>
               </p>
             ) : (
-              <dl className="grid gap-4 [grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr))]">
+              // Centred and wrapping, so any count (2–5) balances: one row on desktop, two per row on phones.
+              <dl className="flex flex-wrap justify-center gap-x-[clamp(20px,3.5vw,48px)] gap-y-10">
                 {numbers.map((n, i) => (
-                  <div key={n.key} className="flex flex-col items-center gap-3.5 text-center">
-                    <dd className="order-1 flex h-40 w-40 items-center justify-center rounded-full font-display text-[60px]" style={{ background: NUMBER_COLORS[i], transform: `rotate(${TILTS[i]})` }}>{n.value.toLocaleString('en-US')}</dd>
-                    <dt className="order-2 text-[17px] font-semibold">{n.label}</dt>
+                  <div key={n.key} className="flex w-[clamp(132px,38vw,180px)] flex-col items-center gap-3.5 text-center">
+                    <dd className="order-1 flex aspect-square w-[clamp(112px,30vw,160px)] items-center justify-center rounded-full font-display text-[clamp(40px,10vw,60px)]" style={{ background: NUMBER_COLORS[i], color: NUMBER_TEXT[i], transform: `rotate(${TILTS[i]})` }}>{n.value.toLocaleString('en-US')}</dd>
+                    <dt className="order-2 text-[clamp(15px,3.8vw,17px)] font-semibold leading-snug">{n.label}</dt>
                   </div>
                 ))}
               </dl>
