@@ -25,10 +25,10 @@ test.describe('admin', () => {
   test('members can be searched and opened', async ({ page }) => {
     await login(page, ADMIN.email, ADMIN.password);
     await page.goto('/admin/members');
-    await page.getByPlaceholder(/name, email/i).fill('adaeze');
+    await page.getByPlaceholder(/name, email/i).fill(MEMBER.name.split(' ')[0]!);
     await page.getByRole('button', { name: 'Filter' }).click();
-    await page.getByRole('link', { name: 'Adaeze Nwosu' }).click();
-    await expect(page.getByRole('heading', { level: 1 })).toContainText('Adaeze Nwosu');
+    await page.getByRole('link', { name: MEMBER.name }).click();
+    await expect(page.getByRole('heading', { level: 1 })).toContainText(MEMBER.name);
   });
 
   test('site settings can be saved and the audit log records it', async ({ page }) => {

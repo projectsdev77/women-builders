@@ -115,12 +115,12 @@ test('6. she completes onboarding and reaches Home', async ({ page }) => {
   w.assertClean();
 });
 
-test('7. she finds Adaeze in Discover and sends a connection request', async ({ page }) => {
+test('7. she finds a member in Discover and sends a connection request', async ({ page }) => {
   const w = watchForBreakage(page);
   await login(page, who.email, password);
-  await page.goto('/search?q=Adaeze');
-  await page.getByRole('link', { name: /Adaeze Nwosu/ }).first().click();
-  await expect(page.getByRole('heading', { level: 1 })).toContainText('Adaeze Nwosu');
+  await page.goto(`/search?q=${encodeURIComponent(MEMBER.name)}`);
+  await page.getByRole('link', { name: new RegExp(MEMBER.name) }).first().click();
+  await expect(page.getByRole('heading', { level: 1 })).toContainText(MEMBER.name);
   await page.getByRole('button', { name: 'Connect' }).click();
   await page.getByRole('dialog').getByRole('textbox').fill('Hello from the e2e test, would love to connect.').catch(() => undefined);
   await page.getByRole('dialog').getByRole('button', { name: 'Send request' }).click();
@@ -128,7 +128,7 @@ test('7. she finds Adaeze in Discover and sends a connection request', async ({ 
   w.assertClean();
 });
 
-test('8. Adaeze accepts the request', async ({ page }) => {
+test('8. the member accepts the request', async ({ page }) => {
   const w = watchForBreakage(page);
   await login(page, MEMBER.email, DEMO_PASSWORD);
   await page.goto('/connections/requests');
@@ -143,9 +143,9 @@ test('9. they exchange messages and the unread count shows', async ({ page, brow
   const w = watchForBreakage(page);
   await login(page, who.email, password);
   await page.goto('/messages');
-  await page.getByRole('link', { name: /Adaeze Nwosu/ }).first().click();
-  const text = `Hi Adaeze, e2e hello ${Date.now()}`;
-  await page.getByLabel(/message adaeze/i).fill(text);
+  await page.getByRole('link', { name: new RegExp(MEMBER.name) }).first().click();
+  const text = `Hi there, e2e hello ${Date.now()}`;
+  await page.getByLabel(new RegExp(`message ${MEMBER.name.split(' ')[0]}`, 'i')).fill(text);
   await page.getByRole('button', { name: 'Send' }).click();
   await expect(page.getByText(text)).toBeVisible();
 

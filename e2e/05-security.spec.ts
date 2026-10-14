@@ -34,7 +34,7 @@ test.describe('API access control', () => {
   });
 
   test('login is throttled after repeated wrong passwords', async ({ page }) => {
-    const email = `nobody-${Date.now()}@example.com`;
+    const email = `e2e-nobody-${Date.now()}@example.com`;
     let throttled = false;
     for (let i = 0; i < 12 && !throttled; i++) {
       await page.goto('/login');
@@ -57,6 +57,6 @@ test.describe('API access control', () => {
       await expect(msg).toBeVisible();
       return (await msg.textContent())?.trim();
     };
-    expect(await message(MEMBER.email)).toBe(await message(`ghost-${Date.now()}@example.com`));
+    expect(await message(MEMBER.email)).toBe(await message(`e2e-ghost-${Date.now()}@example.com`));
   });
 });

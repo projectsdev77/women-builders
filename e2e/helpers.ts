@@ -1,16 +1,15 @@
 import { expect, type Page, type TestInfo } from '@playwright/test';
-import { PrismaClient } from '@prisma/client';
+import { FIX, PASSWORD, prisma } from './fixtures';
 
-export const DEMO_PASSWORD = process.env.E2E_DEMO_PASSWORD ?? 'DemoPass123';
-export const MEMBER = { email: process.env.E2E_MEMBER_EMAIL ?? 'adaeze@demo.womenbuilders.test', name: 'Adaeze Nwosu' };
-export const ADMIN = { email: process.env.E2E_ADMIN_EMAIL ?? 'admin@example.com', password: process.env.E2E_ADMIN_PASSWORD ?? 'ChangeMe123' };
+// The suite's own accounts (created in global-setup, removed in global-teardown).
+export const DEMO_PASSWORD = PASSWORD;
+export const MEMBER = FIX.founder;
+export const OTHER = FIX.investor;
+export const CONNECTED = FIX.builder;
+export const ADMIN = { email: FIX.admin.email, password: PASSWORD };
 
-export const hasDb = !!(process.env.E2E_DATABASE_URL || process.env.DATABASE_URL);
-let prisma: PrismaClient | undefined;
-function db() {
-  prisma ??= new PrismaClient({ datasourceUrl: process.env.E2E_DATABASE_URL || process.env.DATABASE_URL });
-  return prisma;
-}
+export const hasDb = !!process.env.DATABASE_URL;
+const db = () => prisma;
 
 export function unique(prefix: string, info?: TestInfo) {
   const tag = info ? info.project.name : 'x';
@@ -74,7 +73,7 @@ export async function clearTestRequestThrottle() {
 }
 
 export async function closeDb() {
-  await prisma?.$disconnect();
+  await prisma.$disconnect();
 }
 
 // A small valid PNG (red square) for photo uploads, built without extra dependencies.

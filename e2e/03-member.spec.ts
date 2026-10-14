@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { DEMO_PASSWORD, MEMBER, login, logout, tinyPng, unique, watchForBreakage } from './helpers';
+import { CONNECTED, DEMO_PASSWORD, MEMBER, OTHER, login, logout, tinyPng, unique, watchForBreakage } from './helpers';
 
 test.describe('member experience', () => {
   test.beforeEach(async ({ page }) => {
@@ -19,8 +19,9 @@ test.describe('member experience', () => {
 
   test('the main navigation works on this screen size', async ({ page }) => {
     await page.goto('/dashboard');
+    // Names can carry a count ("Messages 1 unread"), so match the start.
     for (const [name, url] of [['Discover', /search/], ['Gatherings', /gatherings/], ['Messages', /messages/], ['Home', /dashboard/]] as const) {
-      await page.getByRole('link', { name, exact: true }).first().click();
+      await page.getByRole('link', { name: new RegExp(`^${name}`) }).first().click();
       await expect(page).toHaveURL(url);
     }
   });
@@ -30,23 +31,23 @@ test.describe('member experience', () => {
     await page.locator('#q').fill('fintech');
     await page.keyboard.press('Enter');
     await expect(page).toHaveURL(/q=fintech/);
-    await expect(page.getByRole('link', { name: /Divya Iyer|Fatima Al-Sayed/ }).first()).toBeVisible();
+    await expect(page.getByRole('link', { name: new RegExp(OTHER.name) }).first()).toBeVisible();
     await page.goto('/search?role=INVESTOR');
-    await expect(page.getByRole('link', { name: /Divya Iyer|Olivia Brooks/ }).first()).toBeVisible();
+    await expect(page.getByRole('link', { name: new RegExp(OTHER.name) }).first()).toBeVisible();
     await expect(page.getByText(/no members match|nothing here/i)).toHaveCount(0);
   });
 
   test('a member profile shows roles, details and actions', async ({ page }) => {
-    await page.goto('/search?q=Divya');
-    await page.getByRole('link', { name: /Divya Iyer/ }).first().click();
-    await expect(page.getByRole('heading', { level: 1 })).toContainText('Divya Iyer');
+    await page.goto(`/search?q=${encodeURIComponent(OTHER.name)}`);
+    await page.getByRole('link', { name: new RegExp(OTHER.name) }).first().click();
+    await expect(page.getByRole('heading', { level: 1 })).toContainText(OTHER.name);
     await expect(page.getByText('Investor').first()).toBeVisible();
     await expect(page.getByText(/check size/i)).toBeVisible();
   });
 
   test('Capital lists investors with filters', async ({ page }) => {
     await page.goto('/capital');
-    await expect(page.getByText(/Divya Iyer|Olivia Brooks/).first()).toBeVisible();
+    await expect(page.getByText(OTHER.name).first()).toBeVisible();
   });
 
   test('editing the profile saves and shows on the profile page', async ({ page }) => {
@@ -109,7 +110,7 @@ test.describe('member experience', () => {
 test.describe('profile photo storage', () => {
   test('upload, serve through the access-checked route, then remove', async ({ page, request }) => {
     const w = watchForBreakage(page);
-    await login(page, 'li@demo.womenbuilders.test', DEMO_PASSWORD);
+    await login(page, CONNECTED.email, DEMO_PASSWORD);
     await page.goto('/profile/edit');
     await page.locator('input[type=file]').setInputFiles({ name: 'me.png', mimeType: 'image/png', buffer: tinyPng(300) });
     await expect(page.getByRole('button', { name: 'Remove', exact: true })).toBeVisible({ timeout: 20_000 });
@@ -127,7 +128,7 @@ test.describe('profile photo storage', () => {
   });
 
   test('files that are not photos, or are too big, are refused with a clear message', async ({ page }) => {
-    await login(page, 'li@demo.womenbuilders.test', DEMO_PASSWORD);
+    await login(page, CONNECTED.email, DEMO_PASSWORD);
     await page.goto('/profile/edit');
     await page.locator('input[type=file]').setInputFiles({ name: 'notes.txt', mimeType: 'text/plain', buffer: Buffer.from('not an image') });
     await expect(page.getByRole('alert').filter({ hasText: /./ }).first()).toBeVisible({ timeout: 15_000 });

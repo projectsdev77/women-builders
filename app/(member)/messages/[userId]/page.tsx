@@ -18,7 +18,7 @@ export default async function ConversationPage({ params }: { params: { userId: s
     listConversations(user.id),
   ]);
   return (
-    <div className="mx-auto grid max-w-[1100px] gap-5 lg:grid-cols-[360px_1fr]">
+    <div className="mx-auto grid max-w-[1100px] grid-cols-1 gap-5 lg:grid-cols-[360px_1fr]">
       <div className="hidden lg:block">
         <h1 className="mb-5">Messages</h1>
         <ConversationList conversations={conversations} activeId={params.userId} />

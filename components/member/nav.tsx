@@ -176,7 +176,7 @@ export function MemberNav({
           const Icon = t.icon;
           const n = t.badge ? counts[t.badge] : 0;
           return (
-            <Link key={t.href} href={t.href} aria-current={active ? 'page' : undefined} className="flex min-h-[52px] flex-col items-center justify-center gap-0.5 text-[11.5px] font-bold text-forest">
+            <Link key={t.href} href={t.href} aria-current={active ? 'page' : undefined} aria-label={n > 0 ? `${t.label}, ${n} ${BADGE_LABEL[t.badge!]}` : undefined} className="flex min-h-[52px] flex-col items-center justify-center gap-0.5 text-[11.5px] font-bold text-forest">
               <span className={cx('relative flex h-7 w-12 items-center justify-center rounded-full', active && 'bg-founder')}>
                 <Icon size={20} strokeWidth={1.75} />
                 {n > 0 && <span className="absolute -right-0.5 -top-1.5"><CountBadge count={n} label={BADGE_LABEL[t.badge!]} /></span>}

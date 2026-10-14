@@ -12,7 +12,7 @@ export default async function MessagesPage() {
   return (
     <div className="mx-auto max-w-[1100px] space-y-5">
       <h1>Messages</h1>
-      <div className="grid gap-5 lg:grid-cols-[360px_1fr]">
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-[360px_1fr]">
         <ConversationList conversations={conversations} />
         {conversations.length > 0 && (
           <div className="hidden min-h-[360px] flex-col items-center justify-center gap-3 rounded-[32px] border border-dashed border-field p-8 text-center lg:flex">
