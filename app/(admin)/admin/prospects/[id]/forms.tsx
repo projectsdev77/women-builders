@@ -82,7 +82,7 @@ type Editable = {
   outreachStatus: string; archived: boolean;
 };
 
-export function ProspectEditor({ prospect, admins }: { prospect: Editable; admins: Array<{ id: string; name: string }> }) {
+export function ProspectEditor({ prospect, admins, selfSubmitted = false }: { prospect: Editable; admins: Array<{ id: string; name: string }>; selfSubmitted?: boolean }) {
   const router = useRouter();
   const [form, setForm] = useState(prospect);
   const [error, setError] = useState<ApiError | null>(null);
@@ -128,15 +128,18 @@ export function ProspectEditor({ prospect, admins }: { prospect: Editable; admin
         </Select>
       </Field>
       <Field id="e-next" label="Next follow-up" error={firstError(fe, 'nextFollowUpDate')}><Input id="e-next" type="date" value={form.nextFollowUpDate} onChange={set('nextFollowUpDate')} /></Field>
-      <Field id="e-name" label="Name" error={firstError(fe, 'name')}><Input id="e-name" value={form.name} onChange={set('name')} /></Field>
-      <Field id="e-email" label="Email" error={firstError(fe, 'email')}><Input id="e-email" value={form.email} onChange={set('email')} /></Field>
-      <Field id="e-li" label="LinkedIn URL" error={firstError(fe, 'linkedInUrl')}><Input id="e-li" value={form.linkedInUrl} onChange={set('linkedInUrl')} /></Field>
+      {selfSubmitted && (
+        <Notice tone="info">This person submitted their own details through the request form, so name, email, LinkedIn, role, source, referrer and the reason we hold the record are locked. You can still change status, owner and follow-up, and add company details and notes.</Notice>
+      )}
+      <Field id="e-name" label="Name" error={firstError(fe, 'name')}><Input id="e-name" value={form.name} onChange={set('name')} readOnly={selfSubmitted} /></Field>
+      <Field id="e-email" label="Email" error={firstError(fe, 'email')}><Input id="e-email" value={form.email} onChange={set('email')} readOnly={selfSubmitted} /></Field>
+      <Field id="e-li" label="LinkedIn URL" error={firstError(fe, 'linkedInUrl')}><Input id="e-li" value={form.linkedInUrl} onChange={set('linkedInUrl')} readOnly={selfSubmitted} /></Field>
       <Field id="e-company" label="Company"><Input id="e-company" value={form.company} onChange={set('company')} /></Field>
-      <Field id="e-role" label="Role"><Input id="e-role" value={form.role} onChange={set('role')} /></Field>
-      <Field id="e-source" label="Discovery source"><Input id="e-source" value={form.discoverySource} onChange={set('discoverySource')} /></Field>
-      <Field id="e-ref" label="Referred by"><Input id="e-ref" value={form.referrerName} onChange={set('referrerName')} /></Field>
+      <Field id="e-role" label="Role"><Input id="e-role" value={form.role} onChange={set('role')} readOnly={selfSubmitted} /></Field>
+      <Field id="e-source" label="Discovery source"><Input id="e-source" value={form.discoverySource} onChange={set('discoverySource')} readOnly={selfSubmitted} /></Field>
+      <Field id="e-ref" label="Referred by"><Input id="e-ref" value={form.referrerName} onChange={set('referrerName')} readOnly={selfSubmitted} /></Field>
       <Field id="e-refemail" label="Referrer email" error={firstError(fe, 'referrerEmail')}><Input id="e-refemail" value={form.referrerEmail} onChange={set('referrerEmail')} /></Field>
-      <Field id="e-basis" label="Why we hold this record"><Textarea id="e-basis" rows={2} value={form.lawfulBasisNote} onChange={set('lawfulBasisNote')} /></Field>
+      <Field id="e-basis" label="Why we hold this record"><Textarea id="e-basis" rows={2} value={form.lawfulBasisNote} onChange={set('lawfulBasisNote')} readOnly={selfSubmitted} /></Field>
       <div className="flex flex-wrap gap-2">
         <Button type="submit">Save details</Button>
         {prospect.outreachStatus !== 'DO_NOT_CONTACT' && (

@@ -131,11 +131,23 @@ export async function createProspect(actorId: string, input: z.output<typeof pro
   });
 }
 
+/**
+ * Details a person gave us themselves through the public request form. Once a record has such a
+ * request, an admin can add notes, company and follow-ups but cannot rewrite what the person said.
+ */
+export const SELF_SUBMITTED_LOCKED_FIELDS = ['name', 'email', 'linkedInUrl', 'role', 'discoverySource', 'referrerName', 'lawfulBasisNote'] as const;
+
 export async function updateProspect(actorId: string, id: string, input: z.output<typeof prospectUpdateSchema>) {
   return prisma.$transaction(async (tx) => {
-    const current = await tx.potentialMember.findUnique({ where: { id } });
+    const current = await tx.potentialMember.findUnique({ where: { id }, include: { requests: { select: { id: true }, take: 1 } } });
     if (!current) throw Errors.notFound('Potential member');
     const { outreachStatus, archived, ...fields } = input;
+    if (current.requests.length > 0) {
+      const edited = SELF_SUBMITTED_LOCKED_FIELDS.filter((k) => fields[k] !== undefined && (fields[k] ?? null) !== (current[k] ?? null));
+      if (edited.length) {
+        throw new AppError('LOCKED_FIELDS', 'This person submitted these details themselves through the request form, so they can’t be edited. Add a note instead.', 409, { fields: edited });
+      }
+    }
     const email = fields.email === undefined ? current.email : fields.email;
     const linkedInUrl = fields.linkedInUrl === undefined ? current.linkedInUrl : fields.linkedInUrl;
     if (!email && !linkedInUrl) throw Errors.validation('Keep at least an email or a LinkedIn URL.');
@@ -226,6 +238,7 @@ export async function getProspect(id: string) {
       attempts: { orderBy: [{ attemptDate: 'asc' }, { createdAt: 'asc' }] },
       statusChanges: { orderBy: { createdAt: 'asc' } },
       invitations: { orderBy: { createdAt: 'desc' } },
+      requests: { select: { id: true }, take: 1 },
     },
   });
   if (!p) throw Errors.notFound('Potential member');

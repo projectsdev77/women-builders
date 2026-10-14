@@ -87,6 +87,7 @@ export default async function ProspectPage({ params }: { params: { id: string } 
             // Remount after outreach/status changes so the form never holds a stale status.
             key={`e-${p.attempts.length}-${p.statusChanges.length}`}
             admins={admins}
+            selfSubmitted={p.requests.length > 0}
             prospect={{
               id: p.id,
               name: p.name,

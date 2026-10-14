@@ -56,3 +56,10 @@ input[type='checkbox'],
 input[type='radio'] {
   accent-color: #1f3d2b;
 }
+
+input[readonly],
+textarea[readonly] {
+  background-color: #f3eadf;
+  color: #4d6b58;
+  cursor: not-allowed;
+}

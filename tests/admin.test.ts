@@ -54,6 +54,18 @@ describe('invitation requests (R3 F3, F21)', () => {
     expect(await openRequestCounts()).toEqual({ open: 1, overdue: 0, waitlist: 0 });
   });
 
+  it('locks what the person submitted themselves, but still allows internal fields', async () => {
+    const a = await admin();
+    await submitInviteRequest(request(), '1.1.1.1');
+    const pm = await prisma.potentialMember.findUniqueOrThrow({ where: { email: 'ada@example.com' } });
+    await expect(updateProspect(a.id, pm.id, { email: 'someone-else@example.com' })).rejects.toMatchObject({ code: 'LOCKED_FIELDS' });
+    await expect(updateProspect(a.id, pm.id, { name: 'Changed Name' })).rejects.toMatchObject({ code: 'LOCKED_FIELDS' });
+    // resending the same value is not an edit
+    await updateProspect(a.id, pm.id, { email: 'ada@example.com', company: 'Analytical Engines Ltd', nextFollowUpDate: new Date('2026-12-01') });
+    const after = await prisma.potentialMember.findUniqueOrThrow({ where: { id: pm.id } });
+    expect(after).toMatchObject({ email: 'ada@example.com', name: pm.name, company: 'Analytical Engines Ltd' });
+  });
+
   it('attaches to a prospect the team already knows, matched by LinkedIn', async () => {
     const a = await admin();
     const known = await createProspect(a.id, prospect({ linkedInUrl: 'https://www.linkedin.com/in/ada' }));
