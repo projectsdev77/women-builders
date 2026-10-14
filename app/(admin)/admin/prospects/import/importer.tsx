@@ -55,7 +55,7 @@ export function Importer() {
             <Button disabled={busy} onClick={() => run(false)}>Import {summary.successful} {summary.successful === 1 ? 'person' : 'people'}</Button>
           )}
           {!summary.dryRun && <Link href="/admin/prospects" className="text-sm underline">View potential members</Link>}
-          <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white">
+          <div tabIndex={0} role="region" aria-label="Import preview table" className="relative overflow-x-auto rounded-lg border border-gray-200 bg-white">
             <table className="w-full text-sm">
               <thead className="bg-gray-50 text-left text-gray-600"><tr><th className="p-2">Row</th><th className="p-2">Name</th><th className="p-2">Email</th><th className="p-2">Result</th><th className="p-2">Details</th></tr></thead>
               <tbody className="divide-y divide-gray-100">

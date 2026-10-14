@@ -14,7 +14,7 @@ export default async function AuditPage({ searchParams }: { searchParams: { page
     <div className="space-y-4">
       <h1>Audit log</h1>
       {entries.length === 0 ? <EmptyState title="No admin actions yet" /> : (
-        <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white">
+        <div tabIndex={0} role="region" aria-label="Audit log table" className="relative overflow-x-auto rounded-lg border border-gray-200 bg-white">
           <table className="w-full text-sm">
             <thead className="bg-gray-50 text-left text-gray-600"><tr><th className="p-3">When</th><th className="p-3">Admin</th><th className="p-3">Action</th><th className="p-3">Target</th><th className="p-3">Details</th></tr></thead>
             <tbody className="divide-y divide-gray-100">

@@ -20,7 +20,7 @@ export default async function InvitationsPage() {
       <p className="text-sm text-gray-600">Joining is by invitation only. Links expire after 14 days and work only for the invited email. If an invitation isn&apos;t used after 7 days, we send one reminder with a fresh link.</p>
       <InviteForm />
       {invitations.length === 0 ? <EmptyState title="No invitations sent yet" /> : (
-        <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white">
+        <div tabIndex={0} role="region" aria-label="Invitations table" className="relative overflow-x-auto rounded-lg border border-gray-200 bg-white">
           <table className="w-full text-sm">
             <thead className="bg-gray-50 text-left text-gray-600"><tr><th className="p-3">Email</th><th className="p-3">Status</th><th className="p-3">Sent</th><th className="p-3">Expires</th><th className="p-3">Reminder</th><th className="p-3">By</th><th className="p-3"><span className="sr-only">Actions</span></th></tr></thead>
             <tbody className="divide-y divide-gray-100">

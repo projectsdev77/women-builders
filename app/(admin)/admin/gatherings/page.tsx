@@ -26,7 +26,7 @@ export default async function AdminGatheringsPage({ searchParams }: { searchPara
         ))}
       </nav>
       {rows.length === 0 ? <EmptyState title={view === 'upcoming' ? 'No upcoming gatherings' : 'No past gatherings'} /> : (
-        <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white">
+        <div tabIndex={0} role="region" aria-label="Gatherings table" className="relative overflow-x-auto rounded-lg border border-gray-200 bg-white">
           <table className="w-full text-sm">
             <thead className="bg-gray-50 text-left text-gray-600">
               <tr><th className="p-3">Gathering</th><th className="p-3">When</th><th className="p-3">Where</th><th className="p-3">Seats</th><th className="p-3">Requests</th></tr>

@@ -132,7 +132,7 @@ export default async function AdminDashboard({ searchParams }: { searchParams: {
       <Card className="space-y-3">
         <h2 className="font-semibold">Outreach conversion ({fmtDay(m.range.from)} – {fmtDay(m.range.to)})</h2>
         <p className="text-sm text-gray-600">For each status: how many potential members entered it in this period, and how many of them later became members.</p>
-        <div className="overflow-x-auto">
+        <div tabIndex={0} role="region" aria-label="Outreach conversion table" className="relative overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="text-left text-gray-600">
               <tr><th className="py-2">Status</th><th>Entered</th><th>Became members</th><th>Conversion</th></tr>

@@ -74,7 +74,7 @@ export default async function ProspectsPage({ searchParams }: { searchParams: Re
       {prospects.length === 0 ? (
         <EmptyState title="No potential members match" />
       ) : (
-        <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white">
+        <div tabIndex={0} role="region" aria-label="Potential members table" className="relative overflow-x-auto rounded-lg border border-gray-200 bg-white">
           <table className="w-full text-sm">
             <thead className="bg-gray-50 text-left text-gray-600">
               <tr><th className="p-3">Name</th><th className="p-3">Company</th><th className="p-3">Role</th><th className="p-3">Status</th><th className="p-3">Next follow-up</th><th className="p-3">Owner</th></tr>

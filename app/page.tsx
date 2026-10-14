@@ -70,7 +70,7 @@ function Collage() {
       </div>
       <div className="absolute right-[0%] top-[30%] w-[58%] rotate-2 rounded-3xl bg-builder p-5 shadow-collage">
         <p className="font-mono text-[11px] uppercase tracking-[.1em]">What you need</p>
-        <p className="mt-2 text-[17px] leading-snug"><s className="opacity-60">help</s> → <b>intros to seed fintech investors</b></p>
+        <p className="mt-2 text-[17px] leading-snug"><s>help</s> → <b>intros to seed fintech investors</b></p>
         <p className="mt-2 text-[14px]">Be specific. We match on it.</p>
       </div>
       <div className="absolute bottom-[9%] right-[3%] w-[62%] -rotate-2 rounded-3xl bg-white p-5 shadow-collage">

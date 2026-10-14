@@ -7,12 +7,19 @@ import { Wordmark } from '@/components/member/nav';
 export function PublicHeader({ waitlist = false }: { waitlist?: boolean }) {
   return (
     <header className="sticky top-0 z-30 border-b border-line bg-cream/90 backdrop-blur-[8px]">
-      <div className="mx-auto flex max-w-[1240px] items-center justify-between gap-4 px-[clamp(20px,4vw,48px)] py-3">
-        <Link href="/" aria-label="Women Builders, home"><Wordmark size={24} /></Link>
+      <div className="mx-auto flex max-w-[1240px] items-center justify-between gap-2 px-[clamp(16px,4vw,48px)] py-3 sm:gap-4">
+        <Link href="/" aria-label="Women Builders, home">
+          <span className="min-[400px]:hidden"><Wordmark size={20} /></span>
+          <span className="hidden min-[400px]:inline"><Wordmark size={24} /></span>
+        </Link>
         <nav aria-label="Site" className="flex items-center gap-1 sm:gap-2">
           <Link href="/charter" className={buttonClass('ghost', 'sm', 'hidden sm:inline-flex')}>Charter</Link>
           <Link href="/login" className={buttonClass('ghost', 'sm')}>Log in</Link>
-          <Link href="/request-invite" className={buttonClass('primary', 'sm')}>{waitlist ? 'Join the waitlist' : 'Request an invitation'}</Link>
+          <Link href="/request-invite" className={buttonClass('primary', 'sm')}>
+            {/* Short label on the smallest phones so the header never overflows. */}
+            <span className="hidden min-[420px]:inline">{waitlist ? 'Join the waitlist' : 'Request an invitation'}</span>
+            <span className="min-[420px]:hidden">{waitlist ? 'Waitlist' : 'Request invite'}</span>
+          </Link>
         </nav>
       </div>
     </header>

@@ -133,7 +133,6 @@ export default async function CapitalPage({ searchParams }: { searchParams: SP }
             </fieldset>
             <Link
               href={`/capital?${toggled.toString()}`}
-              aria-pressed={q.investing === '1'}
               className={`ml-auto inline-flex min-h-[40px] items-center gap-2 rounded-full border-[1.5px] px-4 text-[14px] font-bold ${q.investing === '1' ? 'border-forest bg-success-bg' : 'border-line bg-white'}`}
             >
               {q.investing === '1' ? <><span aria-hidden className="h-2 w-2 rounded-full bg-success" />Currently investing only</> : 'Showing all investors'}
