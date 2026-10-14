@@ -291,7 +291,8 @@ export default async function HomePage({ searchParams }: { searchParams: { delet
           </section>
         )}
 
-        <section id="request" aria-labelledby="request-heading" className={`${SECTION} pb-[clamp(64px,9vw,120px)]`}>
+        {/* Every section above owns its bottom padding; with all of them hidden the panel needs its own top gap. */}
+        <section id="request" aria-labelledby="request-heading" className={`${SECTION} pb-[clamp(64px,9vw,120px)] ${numbers.length || gatherings.length || featured.length || quotes.length ? '' : 'pt-[clamp(56px,8vw,104px)]'}`}>
           <RequestPanel waitlist={waitlist} />
         </section>
       </main>
