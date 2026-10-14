@@ -31,6 +31,14 @@ export default defineConfig({
   projects: [
     { name: 'desktop', use: { ...devices['Desktop Chrome'], viewport: { width: 1280, height: 900 }, launchOptions } },
     { name: 'mobile', use: { ...devices['Pixel 7'], launchOptions } },
+    // Optional: E2E_ALL_BROWSERS=1 also runs Firefox and Safari's engine (first: npx playwright install firefox webkit).
+    ...(process.env.E2E_ALL_BROWSERS
+      ? [
+          { name: 'firefox', use: { ...devices['Desktop Firefox'], viewport: { width: 1280, height: 900 } } },
+          { name: 'safari', use: { ...devices['Desktop Safari'], viewport: { width: 1280, height: 900 } } },
+          { name: 'iphone', use: { ...devices['iPhone 14'] } },
+        ]
+      : []),
   ],
   webServer: process.env.E2E_START_SERVER ? { command: 'npm run start', url: baseURL, reuseExistingServer: true, timeout: 120_000 } : undefined,
 });

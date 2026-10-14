@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   CalendarHeart,
   CircleDollarSign,
@@ -21,7 +21,7 @@ import {
   X,
   type LucideIcon,
 } from 'lucide-react';
-import { api } from '@/lib/client/api';
+import { api, CHANGED_EVENT } from '@/lib/client/api';
 import { Avatar, CountBadge, cx } from '@/components/ui';
 import type { RoleType } from '@prisma/client';
 
@@ -50,23 +50,31 @@ const WINS: Item = { href: '/wins', label: 'Wins', icon: Star, tint: '#F9EDBE' }
 const SETTINGS: Item = { href: '/settings', label: 'Settings', icon: Settings, tint: '#F3EADF' };
 const PROFILE: Item = { href: '/profile', label: 'My profile', icon: UserRound, tint: '#FBE3EA' };
 
-/** Polls the badge counts every 30s while the tab is visible (G12). */
+/**
+ * Badge counts: polled every 30s while the tab is visible (G12), and refreshed at once after any
+ * change the member makes (accepting, introducing, reading…) and on every page change.
+ */
 function useCounts() {
+  const pathname = usePathname();
   const [counts, setCounts] = useState<Counts>({ unread: 0, pendingRequests: 0, introductions: 0 });
-  useEffect(() => {
-    let stopped = false;
-    async function load() {
-      if (document.visibilityState !== 'visible') return;
-      const res = await api<Counts>('/api/me/counts');
-      if (!stopped && res.ok) setCounts(res.data);
-    }
-    void load();
-    const t = setInterval(load, 30_000);
-    return () => {
-      stopped = true;
-      clearInterval(t);
-    };
+  const load = useCallback(async () => {
+    if (document.visibilityState !== 'visible') return;
+    const res = await api<Counts>('/api/me/counts');
+    if (res.ok) setCounts(res.data);
   }, []);
+  useEffect(() => {
+    void load();
+  }, [load, pathname]);
+  useEffect(() => {
+    const t = setInterval(load, 30_000);
+    // A short delay lets the server finish the change before we count again.
+    const onChange = () => setTimeout(load, 300);
+    window.addEventListener(CHANGED_EVENT, onChange);
+    return () => {
+      clearInterval(t);
+      window.removeEventListener(CHANGED_EVENT, onChange);
+    };
+  }, [load]);
   return counts;
 }
 

@@ -77,7 +77,7 @@ npx tsx prisma/seed.ts
 
 ### 6b. Start over with an empty app
 
-To clear everything (members, requests, messages, gatherings, wins, potential members, settings) and keep only three test accounts, run `npm run db:reset-testing` with `CONFIRM_WIPE=yes`, `DATABASE_URL` (the session pooler string) and `ADMIN_EMAIL`/`ADMIN_PASSWORD`, `MEMBER1_EMAIL`/`MEMBER1_PASSWORD`, `MEMBER2_EMAIL`/`MEMBER2_PASSWORD` (optional `MEMBER1_NAME`, `MEMBER2_NAME`). Member 1 is a founder and member 2 an investor, both with complete profiles. Running `npm run e2e` afterwards needs the demo members again (step 6).
+To clear everything (members, requests, messages, gatherings, wins, potential members, settings) and keep only three test accounts, run `npm run db:reset-testing` with `CONFIRM_WIPE=yes`, `DATABASE_URL` (the session pooler string) and `ADMIN_EMAIL`/`ADMIN_PASSWORD`, `MEMBER1_EMAIL`/`MEMBER1_PASSWORD`, `MEMBER2_EMAIL`/`MEMBER2_PASSWORD` (optional `MEMBER1_NAME`, `MEMBER2_NAME`). Member 1 is a founder and member 2 an investor, both with complete profiles. The end-to-end tests create and remove their own accounts, so they run fine on this empty database.
 
 ## 7. Check the deploy, then run the automated tests against it
 
@@ -89,12 +89,10 @@ npm install
 E2E_BASE_URL="https://<your-project>.vercel.app" \
 DATABASE_URL="<your DIRECT_URL value>" \
 CRON_SECRET="<same as in Vercel>" \
-E2E_ADMIN_EMAIL="you@yourdomain.com" \
-E2E_ADMIN_PASSWORD="<the admin password from step 6>" \
 npm run e2e
 ```
 
-The suite runs on desktop and phone sizes (about 3 minutes). `DATABASE_URL` is used only to read invitation emails from the outbox so the test can follow the invite link. A report is written to `e2e-report/` (`npx playwright show-report e2e-report`).
+The suite runs on desktop and phone sizes. It creates its own test accounts (emails starting `e2e-`) and deletes everything it made when it finishes, so your data is untouched. `DATABASE_URL` is also used to read invitation emails from the outbox so the test can follow the invite link. A report is written to `e2e-report/` (`npx playwright show-report e2e-report`).
 
 ### 7a. Free outbox timer (only needed on the free plan)
 

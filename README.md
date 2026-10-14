@@ -88,7 +88,7 @@ Every cron request must include `Authorization: Bearer $CRON_SECRET`. Per-minute
 ## Deploying and testing
 
 - `docs/deploy-vercel.md`: the manual set-up (Vercel, Supabase, Blob, Resend, domain) in order.
-- `npm run e2e`: Playwright end-to-end suite (desktop and phone sizes). Start the app first (`npm run build && npm run start`) or set `E2E_BASE_URL` to a deployed site. Reads invitation emails from the outbox through `DATABASE_URL`.
+- `npm run e2e`: Playwright end-to-end suite (desktop and phone sizes, about 130 checks). Start the app first (`npm run build && npm run start`) or set `E2E_BASE_URL` to a deployed site, and set `DATABASE_URL` to that site's database: the suite creates its own `e2e-` test accounts first and deletes everything it made at the end, so it works on an empty database and leaves it as it was (`E2E_KEEP_DATA=1` keeps the data for debugging). It covers the invitation journey, member and admin flows, introductions, blocking, reporting, account deletion, accessibility (axe), small screens and 200% zoom, keyboard use and reduced motion. `E2E_ALL_BROWSERS=1` adds Firefox and Safari's engine.
 - `docs/manual-testing.md`: the few checks that need a person (real inbox, real phone, design review, accessibility, legal text).
 
 ## Visual design

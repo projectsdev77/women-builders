@@ -8,7 +8,7 @@ test.describe('public site', () => {
     await expect(page.getByRole('heading', { level: 1 })).toContainText('Where women who build find each other');
     await expect(page.getByRole('link', { name: /request an invitation/i }).first()).toBeVisible();
     for (const role of ['Founder', 'Operator', 'Investor', 'Builder']) {
-      await expect(page.getByText(role, { exact: false }).first()).toBeVisible();
+      await expect(page.getByText(role, { exact: true }).first()).toBeVisible();
     }
     await expect(page.getByRole('link', { name: /log in/i }).first()).toBeVisible();
     w.assertClean();

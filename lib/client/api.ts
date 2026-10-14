@@ -9,6 +9,9 @@ export interface ApiError {
 
 export type ApiResult<T> = { ok: true; data: T } | { ok: false; error: ApiError };
 
+/** Fired after any successful change, so live badges (unread, requests, introductions) refresh at once. */
+export const CHANGED_EVENT = 'wb:changed';
+
 /** Same-origin JSON fetch that normalizes the API's error shape. */
 export async function api<T = unknown>(
   path: string,
@@ -42,6 +45,8 @@ export async function api<T = unknown>(
       },
     };
   }
+  const method = options.method ?? (options.body !== undefined ? 'POST' : 'GET');
+  if (method !== 'GET' && typeof window !== 'undefined') window.dispatchEvent(new Event(CHANGED_EVENT));
   return { ok: true, data: json as T };
 }
 
