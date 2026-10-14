@@ -75,6 +75,10 @@ npx tsx prisma/seed.ts
 - `SEED_DEMO=1` also creates demo members (`adaeze@demo.womenbuilders.test`, password `DemoPass123`) that the automated tests and your manual testing use.
 - **Before real members arrive, use a fresh empty database** (a new Supabase project, run the seed again with `SEED_DEMO=0`) so no demo accounts with a known password exist.
 
+### 6b. Start over with an empty app
+
+To clear everything (members, requests, messages, gatherings, wins, potential members, settings) and keep only three test accounts, run `npm run db:reset-testing` with `CONFIRM_WIPE=yes`, `DATABASE_URL` (the session pooler string) and `ADMIN_EMAIL`/`ADMIN_PASSWORD`, `MEMBER1_EMAIL`/`MEMBER1_PASSWORD`, `MEMBER2_EMAIL`/`MEMBER2_PASSWORD` (optional `MEMBER1_NAME`, `MEMBER2_NAME`). Member 1 is a founder and member 2 an investor, both with complete profiles. Running `npm run e2e` afterwards needs the demo members again (step 6).
+
 ## 7. Check the deploy, then run the automated tests against it
 
 1. **Settings → Cron Jobs** should list 6 jobs. Click **Run** on `/api/cron/outbox`; it should return success.

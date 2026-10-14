@@ -16,7 +16,8 @@
     "db:test:reset": "dotenv -e .env.test -- prisma migrate reset --force --skip-seed",
     "vercel-build": "prisma generate && DATABASE_URL=\"${DIRECT_URL:-${DATABASE_URL_UNPOOLED:-$DATABASE_URL}}\" prisma migrate deploy && next build",
     "e2e": "playwright test",
-    "e2e:mobile": "playwright test --project=mobile"
+    "e2e:mobile": "playwright test --project=mobile",
+    "db:reset-testing": "tsx prisma/reset-for-testing.ts"
   },
   "prisma": {
     "seed": "dotenv -e .env -- tsx prisma/seed.ts"
