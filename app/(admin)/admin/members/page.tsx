@@ -9,13 +9,15 @@ import { ACCOUNT_TONE, fmtDate } from '@/components/admin/labels';
 export const metadata: Metadata = { title: 'Members' };
 
 const STATUSES = ['ALL', 'ACTIVE', 'DEACTIVATED', 'DELETED'] as const;
+const ACCESS = [['all', 'Everyone'], ['admins', 'Admins'], ['reviewers', 'Reviewers']] as const;
 
-export default async function AdminMembersPage({ searchParams }: { searchParams: { q?: string; status?: string; page?: string } }) {
+export default async function AdminMembersPage({ searchParams }: { searchParams: { q?: string; status?: string; access?: string; page?: string } }) {
   await pageAdmin();
   const status = (STATUSES as readonly string[]).includes(searchParams.status ?? '') ? (searchParams.status as (typeof STATUSES)[number]) : 'ALL';
   const page = Math.max(1, Number(searchParams.page) || 1);
-  const { members, pagination } = await listMembers({ q: searchParams.q, status, page });
-  const href = (p: number) => `/admin/members?${new URLSearchParams({ ...(searchParams.q ? { q: searchParams.q } : {}), status, page: String(p) })}`;
+  const access = searchParams.access === 'admins' || searchParams.access === 'reviewers' ? searchParams.access : 'all';
+  const { members, pagination } = await listMembers({ q: searchParams.q, status, admins: access === 'admins', reviewers: access === 'reviewers', page });
+  const href = (p: number) => `/admin/members?${new URLSearchParams({ ...(searchParams.q ? { q: searchParams.q } : {}), status, ...(access !== 'all' ? { access } : {}), page: String(p) })}`;
   return (
     <div className="space-y-4">
       <h1>Members <span className="text-base font-normal text-gray-500">({pagination.total})</span></h1>
@@ -25,6 +27,10 @@ export default async function AdminMembersPage({ searchParams }: { searchParams:
         <label htmlFor="status" className="sr-only">Status</label>
         <Select id="status" name="status" defaultValue={status} className="max-w-[12rem]">
           {STATUSES.map((s) => <option key={s} value={s}>{s === 'ALL' ? 'All statuses' : s.charAt(0) + s.slice(1).toLowerCase()}</option>)}
+        </Select>
+        <label htmlFor="access" className="sr-only">Access</label>
+        <Select id="access" name="access" defaultValue={access} className="max-w-[12rem]">
+          {ACCESS.map(([v, label]) => <option key={v} value={v}>{label}</option>)}
         </Select>
         <Button type="submit" variant="secondary">Filter</Button>
       </form>
@@ -42,6 +48,7 @@ export default async function AdminMembersPage({ searchParams }: { searchParams:
                   <td className="p-3">
                     <Link href={`/admin/members/${m.id}`} className="font-medium underline">{m.name}</Link>
                     {m.isAdmin && <span className="ml-2"><Badge tone="brand">Admin</Badge></span>}
+                    {m.isReviewer && <span className="ml-2"><Badge tone="yellow">Reviewer</Badge></span>}
                     <div className="text-xs text-gray-500">{m.email}</div>
                   </td>
                   <td className="p-3">{m.primaryRole ? ROLE_LABELS[m.primaryRole] : '—'}</td>

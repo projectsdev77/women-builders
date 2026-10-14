@@ -7,12 +7,13 @@ import { audit } from '../audit';
 import { changeProspectStatus } from '../prospect-status';
 import { closeIntroductionsFor } from '../introductions';
 
-export async function listMembers(opts: { q?: string; status?: AccountStatus | 'ALL'; admins?: boolean; page?: number; limit?: number }) {
+export async function listMembers(opts: { q?: string; status?: AccountStatus | 'ALL'; admins?: boolean; reviewers?: boolean; page?: number; limit?: number }) {
   const page = Math.max(1, opts.page ?? 1);
   const limit = Math.min(100, opts.limit ?? 25);
   const where: Prisma.UserWhereInput = {};
   if (opts.status && opts.status !== 'ALL') where.accountStatus = opts.status;
   if (opts.admins) where.isAdmin = true;
+  if (opts.reviewers) where.isReviewer = true;
   if (opts.q?.trim()) {
     const c = { contains: opts.q.trim(), mode: 'insensitive' as const };
     where.OR = [{ name: c }, { email: c }, { profile: { headline: c } }, { profile: { companyName: c } }];
@@ -36,6 +37,7 @@ export async function listMembers(opts: { q?: string; status?: AccountStatus | '
       name: u.name,
       email: u.accountStatus === 'DELETED' ? '' : u.email, // erased on deletion
       isAdmin: u.isAdmin,
+      isReviewer: u.isReviewer,
       accountStatus: u.accountStatus,
       deactivatedBy: u.deactivatedBy,
       primaryRole: u.profile?.primaryRole ?? null,
