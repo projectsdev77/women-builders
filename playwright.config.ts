@@ -25,6 +25,8 @@ export default defineConfig({
   fullyParallel: false,
   workers: 1,
   retries: process.env.CI || remote ? 1 : 0,
+  // Against a live site, stop after 10 failures instead of waiting out every timeout (set E2E_MAX_FAILURES=0 for no limit).
+  maxFailures: remote ? Number(process.env.E2E_MAX_FAILURES ?? 10) || undefined : undefined,
   reporter: [['list'], ['html', { open: 'never', outputFolder: 'e2e-report' }]],
   outputDir: 'e2e-results',
   use: { baseURL, navigationTimeout: remote ? 60_000 : 30_000, actionTimeout: remote ? 30_000 : 0, trace: 'retain-on-failure', screenshot: 'only-on-failure', launchOptions },
