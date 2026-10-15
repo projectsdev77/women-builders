@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import { Lock, Users } from 'lucide-react';
 import { Button, Field, Input, Notice, Select, Textarea, cx } from '@/components/ui';
 import { api, firstError, type ApiError } from '@/lib/client/api';
 import {
@@ -65,16 +66,17 @@ export interface EditableProfile {
 
 export type Section = 'basics' | 'roles' | 'about' | 'needs' | 'privacy';
 
-const HIDEABLE: Array<{ field: string; label: string }> = [
+// `only`: shown just to members with that role, since the field doesn't apply to anyone else.
+const HIDEABLE: Array<{ field: string; label: string; only?: Role }> = [
   { field: 'location', label: 'Location (city and country)' },
   { field: 'professionalBackground', label: 'Professional background' },
   { field: 'currentFocus', label: 'Current focus' },
   { field: 'needs', label: 'What I need' },
   { field: 'offerings', label: 'What I can offer' },
-  { field: 'companyName', label: 'Company name' },
-  { field: 'fundingStatus', label: 'Funding status' },
-  { field: 'raiseAmount', label: 'Raise amount' },
-  { field: 'checkSize', label: 'Check size' },
+  { only: 'FOUNDER', field: 'companyName', label: 'Company name' },
+  { only: 'FOUNDER', field: 'fundingStatus', label: 'Funding status' },
+  { only: 'FOUNDER', field: 'raiseAmount', label: 'Raise amount' },
+  { only: 'INVESTOR', field: 'checkSize', label: 'Check size' },
   { field: 'linkedInUrl', label: 'LinkedIn' },
   { field: 'websiteUrl', label: 'Website' },
 ];
@@ -167,8 +169,6 @@ export function ProfileSections({
   const held = useMemo(() => new Set<Role>([profile.primaryRole, ...profile.secondaryRoles]), [profile.primaryRole, profile.secondaryRoles]);
   const err = (k: string) => firstError(fe, k);
   const aria = (k: string) => (fe[k] ? { 'aria-invalid': true, 'aria-describedby': `${k}-error` } : {});
-  const hiddenBadge = (field: string) =>
-    profile.hiddenFields.includes(field) ? <span className="ml-2 text-xs font-normal text-gray-500">(connections only)</span> : null;
 
   return (
     <div className="space-y-8">
@@ -425,21 +425,38 @@ export function ProfileSections({
           <p className="text-sm text-gray-600">
             Your name, headline, roles and expertise are always visible to members. Choose which other details only your connections can see. Your email is never shown.
           </p>
-          <div className="grid gap-1 sm:grid-cols-2">
-            {HIDEABLE.map(({ field, label }) => (
-              <label key={field} className="inline-flex min-h-[44px] items-center gap-2 text-sm">
-                <input
-                  type="checkbox"
-                  checked={profile.hiddenFields.includes(field)}
-                  onChange={(e) =>
-                    set('hiddenFields', e.target.checked ? [...profile.hiddenFields, field] : profile.hiddenFields.filter((f) => f !== field))
-                  }
-                />
-                Only connections see: {label}
-                {hiddenBadge(field)}
-              </label>
-            ))}
-          </div>
+          <ul className="divide-y divide-line overflow-hidden rounded-[20px] border border-line bg-white">
+            {HIDEABLE.filter(({ only }) => !only || held.has(only)).map(({ field, label }) => {
+              const hidden = profile.hiddenFields.includes(field);
+              return (
+                <li key={field}>
+                  <label className="flex min-h-[56px] cursor-pointer items-center gap-4 px-4 py-2.5 hover:bg-wash/60">
+                    <span className="flex flex-1 flex-col gap-0.5 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+                      <span className="text-[15px] font-semibold text-forest">{label}</span>
+                      <span className={cx('flex items-center gap-1.5 text-[13px] font-semibold', hidden ? 'text-forest' : 'text-ink-muted')}>
+                        {hidden ? <Lock size={14} strokeWidth={2} aria-hidden /> : <Users size={14} strokeWidth={2} aria-hidden />}
+                        {hidden ? 'Connections only' : 'All members'}
+                      </span>
+                    </span>
+                    <input
+                      type="checkbox"
+                      role="switch"
+                      aria-label={`${label}: only connections see this`}
+                      className="peer sr-only"
+                      checked={hidden}
+                      onChange={(e) =>
+                        set('hiddenFields', e.target.checked ? [...profile.hiddenFields, field] : profile.hiddenFields.filter((f) => f !== field))
+                      }
+                    />
+                    <span
+                      aria-hidden
+                      className="relative h-7 w-12 shrink-0 rounded-full bg-[#D9D2C7] transition-colors after:absolute after:left-1 after:top-1 after:h-5 after:w-5 after:rounded-full after:bg-white after:shadow after:transition-transform peer-checked:bg-forest peer-checked:after:translate-x-5 peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-forest motion-reduce:after:transition-none"
+                    />
+                  </label>
+                </li>
+              );
+            })}
+          </ul>
         </section>
       )}
     </div>
