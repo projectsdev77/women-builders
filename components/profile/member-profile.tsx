@@ -163,7 +163,7 @@ export function MemberProfile({ member, actions }: { member: MemberView; actions
             </div>
           </div>
           {actions && (
-            <div className="flex flex-col gap-2.5 p-6 sm:p-8" style={{ background: ROLE_COLOR[member.primaryRole].tint }}>
+            <div className="flex flex-col justify-center gap-2.5 p-6 sm:p-8" style={{ background: ROLE_COLOR[member.primaryRole].tint }}>
               {actions}
             </div>
           )}
