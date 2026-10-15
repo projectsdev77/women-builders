@@ -1,26 +1,30 @@
-import type { Metadata } from 'next';
-import { notFound, redirect } from 'next/navigation';
-import { pageActiveMember } from '@/lib/auth/guards';
-import { getMemberProfile } from '@/lib/services/profiles';
-import { AppError } from '@/lib/errors';
-import { MemberProfile } from '@/components/profile/member-profile';
-import { MemberActions } from '@/components/member/member-actions';
-import { prisma } from '@/lib/db';
-import { canSendConnectionRequests } from '@/lib/services/profile-fields';
-import { pendingRequestBetween } from '@/lib/services/connections';
-import { introductionOptions } from '@/lib/services/introductions';
-import { memberWins } from '@/lib/services/wins';
-import { WinCard } from '@/components/wins/win-card';
-import Link from 'next/link';
-import { BackLink } from '@/components/ui/back-link';
+import type { Metadata } from "next";
+import { notFound, redirect } from "next/navigation";
+import { pageActiveMember } from "@/lib/auth/guards";
+import { getMemberProfile } from "@/lib/services/profiles";
+import { AppError } from "@/lib/errors";
+import { MemberProfile } from "@/components/profile/member-profile";
+import { MemberActions } from "@/components/member/member-actions";
+import { prisma } from "@/lib/db";
+import { canSendConnectionRequests } from "@/lib/services/profile-fields";
+import { pendingRequestBetween } from "@/lib/services/connections";
+import { introductionOptions } from "@/lib/services/introductions";
+import { memberWins } from "@/lib/services/wins";
+import { WinCard } from "@/components/wins/win-card";
+import Link from "next/link";
+import { BackLink } from "@/components/ui/back-link";
 
-export const metadata: Metadata = { title: 'Member' };
+export const metadata: Metadata = { title: "Member" };
 
-export default async function MemberPage({ params }: { params: { id: string } }) {
+export default async function MemberPage({
+  params,
+}: {
+  params: { id: string };
+}) {
   const user = await pageActiveMember();
-  if (params.id === user.id) redirect('/profile');
+  if (params.id === user.id) redirect("/profile");
   const member = await getMemberProfile(user.id, params.id).catch((e) => {
-    if (e instanceof AppError && e.code === 'NOT_FOUND') notFound();
+    if (e instanceof AppError && e.code === "NOT_FOUND") notFound();
     throw e;
   });
   const [own, pending, intro, wins] = await Promise.all([
@@ -31,34 +35,57 @@ export default async function MemberPage({ params }: { params: { id: string } })
   ]);
   return (
     <div className="space-y-6">
-    <BackLink />
-    <MemberProfile
-      member={member}
-      actions={
-        <MemberActions
-          memberId={member.id}
-          memberName={member.name}
-          status={member.connectionStatus === 'self' ? 'none' : member.connectionStatus}
-          canRequest={canSendConnectionRequests(own)}
-          requestId={pending?.id}
-          requestMessage={pending?.message}
-          intro={intro}
-        />
-      }
-    />
-      {(wins.length > 0 || member.connectionStatus === 'connected') && (
-        <section aria-labelledby="wins" className="space-y-3">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <h2 id="wins" className="font-display text-[28px]">Wins</h2>
-            {member.connectionStatus === 'connected' && (
-              <Link href={`/wins/new?with=${member.id}`} className="text-[15px] font-bold underline underline-offset-4">Share a win with {member.name.split(' ')[0]}</Link>
-            )}
-          </div>
-          {wins.length === 0 ? <p className="text-[15px] text-ink-subtle">No shared wins yet.</p> : (
-            <ul className="grid gap-3 md:grid-cols-2">{wins.map((w) => <li key={w.id}><WinCard win={w} /></li>)}</ul>
-          )}
-        </section>
-      )}
+      <BackLink />
+      <MemberProfile
+        member={member}
+        actions={
+          <MemberActions
+            memberId={member.id}
+            memberName={member.name}
+            status={
+              member.connectionStatus === "self"
+                ? "none"
+                : member.connectionStatus
+            }
+            canRequest={canSendConnectionRequests(own)}
+            requestId={pending?.id}
+            requestMessage={pending?.message}
+            intro={intro}
+          />
+        }
+        extra={
+          (wins.length > 0 || member.connectionStatus === "connected") && (
+            <section aria-labelledby="wins" className="space-y-3">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <h2 id="wins" className="font-display text-[28px]">
+                  Wins
+                </h2>
+                {member.connectionStatus === "connected" && (
+                  <Link
+                    href={`/wins/new?with=${member.id}`}
+                    className="text-[15px] font-bold underline underline-offset-4"
+                  >
+                    Share a win with {member.name.split(" ")[0]}
+                  </Link>
+                )}
+              </div>
+              {wins.length === 0 ? (
+                <p className="text-[15px] text-ink-subtle">
+                  No shared wins yet.
+                </p>
+              ) : (
+                <ul className="grid gap-3 md:grid-cols-2">
+                  {wins.map((w) => (
+                    <li key={w.id}>
+                      <WinCard win={w} />
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </section>
+          )
+        }
+      />
     </div>
   );
 }
