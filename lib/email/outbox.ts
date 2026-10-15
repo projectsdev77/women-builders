@@ -31,6 +31,23 @@ export async function enqueueEmail(db: Tx, input: EnqueueInput) {
   });
 }
 
+/** Queues many emails in one write (bulk announcements stay fast and inside short transactions). */
+export async function enqueueEmails(db: Tx, inputs: EnqueueInput[]) {
+  if (!inputs.length) return 0;
+  const res = await db.emailOutbox.createMany({
+    data: inputs.map((input) => ({
+      to: input.to,
+      kind: input.kind,
+      subject: input.content.subject,
+      html: input.content.html,
+      text: input.content.text,
+      dedupeKey: input.dedupeKey,
+      unsubscribeUrl: input.unsubscribeUrl,
+    })),
+  });
+  return res.count;
+}
+
 async function deliver(email: {
   to: string;
   subject: string;

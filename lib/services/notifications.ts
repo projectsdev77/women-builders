@@ -1,6 +1,6 @@
 import type { Tx } from '@/lib/db';
 import { appUrl } from '@/lib/config';
-import { enqueueEmail } from '@/lib/email/outbox';
+import { enqueueEmail, enqueueEmails } from '@/lib/email/outbox';
 import { templates, type EmailContent } from '@/lib/email/templates';
 import { sign, verifySigned } from '@/lib/security/tokens';
 import { prisma } from '@/lib/db';
@@ -71,6 +71,23 @@ export async function notify(
   if (opts.delayMs) {
     await tx.emailOutbox.update({ where: { id: row.id }, data: { nextAttemptAt: new Date(Date.now() + opts.delayMs) } });
   }
+}
+
+/** notify() for many people at once: one read for their preferences, one write for the emails. */
+export async function notifyMany(tx: Tx, userIds: string[], type: NotificationType, build: (unsubscribe: string) => EmailContent) {
+  if (!userIds.length) return 0;
+  const users = await tx.user.findMany({
+    where: { id: { in: userIds }, accountStatus: 'ACTIVE' },
+    select: { id: true, email: true, notificationPreference: true },
+  });
+  const allowed = users.filter((u) => !u.notificationPreference || u.notificationPreference[PREF_FIELD[type]]);
+  return enqueueEmails(
+    tx,
+    allowed.map((u) => {
+      const unsub = unsubscribeUrl(u.id, type);
+      return { to: u.email, kind: type, content: build(unsub), unsubscribeUrl: unsub };
+    }),
+  );
 }
 
 export function notifyConnectionRequest(tx: Tx, to: string, fromName: string, message: string | null) {

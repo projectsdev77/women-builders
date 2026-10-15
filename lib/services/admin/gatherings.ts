@@ -2,13 +2,13 @@ import type { Prisma, RoleType } from '@prisma/client';
 import { z } from 'zod';
 import { prisma, type Tx } from '@/lib/db';
 import { Errors } from '@/lib/errors';
-import { enqueueEmail } from '@/lib/email/outbox';
+import { enqueueEmail, enqueueEmails } from '@/lib/email/outbox';
 import { templates } from '@/lib/email/templates';
 import { isCountryCode } from '@/lib/countries';
 import { isValidTimeZone, utcToZonedInput, zonedTimeToUtc } from '@/lib/time';
 import { audit } from '../audit';
 import { lock } from '../locks';
-import { notify } from '../notifications';
+import { notify, notifyMany } from '../notifications';
 import { endsAt, promoteFromWaitlist, summary } from '../gatherings';
 import { photoUrl } from '../photo-url';
 
@@ -94,7 +94,7 @@ async function announce(tx: Tx, gatheringId: string) {
       where: { id: { in: g.invites.map((i) => i.userId).filter((id) => !hostIds.has(id)) }, accountStatus: 'ACTIVE' },
       select: { email: true },
     });
-    for (const u of invited) await enqueueEmail(tx, { to: u.email, kind: 'gathering_invite', content: templates.gatheringInvite(summary(g)) });
+    await enqueueEmails(tx, invited.map((u) => ({ to: u.email, kind: 'gathering_invite', content: templates.gatheringInvite(summary(g)) })));
     return invited.length;
   }
   const where: Prisma.ProfileWhereInput = {
@@ -104,8 +104,7 @@ async function announce(tx: Tx, gatheringId: string) {
     ...(g.audience === 'ROLES' ? { OR: [{ primaryRole: { in: g.audienceRoles } }, { secondaryRoles: { hasSome: g.audienceRoles } }] } : {}),
   };
   const members = await tx.profile.findMany({ where, select: { userId: true }, take: 5000 });
-  for (const m of members) await notify(tx, m.userId, 'gathering_nearby', (u) => templates.gatheringNearby(summary(g), u));
-  return members.length;
+  return notifyMany(tx, members.map((m) => m.userId), 'gathering_nearby', (u) => templates.gatheringNearby(summary(g), u));
 }
 
 export async function createGathering(adminId: string, input: GatheringInput) {
@@ -159,7 +158,7 @@ export async function updateGathering(adminId: string, id: string, input: Gather
       before.venue !== g.venue;
     if (changed) {
       const confirmed = await tx.seatRequest.findMany({ where: { gatheringId: id, status: 'CONFIRMED' }, include: { user: { select: { email: true } } } });
-      for (const s of confirmed) await enqueueEmail(tx, { to: s.user.email, kind: 'gathering_changed', content: templates.gatheringChanged(summary(g), g.venue) });
+      await enqueueEmails(tx, confirmed.map((s) => ({ to: s.user.email, kind: 'gathering_changed', content: templates.gatheringChanged(summary(g), g.venue) })));
       // Reminders follow the new time.
       if (before.startsAt.getTime() !== g.startsAt.getTime()) {
         await tx.gathering.update({ where: { id }, data: { reminder2dSentAt: null, reminderDaySentAt: null } });
@@ -168,7 +167,7 @@ export async function updateGathering(adminId: string, id: string, input: Gather
     // Invitees added later get their invitation too.
     if (input.audience === 'INVITE_ONLY' && before.nearbyNotifiedAt && newInvites.length) {
       const users = await tx.user.findMany({ where: { id: { in: newInvites } }, select: { email: true } });
-      for (const u of users) await enqueueEmail(tx, { to: u.email, kind: 'gathering_invite', content: templates.gatheringInvite(summary(g)) });
+      await enqueueEmails(tx, users.map((u) => ({ to: u.email, kind: 'gathering_invite', content: templates.gatheringInvite(summary(g)) })));
     }
     // Open mode with more seats: move people up from the waitlist.
     if (g.seatMode === 'OPEN') while (await promoteFromWaitlist(tx, id));
@@ -187,7 +186,7 @@ export async function cancelGathering(adminId: string, id: string, reason: strin
       where: { gatheringId: id, status: { in: ['REQUESTED', 'CONFIRMED', 'WAITLISTED'] } },
       include: { user: { select: { email: true } } },
     });
-    for (const s of seats) await enqueueEmail(tx, { to: s.user.email, kind: 'gathering_cancelled', content: templates.gatheringCancelled(summary(g), reason.trim()) });
+    await enqueueEmails(tx, seats.map((s) => ({ to: s.user.email, kind: 'gathering_cancelled', content: templates.gatheringCancelled(summary(g), reason.trim()) })));
     await audit(tx, { actorId: adminId, action: 'gathering.cancel', targetType: 'gathering', targetId: id, details: { reason } });
   });
 }
@@ -372,7 +371,7 @@ export async function messageAttendees(adminId: string, gatheringId: string, sub
     const g = await tx.gathering.findUnique({ where: { id: gatheringId } });
     if (!g) throw Errors.notFound('Gathering');
     const seats = await tx.seatRequest.findMany({ where: { gatheringId, status: 'CONFIRMED' }, include: { user: { select: { email: true } } } });
-    for (const s of seats) await enqueueEmail(tx, { to: s.user.email, kind: 'gathering_message', content: templates.gatheringMessage(summary(g), subject, body) });
+    await enqueueEmails(tx, seats.map((s) => ({ to: s.user.email, kind: 'gathering_message', content: templates.gatheringMessage(summary(g), subject, body) })));
     await audit(tx, { actorId: adminId, action: 'gathering.message', targetType: 'gathering', targetId: gatheringId, details: { subject, recipients: seats.length } });
     return { sent: seats.length };
   });

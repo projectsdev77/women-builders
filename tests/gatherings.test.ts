@@ -69,6 +69,18 @@ describe('time zones', () => {
 });
 
 describe('gatherings (R3 F14, F23)', () => {
+  it('announces to many members in one batch, each with an unsubscribe link', async () => {
+    const admin = await createMember({ isAdmin: true, profile: null });
+    const people = [];
+    for (let i = 0; i < 60; i++) people.push(await createMember());
+    await prisma.notificationPreference.update({ where: { userId: people[0]!.id }, data: { gatheringsNearMe: false } });
+    await createGathering(admin.id, input());
+    const sent = await prisma.emailOutbox.findMany({ where: { kind: 'gathering_nearby' } });
+    expect(sent).toHaveLength(59);
+    expect(sent.every((e) => !!e.unsubscribeUrl)).toBe(true);
+    expect(sent.map((e) => e.to)).not.toContain(people[0]!.email);
+  });
+
   it('announces to members in the same country who opted in, and respects audiences', async () => {
     const admin = await createMember({ isAdmin: true, profile: null });
     const lagos = await createMember();
