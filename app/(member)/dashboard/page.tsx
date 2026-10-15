@@ -78,7 +78,8 @@ export default async function DashboardPage() {
       {(prompt || showInvesting || todo.length > 0) && (
         <div className="grid gap-4 lg:grid-cols-2">
           {(prompt || showInvesting) && (
-            <div className="space-y-4">
+            // With a To-do list the cards stack in the left column; without one they share the full width.
+            <div className={todo.length > 0 ? 'space-y-4' : 'grid gap-4 lg:col-span-2 lg:grid-cols-2 lg:[&>*:only-child]:col-span-2'}>
               {prompt && (
                 <section aria-labelledby="prompt" className="relative flex items-center gap-5 overflow-hidden rounded-[28px] bg-founder p-6 pr-[18%]">
                   <div aria-hidden className="absolute inset-y-0 right-0 w-[16%]" style={{ background: 'repeating-linear-gradient(90deg, #FBE3EA 0 10px, transparent 10px 20px)' }} />
