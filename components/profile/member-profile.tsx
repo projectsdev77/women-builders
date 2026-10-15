@@ -78,6 +78,58 @@ function SideCard({ role, title, children }: { role?: MemberView['primaryRole'];
 
 export function MemberProfile({ member, actions }: { member: MemberView; actions?: ReactNode }) {
   const first = member.name.split(' ')[0];
+
+  const roleCards: Array<[MemberView['primaryRole'], ReactNode]> = [
+    ['FOUNDER', member.founder && (
+      <SideCard role="FOUNDER" title="Founder">
+        <dl className="space-y-1.5">
+          <Row label="Company" value={member.founder.companyName} />
+          <Row label="Stage" value={member.founder.companyStage} />
+          <Row label="Industry" value={member.founder.industry} />
+          <Row label="Funding" value={member.founder.fundingStatus} />
+          <Row label="Raising" value={member.founder.raiseAmount != null ? formatThousands(member.founder.raiseAmount) : null} />
+        </dl>
+      </SideCard>
+    )],
+    ['OPERATOR', member.operator && (
+      <SideCard role="OPERATOR" title="Operator">
+        <dl className="space-y-1.5">
+          <Row label="Function" value={member.operator.functionalExpertise} />
+          <Row label="Seniority" value={member.operator.seniorityLevel} />
+          <Row label="Focus areas" value={member.operator.operationalFocus} />
+        </dl>
+      </SideCard>
+    )],
+    ['INVESTOR', member.investor && (
+      <SideCard role="INVESTOR" title="Investor">
+        <InvestingBadge status={member.investor.investing} />
+        <dl className="space-y-1.5">
+          <Row label="Type" value={member.investor.investorType} />
+          <Row label="Firm" value={member.investor.firmName} />
+          <Row label="Leads or follows" value={member.investor.leadsRounds} />
+          <Row label="Last check" value={formatMonth(member.investor.lastCheckMonth)} />
+          <Row label="Stages" value={member.investor.investmentStages} />
+          <Row label="Check size" value={formatCheckSize(member.investor.checkSizeMin, member.investor.checkSizeMax)} />
+          <Row label="Sectors" value={member.investor.sectorPreferences} />
+        </dl>
+      </SideCard>
+    )],
+    ['BUILDER', member.builder && (
+      <SideCard role="BUILDER" title="Builder">
+        <dl className="space-y-1.5">
+          <Row label="Skills" value={member.builder.technicalSkills} />
+          <Row label="Project types" value={member.builder.projectTypes} />
+          <Row label="Collaboration" value={member.builder.collaborationInterests} />
+        </dl>
+      </SideCard>
+    )],
+  ];
+  // The primary role's card sits in the sidebar; any others go under the main column so the two stay balanced.
+  const shown = roleCards
+    .filter(([, card]) => card)
+    .sort(([a], [b]) => Number(b === member.primaryRole) - Number(a === member.primaryRole));
+  const sideRole = shown[0] && <div key={shown[0][0]}>{shown[0][1]}</div>;
+  const moreRoles = shown.slice(1);
   return (
     <div className="space-y-5">
       <header className="overflow-hidden rounded-[32px] bg-white">
@@ -117,7 +169,7 @@ export function MemberProfile({ member, actions }: { member: MemberView; actions
           )}
         </div>
         {member.hasHiddenFields && (
-          <p className="flex items-center gap-2 border-t border-line bg-cream px-6 py-3 text-[14px] text-ink-muted sm:px-8">
+          <p className="flex items-center gap-2 border-t border-line bg-white px-6 py-3 text-[14px] text-ink-muted sm:px-8">
             <Lock size={15} strokeWidth={1.75} aria-hidden /> {first} shares some details only with connections.
           </p>
         )}
@@ -150,6 +202,11 @@ export function MemberProfile({ member, actions }: { member: MemberView; actions
           {!member.currentFocus && !member.needs && !member.offerings && !member.professionalBackground && (
             <p className="rounded-[24px] bg-white p-6 text-[15px] text-ink-subtle">No details shared yet.</p>
           )}
+          {moreRoles.length > 0 && (
+            <div className="grid items-start gap-4 md:grid-cols-2">
+              {moreRoles.map(([role, card]) => <div key={role}>{card}</div>)}
+            </div>
+          )}
         </div>
         <div className="space-y-4">
           {member.expertiseAreas.length > 0 && (
@@ -157,49 +214,7 @@ export function MemberProfile({ member, actions }: { member: MemberView; actions
               <ul className="flex flex-wrap gap-1.5">{member.expertiseAreas.map((t) => <li key={t} className="rounded-chip bg-cream px-2.5 py-1 text-[13px]">{t}</li>)}</ul>
             </SideCard>
           )}
-          {member.founder && (
-            <SideCard role="FOUNDER" title="Founder">
-              <dl className="space-y-1.5">
-                <Row label="Company" value={member.founder.companyName} />
-                <Row label="Stage" value={member.founder.companyStage} />
-                <Row label="Industry" value={member.founder.industry} />
-                <Row label="Funding" value={member.founder.fundingStatus} />
-                <Row label="Raising" value={member.founder.raiseAmount != null ? formatThousands(member.founder.raiseAmount) : null} />
-              </dl>
-            </SideCard>
-          )}
-          {member.operator && (
-            <SideCard role="OPERATOR" title="Operator">
-              <dl className="space-y-1.5">
-                <Row label="Function" value={member.operator.functionalExpertise} />
-                <Row label="Seniority" value={member.operator.seniorityLevel} />
-                <Row label="Focus areas" value={member.operator.operationalFocus} />
-              </dl>
-            </SideCard>
-          )}
-          {member.investor && (
-            <SideCard role="INVESTOR" title="Investor">
-              <InvestingBadge status={member.investor.investing} />
-              <dl className="space-y-1.5">
-                <Row label="Type" value={member.investor.investorType} />
-                <Row label="Firm" value={member.investor.firmName} />
-                <Row label="Leads or follows" value={member.investor.leadsRounds} />
-                <Row label="Last check" value={formatMonth(member.investor.lastCheckMonth)} />
-                <Row label="Stages" value={member.investor.investmentStages} />
-                <Row label="Check size" value={formatCheckSize(member.investor.checkSizeMin, member.investor.checkSizeMax)} />
-                <Row label="Sectors" value={member.investor.sectorPreferences} />
-              </dl>
-            </SideCard>
-          )}
-          {member.builder && (
-            <SideCard role="BUILDER" title="Builder">
-              <dl className="space-y-1.5">
-                <Row label="Skills" value={member.builder.technicalSkills} />
-                <Row label="Project types" value={member.builder.projectTypes} />
-                <Row label="Collaboration" value={member.builder.collaborationInterests} />
-              </dl>
-            </SideCard>
-          )}
+          {sideRole}
         </div>
       </div>
     </div>
