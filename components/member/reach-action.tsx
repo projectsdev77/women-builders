@@ -22,7 +22,7 @@ export function ReachAction({ member }: { member: MemberCard }) {
       <Link href={profile} className={buttonClass('primary', 'md', 'flex-1')}>Ask for an introduction</Link>
     ) : (
       <div className="w-full space-y-2">
-        <Link href={profile} className={buttonClass('secondary', 'md', 'w-full')}>Ask the team to introduce you</Link>
+        <Link href={profile} className={buttonClass('secondary', 'md', 'w-full !whitespace-normal py-2.5 text-center leading-snug')}>Ask the team to introduce you</Link>
         <p className="text-[13px] text-ink-subtle">No one in your network knows {first} yet.</p>
       </div>
     );

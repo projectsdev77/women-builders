@@ -86,7 +86,7 @@ export function MemberActions({
             <>
               {intro.preferIntroductions && <p className="text-[13px] text-ink-muted">No one in your network knows {first} yet.</p>}
               {intro.teamAvailable && intro.teamRemainingThisMonth > 0 && (
-                <Button variant="secondary" disabled={!intro.canAsk} onClick={() => setDialog('team')} className="w-full whitespace-normal text-center">
+                <Button variant="secondary" disabled={!intro.canAsk} onClick={() => setDialog('team')} className="w-full !whitespace-normal py-2.5 text-center leading-snug">
                   Ask the Women Builders team to introduce you
                 </Button>
               )}
