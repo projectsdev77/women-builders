@@ -417,7 +417,7 @@ Unchanged:
 - 20 requests per rolling 24 hours, and one pending request per pair;
 - crossing requests connect immediately;
 - declines are silent;
-- withdrawing a request applies a cooldown until the original expiry;
+- withdrawing a request: up to 3 resends to the same member are allowed (a withdrawal can be a slip); after a 4th withdrawal within 30 days, the next request waits 30 days from that withdrawal. Withdrawing a request that was silently declined still waits until its original expiry;
 - requests expire after 30 days;
 - remove connection, with read-only history;
 - the connections list with search, and the requests page.

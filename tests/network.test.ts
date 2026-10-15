@@ -84,12 +84,29 @@ describe('connection requests (Req 3, G1, G2, G6)', () => {
     expect(await prisma.emailOutbox.count({ where: { to: a.email } })).toBe(0);
   });
 
-  it('allows a new request after expiry, and applies the same cooldown after cancelling', async () => {
+  it('allows three resends after withdrawing; the fourth waits 30 days from the last withdrawal', async () => {
+    const a = await ready();
+    const b = await ready();
+    for (let i = 0; i < 4; i++) {
+      const { requestId } = (await sendConnectionRequest(a.id, b.id)) as { requestId: string };
+      await cancelConnectionRequest(a.id, requestId);
+    }
+    await expect(sendConnectionRequest(a.id, b.id)).rejects.toMatchObject({ code: 'REQUEST_COOLDOWN' });
+    // 30 days after the last withdrawal, a new request is allowed.
+    await prisma.connectionRequest.updateMany({ data: { respondedAt: new Date(Date.now() - 31 * 86_400_000) } });
+    expect((await sendConnectionRequest(a.id, b.id)).status).toBe('sent');
+  });
+
+  it('withdrawing a silently declined request does not allow a resend before it would have expired', async () => {
     const a = await ready();
     const b = await ready();
     const { requestId } = (await sendConnectionRequest(a.id, b.id)) as { requestId: string };
+    await declineConnectionRequest(b.id, requestId);
     await cancelConnectionRequest(a.id, requestId);
-    await expect(sendConnectionRequest(a.id, b.id)).rejects.toMatchObject({ code: 'REQUEST_COOLDOWN' });
+    await expect(sendConnectionRequest(a.id, b.id)).rejects.toMatchObject({
+      code: 'REQUEST_COOLDOWN',
+      message: expect.stringContaining('You withdrew a request to this member recently.'),
+    });
     await prisma.connectionRequest.updateMany({ data: { expiresAt: new Date(Date.now() - 1000) } });
     expect((await sendConnectionRequest(a.id, b.id)).status).toBe('sent');
   });

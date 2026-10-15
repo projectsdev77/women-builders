@@ -4,6 +4,7 @@ export const APP_NAME = 'Women Builders';
 
 export const LIMITS = {
   connectionRequestsPer24h: 20, // G1
+  connectionResendsAfterWithdrawing: 3, // withdraw-and-resend to one member; the next waits 30 days
   unansweredMessagesPerConversation: 20, // G1
   connectionRequestMessageMax: 500,
   messageMax: 5000, // G12

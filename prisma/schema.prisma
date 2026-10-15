@@ -252,6 +252,7 @@ model ConnectionRequest {
   status      ConnectionRequestStatus @default(PENDING)
   expiresAt   DateTime
   respondedAt DateTime?
+  declinedAt  DateTime? // kept after the sender withdraws, so a silent decline still holds
   createdAt   DateTime                @default(now())
 
   @@index([receiverId, status])

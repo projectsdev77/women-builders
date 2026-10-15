@@ -83,24 +83,37 @@ export async function sendConnectionRequest(senderId: string, receiverId: string
     }
 
     const existing = await tx.connectionRequest.findFirst({
-      where: {
-        senderId,
-        receiverId,
-        status: { in: ['PENDING', 'DECLINED', 'CANCELLED'] },
-        expiresAt: { gt: now },
-      },
-      orderBy: { createdAt: 'desc' },
+      where: { senderId, receiverId, status: { in: ['PENDING', 'DECLINED'] }, expiresAt: { gt: now } },
     });
-    if (existing?.status === 'PENDING' || existing?.status === 'DECLINED') {
+    if (existing) {
       // A declined request still looks pending to the sender (silent decline).
       throw Errors.conflict('You already have a pending request to this member.');
     }
-    if (existing?.status === 'CANCELLED') {
-      throw new AppError(
+    const cooldown = (until: Date, why: string) =>
+      new AppError(
         'REQUEST_COOLDOWN',
-        `You withdrew a request to this member recently. You can send a new one after ${existing.expiresAt.toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}.`,
+        `${why} You can send a new one after ${until.toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}.`,
         409,
       );
+    // Withdrawing a request the member had already declined doesn't reopen the door: wait out the original 30 days.
+    const declined = await tx.connectionRequest.findFirst({
+      where: { senderId, receiverId, status: 'CANCELLED', declinedAt: { not: null }, expiresAt: { gt: now } },
+      orderBy: { expiresAt: 'desc' },
+    });
+    if (declined) throw cooldown(declined.expiresAt, 'You withdrew a request to this member recently.');
+    // A withdrawal can be a slip, so resending is fine a few times; after that, wait 30 days.
+    const window = DURATIONS_MS.connectionRequestExpiry;
+    const limit = LIMITS.connectionResendsAfterWithdrawing;
+    const withdrawals = await tx.connectionRequest.findMany({
+      where: { senderId, receiverId, status: 'CANCELLED', respondedAt: { gt: new Date(now.getTime() - 2 * window) } },
+      orderBy: { respondedAt: 'desc' },
+      take: limit + 1,
+      select: { respondedAt: true },
+    });
+    const latest = withdrawals[0]?.respondedAt;
+    const oldest = withdrawals[limit]?.respondedAt;
+    if (latest && oldest && latest.getTime() - oldest.getTime() <= window && now.getTime() < latest.getTime() + window) {
+      throw cooldown(new Date(latest.getTime() + window), 'You have withdrawn several requests to this member.');
     }
 
     const sentToday = await tx.connectionRequest.count({
@@ -149,7 +162,7 @@ export async function acceptConnectionRequest(actorId: string, requestId: string
 export async function declineConnectionRequest(actorId: string, requestId: string) {
   const res = await prisma.connectionRequest.updateMany({
     where: { id: requestId, receiverId: actorId, status: 'PENDING' },
-    data: { status: 'DECLINED', respondedAt: new Date() },
+    data: { status: 'DECLINED', respondedAt: new Date(), declinedAt: new Date() },
   });
   if (res.count === 0) throw Errors.notFound('Request');
 }
