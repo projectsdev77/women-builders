@@ -41,7 +41,8 @@ const PLAN: Record<string, Array<[string, string | null]>> = {
   operator: member([['Home', '/dashboard'], ['My profile', '/profile'], ['Discover', '/search']]),
   builder: member([['Home', '/dashboard'], ['My profile', '/profile'], ['For you', '/recommendations']]),
   multi: member([['Home', '/dashboard'], ['My profile', '/profile'], ['Edit profile', '/profile/edit']]),
-  newbie: member([['Onboarding', '/onboarding'], ['Home', '/dashboard'], ['My profile', '/profile'], ['Member: founder (cannot connect yet)', `/members/${id.founder}`]]),
+  // Until onboarding is finished every member page redirects there, so one screen covers a brand-new member.
+  newbie: member([['Onboarding', '/onboarding']]),
   admin: member([
     ['Admin home', '/admin'], ['Requests', '/admin/requests'], ['Invitations', '/admin/invitations'], ['Potential members', '/admin/prospects'],
     ['Potential member', id.prospect && `/admin/prospects/${id.prospect}`], ['Potential member (requested)', id.requestedProspect && `/admin/prospects/${id.requestedProspect}`],
