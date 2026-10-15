@@ -171,14 +171,15 @@ export function MemberNav({
         </div>
       </aside>
 
-      {/* Mobile and tablet top bar */}
-      <header className="sticky top-0 z-30 flex items-center justify-between border-b border-line bg-cream/95 px-4 py-3 backdrop-blur lg:hidden">
+      {/* Mobile and tablet top bar. Both bars are solid and carry their colour past the screen edge,
+          because in-app browsers and iOS Safari show the page under their own toolbars. */}
+      <header className="sticky top-0 z-30 flex items-center justify-between border-b border-line bg-cream px-4 py-3 before:absolute before:inset-x-0 before:bottom-full before:h-[100vh] before:bg-cream lg:hidden">
         <Link href="/dashboard" aria-label="Women Builders, home"><Wordmark size={21} /></Link>
         <Link href="/profile" aria-label="My profile"><Avatar name={name} size={40} photoUrl={photoUrl} role={role} /></Link>
       </header>
 
       {/* Mobile and tablet bottom tab bar */}
-      <nav aria-label="Main" className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-5 border-t border-line bg-white px-1 pb-[22px] pt-1 lg:hidden">
+      <nav aria-label="Main" className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-5 border-t border-line bg-white px-1 pb-[22px] pt-1 after:absolute after:inset-x-0 after:top-full after:h-[100vh] after:bg-white lg:hidden">
         {tabs.map((t) => {
           const active = isActive(t.href);
           const Icon = t.icon;

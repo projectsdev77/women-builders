@@ -6,7 +6,7 @@ import { Wordmark } from '@/components/member/nav';
 /** Sticky public nav (cream 92% + blur). The primary label becomes "Join the waitlist" while applications are closed. */
 export function PublicHeader({ waitlist = false }: { waitlist?: boolean }) {
   return (
-    <header className="sticky top-0 z-30 border-b border-line bg-cream/90 backdrop-blur-[8px]">
+    <header className="sticky top-0 z-30 border-b border-line bg-cream before:absolute before:inset-x-0 before:bottom-full before:h-[100vh] before:bg-cream">
       <div className="mx-auto flex max-w-[1240px] items-center justify-between gap-2 px-[clamp(16px,4vw,48px)] py-3 sm:gap-4">
         <Link href="/" aria-label="Women Builders, home">
           <span className="min-[400px]:hidden"><Wordmark size={20} /></span>
