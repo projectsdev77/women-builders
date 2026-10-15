@@ -39,7 +39,9 @@ beforeEach(resetDb);
 
 describe('joining by invitation (R3 F4)', () => {
   it('creates an ACTIVE member with the charter accepted and marks the prospect Joined', async () => {
-    const prospect = await prisma.potentialMember.create({ data: { name: 'Ada', email: 'ada@example.com', outreachStatus: 'CONTACTED' } });
+    const prospect = await prisma.potentialMember.create({
+      data: { name: 'Ada', email: 'ada@example.com', linkedInUrl: 'https://www.linkedin.com/in/ada', outreachStatus: 'CONTACTED' },
+    });
     const token = await invite('Ada@Example.com');
     expect(await previewInvitation(token)).toMatchObject({ email: 'ada@example.com', name: 'Ada' });
 
@@ -48,7 +50,7 @@ describe('joining by invitation (R3 F4)', () => {
     expect(user.accountStatus).toBe('ACTIVE');
     expect(user.email).toBe('ada@example.com');
     expect(user.charterVersion).toBe(CHARTER_VERSION);
-    expect(user.profile).toMatchObject({ primaryRole: 'BUILDER', city: 'London', country: 'GB' });
+    expect(user.profile).toMatchObject({ primaryRole: 'BUILDER', city: 'London', country: 'GB', linkedInUrl: 'https://www.linkedin.com/in/ada' });
     const p = await prisma.potentialMember.findUniqueOrThrow({ where: { id: prospect.id } });
     expect(p.userId).toBe(userId);
     expect(p.outreachStatus).toBe('APPROVED');

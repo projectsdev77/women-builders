@@ -63,6 +63,7 @@ export async function joinWithInvitation(input: JoinInput): Promise<{ userId: st
     const existing = await tx.user.findUnique({ where: { email: inv.email } });
     if (existing) throw new AppError('EMAIL_TAKEN', 'An account with this email already exists. Try logging in.', 409);
 
+    const prospect = inv.potentialMember ?? (await tx.potentialMember.findUnique({ where: { email: inv.email } }));
     const now = new Date();
     const profileData = {
       primaryRole: input.primaryRole,
@@ -70,6 +71,8 @@ export async function joinWithInvitation(input: JoinInput): Promise<{ userId: st
       headline: input.headline.trim() || null,
       city: input.city,
       country: input.country,
+      // The join form doesn't ask again: carry over the LinkedIn they gave when requesting an invitation.
+      linkedInUrl: inv.potentialMember?.requests[0]?.linkedInUrl || prospect?.linkedInUrl || null,
     };
     const user = await tx.user.create({
       data: {
@@ -88,9 +91,6 @@ export async function joinWithInvitation(input: JoinInput): Promise<{ userId: st
     });
     await tx.invitation.update({ where: { id: inv.id }, data: { usedAt: now } });
 
-    const prospect = inv.potentialMemberId
-      ? await tx.potentialMember.findUnique({ where: { id: inv.potentialMemberId } })
-      : await tx.potentialMember.findUnique({ where: { email: inv.email } });
     if (prospect && prospect.outreachStatus !== 'DO_NOT_CONTACT') {
       await tx.potentialMember.update({ where: { id: prospect.id }, data: { userId: user.id } });
       await changeProspectStatus(tx, prospect.id, 'APPROVED', null);
