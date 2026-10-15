@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { pageStaff } from '@/lib/auth/guards';
 import { prisma } from '@/lib/db';
 import { AdminNav } from '@/components/admin/admin-nav';
+import { emailTestMode } from '@/lib/email/outbox';
 import { LogoutButton } from '@/components/logout-button';
 import { followUpQueue } from '@/lib/services/admin/prospects';
 import { openRequestCounts } from '@/lib/services/invite-requests';
@@ -29,7 +30,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       </header>
       <div className="flex flex-1 flex-col lg:flex-row">
         <div className="border-b border-line px-3 py-3 lg:w-[232px] lg:shrink-0 lg:border-b-0 lg:border-r lg:px-3.5 lg:py-5">
-          <AdminNav reviewerOnly={!admin.isAdmin} counts={{ requests: requests.open, requestsOverdue: requests.overdue, reports, followUps: followUps.length, introductions }} />
+          <AdminNav reviewerOnly={!admin.isAdmin} testEmails={admin.isAdmin && emailTestMode()} counts={{ requests: requests.open, requestsOverdue: requests.overdue, reports, followUps: followUps.length, introductions }} />
         </div>
         <main id="main" className="min-w-0 flex-1 px-4 pb-20 pt-7 sm:px-[clamp(16px,3vw,36px)]">{children}</main>
       </div>

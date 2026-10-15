@@ -18,12 +18,13 @@ const ITEMS = [
   { href: '/admin/audit', label: 'Audit log' },
 ];
 
-export function AdminNav({ counts, reviewerOnly = false }: {
-  reviewerOnly?: boolean; counts: { requests: number; requestsOverdue: number; followUps: number; reports: number; introductions: number } }) {
+export function AdminNav({ counts, reviewerOnly = false, testEmails = false }: {
+  reviewerOnly?: boolean; testEmails?: boolean; counts: { requests: number; requestsOverdue: number; followUps: number; reports: number; introductions: number } }) {
   const pathname = usePathname();
+  const items = testEmails ? [...ITEMS, { href: '/admin/emails', label: 'Emails (test mode)' }] : ITEMS;
   return (
     <nav aria-label="Admin" className="flex gap-1 overflow-x-auto lg:flex-col lg:gap-0.5">
-      {ITEMS.filter((i) => !reviewerOnly || i.href === '/admin/requests').map((item) => {
+      {items.filter((i) => !reviewerOnly || i.href === '/admin/requests').map((item) => {
         const active = item.exact ? pathname === item.href : pathname.startsWith(item.href);
         const count = item.badge ? counts[item.badge] : 0;
         return (

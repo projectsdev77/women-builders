@@ -107,6 +107,7 @@ export async function cleanup() {
   await prisma.win.deleteMany({ where: { OR: [{ authorId: { in: ids } }, { story: { startsWith: 'E2E' } }] } });
   await prisma.user.deleteMany({ where: { id: { in: ids } } });
   // Accounts deleted through the app keep a placeholder row; their e2e conversations go with the other side.
+  await prisma.invitation.deleteMany({ where: { email: { startsWith: 'e2e-' } } });
   await prisma.potentialMember.deleteMany({ where: { email: { startsWith: 'e2e-' } } });
   await prisma.publicSubmission.deleteMany({ where: { email: { startsWith: 'e2e-' } } });
   await prisma.emailOutbox.deleteMany({ where: { to: { startsWith: 'e2e-' } } });

@@ -5,6 +5,9 @@ import type { EmailContent } from './templates';
 
 const MAX_ATTEMPTS = 5;
 
+/** Without an email provider nothing is delivered; admins can read the emails on /admin/emails instead. */
+export const emailTestMode = () => !process.env.RESEND_API_KEY;
+
 export interface EnqueueInput {
   to: string;
   kind: string;
