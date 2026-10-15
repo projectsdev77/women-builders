@@ -77,3 +77,16 @@ Open the homepage, login and a profile once in **Safari** (Mac or iPhone) and **
 ---
 
 **Found something?** Note the page, what you did and what you saw (a screenshot helps) and send it to Claude. Anything repeatable will get a new automated test so it stays fixed.
+
+## Screen gallery (every screen, every role, four data levels)
+
+Photographs every page for the admin, a founder, an investor, an operator, a builder, a multi-role member, a brand-new member and a logged-out visitor, at desktop and phone size, with **empty**, **a few**, **medium** and **a lot** of data.
+
+Local only: it wipes the database named in `.env` (it refuses to run unless that is on `localhost`).
+
+```bash
+npm run build && npm run start      # in one terminal
+npm run screens                     # in another; about 10 minutes
+```
+
+Screenshots land in `.data/screens/out/<level>/<desktop|phone>/`, with a `manifest.json` listing each one. Log in as any persona with `<persona>@screens.test` and password `ScreenPass1` (admin, founder, investor, operator, builder, multi, newbie).

@@ -18,7 +18,10 @@
     "e2e": "playwright test",
     "e2e:mobile": "playwright test --project=mobile",
     "db:reset-testing": "tsx prisma/reset-for-testing.ts",
-    "e2e:cleanup": "tsx e2e/cleanup.ts"
+    "e2e:cleanup": "tsx e2e/cleanup.ts",
+    "screens:seed": "dotenv -e .env -- tsx scripts/screens/seed.ts",
+    "screens:shoot": "tsx scripts/screens/shoot.ts",
+    "screens": "for l in empty few medium lots; do SCREENS_LEVEL=$l npm run -s screens:seed && SCREENS_LEVEL=$l npm run -s screens:shoot; done"
   },
   "prisma": {
     "seed": "dotenv -e .env -- tsx prisma/seed.ts"
